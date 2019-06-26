@@ -1,73 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`accepts filterProps argument 1`] = `
-"import { styled } from 'linaria/react';
-
-const CustomButton = props => <button {...props} />;
-
-export const Button =
-/*#__PURE__*/
-styled(CustomButton)({
-  name: \\"Button\\",
-  class: \\"bh6xni0\\",
-  vars: {
-    \\"bh6xni0-2\\": [props => props.color]
-  },
-  mod: {
-    \\"bh6xni0--primary-1\\": props => props.primary
-  },
-  f: ({
-    primary,
-    ...o
-  }) => o
-});"
-`;
-
-exports[`accepts filterProps argument 2`] = `
-
-CSS:
-
-.bh6xni0 {
-  
-  padding: 16px 24px;
-  &.bh6xni0--primary-1:hover {
-    color: var(--bh6xni0-2);
-    background: white;
-  }
-}
-
-Dependencies: NA
-
-`;
-
-exports[`accepts filterProps argument 2 1`] = `
-"import { styled } from 'linaria/react';
-export const Button =
-/*#__PURE__*/
-styled(\\"button\\")({
-  name: \\"Button\\",
-  class: \\"bh6xni0\\",
-  f: ({
-    primary,
-    ...o
-  }) => o
-});"
-`;
-
-exports[`accepts filterProps argument 2 2`] = `
-
-CSS:
-
-.bh6xni0 {
-  /* Comment */
-  
-  padding: 16px 24px;
-}
-
-Dependencies: NA
-
-`;
-
 exports[`allows simple parent selector for state selector 1`] = `
 "import { styled } from 'linaria/react';
 export const Page =
@@ -724,17 +656,6 @@ To evaluate the expressions at build time, pass 'evaluate: true' to the babel pl
   5 | \`;"
 `;
 
-exports[`throws when duplicate filterProps arguments found 1`] = `
-"<<DIRNAME>>/app/index.js: Found duplicate filterProps function definition. Expected only one per component.
-   5 | export const Button = (props => styled(CustomButton)\`
-   6 |   \${{ filterProps: ({ primary, ...o }) => o }}
->  7 |   \${{ filterProps: ({ primary, ...o }) => o }}
-     |     ^
-   8 |   padding: 16px 24px;
-   9 |   &\${[props.primary]}:hover {
-  10 |     color: \${props.color};"
-`;
-
 exports[`throws when modifier selector array contains more than one element 1`] = `
 "<<DIRNAME>>/app/index.js: Modifier expression array must contain only 1 element
   4 | export const Modified = (props => styled.div\`
@@ -744,6 +665,18 @@ exports[`throws when modifier selector array contains more than one element 1`] 
   7 |       color: blue;
   8 |     }
   9 |     font-size: \${size}px;"
+`;
+
+exports[`throws when object literal cannot serialize 1`] = `
+"<<DIRNAME>>/app/index.js: Unexpected object expression.
+To evaluate the expressions at build time, pass 'evaluate: true' to the babel plugin.
+  4 | 
+  5 | export const Button = (props => styled(CustomButton)\`
+> 6 |   \${{ filterProps: ({ primary, ...o }) => o }}
+    |     ^
+  7 |   padding: 16px 24px;
+  8 |   &\${[props.primary]}:hover {
+  9 |     color: \${props.color};"
 `;
 
 exports[`transpiles css template literal 1`] = `

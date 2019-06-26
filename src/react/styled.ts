@@ -1,5 +1,4 @@
 import React from 'react'; // eslint-disable-line import/no-extraneous-dependencies
-import validAttr from '@emotion/is-prop-valid';
 import { cx } from '../index';
 
 type Options = {
@@ -51,12 +50,10 @@ function styled(tag: React.ComponentType<any> | string) {
       let filteredProps;
 
       // Check if it's an HTML tag and not a custom element
-      if (typeof component === 'string' && component.indexOf('-') === -1) {
+      if (typeof component === 'string') {
         filteredProps = {} as { [key: string]: any };
-
-        // eslint-disable-next-line guard-for-in
         for (const key in rest) {
-          if (key === 'as' || validAttr(key)) {
+          if (key[key.length - 1] !== '$') {
             // Don't pass through invalid attributes to HTML elements
             filteredProps[key] = rest[key];
           }
@@ -65,11 +62,7 @@ function styled(tag: React.ComponentType<any> | string) {
         filteredProps = rest;
       }
 
-      const { vars, mod, f } = options;
-
-      if (f) {
-        filteredProps = f(filteredProps);
-      }
+      const { vars, mod } = options;
 
       let modifiers = [];
       if (mod) {
@@ -164,12 +157,6 @@ export type StyledComponent<Tag, ExtraProps> = React.FunctionComponent<
 > &
   _isStyled;
 
-interface Filter<T> {
-  filterProps: {
-    (initial: T): Partial<T>;
-  };
-}
-
 // The tagged template function
 type StyledTag<Tag> = <ExtraProps = {}>(
   strings: TemplateStringsArray,
@@ -181,7 +168,6 @@ type StyledTag<Tag> = <ExtraProps = {}>(
     // Strictly typing props argument would break the generated StyledComponent.
     | ((props?: any) => string | number)
     | [unknown] // Modifier selectors
-    | Filter<GetProps<Tag> & ExtraProps>
   >
 ) => StyledComponent<Tag, ExtraProps>;
 

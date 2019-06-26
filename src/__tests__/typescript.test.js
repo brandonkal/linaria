@@ -34,7 +34,7 @@ it('handles basic typescript', async () => {
   expect(metadata).toMatchSnapshot();
 });
 
-it('handles filterProps with typescript', async () => {
+it('throws for objects that cannot serialize with typescript', async () => {
   const { code, metadata } = await transpile(
     dedent`
     import { styled } from 'linaria/react';

@@ -274,29 +274,6 @@ export default function getTemplateProcessor(options: StrictOptions) {
             });
           } else {
             // Try to fetch preval-ed value. If preval, return early.
-            if (t.isObjectExpression(ex.node)) {
-              let property = ex.node.properties[0];
-              if (
-                t.isObjectProperty(property) &&
-                property.key.name === 'filterProps' &&
-                (t.isFunctionExpression(property.value) ||
-                  t.isArrowFunctionExpression(property.value))
-              ) {
-                if (!styled) {
-                  throw ex.buildCodeFrameError(
-                    "Filter props function definitions can only be defined within a 'styled' tag."
-                  );
-                }
-                if (filterFunction) {
-                  throw ex.buildCodeFrameError(
-                    'Found duplicate filterProps function definition. Expected only one per component.'
-                  );
-                }
-                filterFunction = property.value;
-                return;
-              }
-            }
-
             if (
               options.evaluate &&
               !(t.isFunctionExpression(ex) || t.isArrowFunctionExpression(ex))
@@ -325,6 +302,11 @@ export default function getTemplateProcessor(options: StrictOptions) {
 
                 return;
               }
+            } else if (t.isObjectExpression(ex)) {
+              throw ex.buildCodeFrameError(
+                'Unexpected object expression.\n' +
+                  "To evaluate the expressions at build time, pass 'evaluate: true' to the babel plugin."
+              );
             }
 
             if (styled) {

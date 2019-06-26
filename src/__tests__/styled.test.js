@@ -97,7 +97,7 @@ it('replaces simple component with as prop', () => {
   });
 
   const tree = renderer.create(
-    <Test as="a" id="test" foo="bar">
+    <Test as="a" id="test" foo$="bar">
       This is a test
     </Test>
   );
@@ -114,7 +114,7 @@ it('replaces custom component with as prop for primitive', () => {
   });
 
   const tree = renderer.create(
-    <Test as="a" id="test" foo="bar">
+    <Test as="a" id="test" foo$="bar">
       This is a test
     </Test>
   );
@@ -178,20 +178,20 @@ it('filters unknown html attributes for HTML tag', () => {
   });
 
   const tree = renderer.create(
-    <Test unknownAttribute="voila">This is a test</Test>
+    <Test unknownAttribute$="voila">This is a test</Test>
   );
 
   expect(tree.toJSON()).toMatchSnapshot();
 });
 
-it('does not filter attributes for custom elements', () => {
+it('filters attributes for custom elements', () => {
   const Test = styled('my-element')({
     name: 'TestComponent',
     class: 'abcdefg',
   });
 
   const tree = renderer.create(
-    <Test unknownAttribute="voila">This is a test</Test>
+    <Test unknownAttribute$="voila">This is a test</Test>
   );
 
   expect(tree.toJSON()).toMatchSnapshot();

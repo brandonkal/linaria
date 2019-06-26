@@ -144,46 +144,7 @@ it('handles variant classes', async () => {
   expect(metadata).toMatchSnapshot();
 });
 
-it('accepts filterProps argument', async () => {
-  const { code, metadata } = await transpile(
-    dedent`
-    import { styled } from 'linaria/react';
-
-    const CustomButton = props => <button {...props} />
-
-    export const Button = (props => styled(CustomButton)\`
-      ${'${{ filterProps: ({ primary, ...o }) => o }}'}
-      padding: 16px 24px;
-      &${'${[props.primary]}'}:hover {
-        color: ${'${props.color}'};
-        background: white;
-      }
-    \`)({});
-    `
-  );
-
-  expect(code).toMatchSnapshot();
-  expect(metadata).toMatchSnapshot();
-});
-
-it('accepts filterProps argument 2', async () => {
-  const { code, metadata } = await transpile(
-    dedent`
-    import { styled } from 'linaria/react';
-
-    export const Button = (props => styled.button\`
-      /* Comment */
-      ${'${{ filterProps: ({ primary, ...o }) => o }}'}
-      padding: 16px 24px;
-    \`)({});
-    `
-  );
-
-  expect(code).toMatchSnapshot();
-  expect(metadata).toMatchSnapshot();
-});
-
-it('throws when duplicate filterProps arguments found', async () => {
+it('throws when object literal cannot serialize', async () => {
   expect.assertions(1);
   try {
     await transpile(
@@ -193,7 +154,6 @@ it('throws when duplicate filterProps arguments found', async () => {
       const CustomButton = props => <button {...props} />
 
       export const Button = (props => styled(CustomButton)\`
-        ${'${{ filterProps: ({ primary, ...o }) => o }}'}
         ${'${{ filterProps: ({ primary, ...o }) => o }}'}
         padding: 16px 24px;
         &${'${[props.primary]}'}:hover {

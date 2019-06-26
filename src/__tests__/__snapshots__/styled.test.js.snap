@@ -22,10 +22,9 @@ exports[`does not filter attributes for components 1`] = `
 </div>
 `;
 
-exports[`does not filter attributes for custom elements 1`] = `
+exports[`filters attributes for custom elements 1`] = `
 <my-element
   className="abcdefg"
-  unknownAttribute="voila"
 >
   This is a test
 </my-element>
