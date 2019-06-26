@@ -93,7 +93,6 @@
     "@babel/plugin-transform-modules-commonjs": "^7.2.0",
     "@babel/register": "^7.4.0",
     "@babel/traverse": "^7.4.3",
-    "@emotion/is-prop-valid": "^0.7.3",
     "camelcase": "^5.3.1",
     "convert-source-map": "^1.6.0",
     "core-js": "^2.0.0",
@@ -110,7 +109,6 @@
     "rollup-pluginutils": "^2.4.1",
     "source-map": "^0.7.3",
     "strip-ansi": "^5.2.0",
-    "stylis": "^3.5.4",
     "yargs": "^13.2.1"
   },
   "resolutions": {

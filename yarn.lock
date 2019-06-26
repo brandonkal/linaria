@@ -956,18 +956,6 @@
   dependencies:
     find-up "^2.1.0"
 
-"@emotion/is-prop-valid@^0.7.3":
-  version "0.7.3"
-  resolved "https://registry.yarnpkg.com/@emotion/is-prop-valid/-/is-prop-valid-0.7.3.tgz#a6bf4fa5387cbba59d44e698a4680f481a8da6cc"
-  integrity sha512-uxJqm/sqwXw3YPA5GXX365OBcJGFtxUVkB6WyezqFHlNe9jqUWH5ur2O2M8dGBz61kn1g3ZBlzUunFQXQIClhA==
-  dependencies:
-    "@emotion/memoize" "0.7.1"
-
-"@emotion/memoize@0.7.1":
-  version "0.7.1"
-  resolved "https://registry.yarnpkg.com/@emotion/memoize/-/memoize-0.7.1.tgz#e93c13942592cf5ef01aa8297444dc192beee52f"
-  integrity sha512-Qv4LTqO11jepd5Qmlp3M1YEjBumoTHcHFdgPTQ+sFlIL5myi/7xu/POwP7IRu6odBdmLXdtIs1D6TuW6kbwbbg==
-
 "@jest/console@^24.3.0":
   version "24.3.0"
   resolved "https://registry.yarnpkg.com/@jest/console/-/console-24.3.0.tgz#7bd920d250988ba0bf1352c4493a48e1cb97671e"
@@ -7464,11 +7452,6 @@ strip-json-comments@^2.0.1, strip-json-comments@~2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
   integrity sha1-PFMZQukIwml8DsNEhYwobHygpgo=
-
-stylis@^3.5.4:
-  version "3.5.4"
-  resolved "https://registry.yarnpkg.com/stylis/-/stylis-3.5.4.tgz#f665f25f5e299cf3d64654ab949a57c768b73fbe"
-  integrity sha512-8/3pSmthWM7lsPBKv7NXkzn2Uc9W7NotcwGNpJaa3k7WMM1XDCA4MgT5k/8BIexd5ydZdboXtU90XH9Ec4Bv/Q==
 
 supports-color@6.1.0, supports-color@^6.0.0, supports-color@^6.1.0:
   version "6.1.0"
