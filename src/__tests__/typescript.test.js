@@ -4,6 +4,7 @@ const path = require('path');
 const babel = require('@babel/core');
 const dedent = require('dedent');
 const serializer = require('../__utils__/linaria-snapshot-serializer');
+import stripAnsi from 'strip-ansi';
 
 expect.addSnapshotSerializer(serializer);
 
@@ -35,8 +36,10 @@ it('handles basic typescript', async () => {
 });
 
 it('throws for objects that cannot serialize with typescript', async () => {
-  const { code, metadata } = await transpile(
-    dedent`
+  expect.assertions(1);
+  try {
+    await transpile(
+      dedent`
     import { styled } from '@brandonkal/linaria/react';
 
     interface TitleProps {
@@ -49,10 +52,12 @@ it('throws for objects that cannot serialize with typescript', async () => {
       font-size: ${'${props.size}'}px;
     \`)({} as TitleProps);
     `
-  );
-
-  expect(code).toMatchSnapshot();
-  expect(metadata).toMatchSnapshot();
+    );
+  } catch (e) {
+    expect(
+      stripAnsi(e.message.replace(__dirname, '<<DIRNAME>>'))
+    ).toMatchSnapshot();
+  }
 });
 
 it('handles object access', async () => {

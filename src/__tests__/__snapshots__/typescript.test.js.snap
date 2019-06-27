@@ -57,17 +57,12 @@ Dependencies: NA
 `;
 
 exports[`throws for objects that cannot serialize with typescript 1`] = `
-"import { styled } from '@brandonkal/linaria/react';
-export const Title = (props => styled.h1\`
-  /* do: comment */
-  \${{
-  filterProps: ({
-    size,
-    ...o
-  }) => o
-}}
-  font-size: \${props.size}px;
-\`)({});"
+"<<DIRNAME>>/app/index.js: Unexpected object expression.
+To evaluate the expressions at build time, pass 'evaluate: true' to the babel plugin.
+   7 | export const Title = (props => styled.h1<TitleProps>\`
+   8 |   /* do: comment */
+>  9 |   \${{ filterProps: ({ size, ...o }) => o }}
+     |     ^
+  10 |   font-size: \${props.size}px;
+  11 | \`)({} as TitleProps);"
 `;
-
-exports[`throws for objects that cannot serialize with typescript 2`] = `Object {}`;
