@@ -141,7 +141,7 @@ const FancyButton = styled(Button)`
 Takes HTML and CSS strings and returns the critical CSS used in the page by analyzing the class names. It can be used to determine critical CSS for server side rendering.
 
 ```js
-import { collect } from 'linaria/server';
+import { collect } from '@brandonkal/linaria/server';
 
 const css = fs.readFileSync('./dist/styles.css', 'utf8');
 const html = ReactDOMServer.renderToString(<App />);

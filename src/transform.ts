@@ -72,7 +72,7 @@ export default function transform(code: string, options: Options): Result {
   const ast = babel.parseSync(code, {
     ...(pluginOptions ? pluginOptions.babelOptions : null),
     filename: options.filename,
-    caller: { name: 'linaria' },
+    caller: { name: '@brandonkal/linaria' },
   });
 
   const { metadata, code: transformedCode, map } = babel.transformFromAstSync(

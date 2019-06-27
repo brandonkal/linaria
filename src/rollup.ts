@@ -22,7 +22,7 @@ export default function linaria({
   const cssLookup: { [key: string]: string } = {};
 
   return {
-    name: 'linaria',
+    name: '@brandonkal/linaria',
     load(id: string) {
       return cssLookup[id];
     },

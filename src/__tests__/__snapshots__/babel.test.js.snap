@@ -621,7 +621,7 @@ exports[`throws if wrapping arrow function contains more than one argument 1`] =
 If this is not an error, wrap it in another arrow function:
 const Button = config => (props => styled.button\`\`)({})
   1 | import { styled } from '@brandonkal/linaria/react';
-  2 |
+  2 | 
 > 3 | export const Title = ((props, options) => styled.h1\`
     |                       ^
   4 |   font-size: 14px;
@@ -631,7 +631,7 @@ const Button = config => (props => styled.button\`\`)({})
 exports[`throws if wrapping arrow function is not called immediately 1`] = `
 "<<DIRNAME>>/app/index.js: A styled component's wrapping function must be called immediately
   1 | import { styled } from '@brandonkal/linaria/react';
-  2 |
+  2 | 
 > 3 | export const Title = props => styled.h1\`
     |                      ^
   4 |   font-size: 14px;
@@ -649,7 +649,7 @@ exports[`throws if wrapping arrow function is not called with empty object 1`] =
 exports[`throws when contains dynamic expression without evaluate: true in css tag 1`] = `
 "<<DIRNAME>>/app/index.js: The CSS cannot contain JavaScript expressions when using the 'css' or 'injectGlobal' tag.
 To evaluate the expressions at build time, pass 'evaluate: true' to the babel plugin.
-  2 |
+  2 | 
   3 | const title = css\`
 > 4 |   font-size: \${size}px;
     |                ^
@@ -670,7 +670,7 @@ exports[`throws when modifier selector array contains more than one element 1`] 
 exports[`throws when object literal cannot serialize 1`] = `
 "<<DIRNAME>>/app/index.js: Unexpected object expression.
 To evaluate the expressions at build time, pass 'evaluate: true' to the babel plugin.
-  4 |
+  4 | 
   5 | export const Button = (props => styled(CustomButton)\`
 > 6 |   \${{ filterProps: ({ primary, ...o }) => o }}
     |     ^

@@ -16,7 +16,7 @@ To use Linaria with webpack, in your webpack config, add `linaria/loader` under 
   use: [
     { loader: 'babel-loader' },
     {
-      loader: 'linaria/loader',
+      loader: '@brandonkal/linaria/loader',
       options: {
         sourceMap: process.env.NODE_ENV !== 'production',
       },
@@ -133,7 +133,7 @@ module.exports = {
         use: [
           { loader: 'babel-loader' },
           {
-            loader: 'linaria/loader',
+            loader: '@brandonkal/linaria/loader',
             options: { sourceMap: dev },
           },
         ],
@@ -152,12 +152,12 @@ module.exports = {
             loader: 'css-loader',
             options: { sourceMap: dev },
           },
-          'linaria/fixSourceMap',
+          '@brandonkal/linaria/fixSourceMap',
           {
             loader: 'postcss-loader',
             options: { sourceMap: dev },
           },
-          'linaria/attachSourceMap',
+          '@brandonkal/linaria/attachSourceMap',
         ],
       },
       {
@@ -205,7 +205,7 @@ You can pass options to the loader like so:
 
 ```js
 {
-  loader: 'linaria/loader',
+  loader: '@brandonkal/linaria/loader',
   options: {
     sourceMap: false,
     cacheDirectory: '.linaria-cache',
@@ -224,7 +224,7 @@ yarn add --dev rollup-plugin-css-only
 Then add them to your `rollup.config.js`:
 
 ```js
-import linaria from 'linaria/rollup';
+import linaria from '@brandonkal/linaria/rollup';
 import css from 'rollup-plugin-css-only';
 
 export default {

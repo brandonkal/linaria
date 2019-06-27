@@ -5,7 +5,7 @@ export type PluginOptions = StrictOptions & {
   configFile?: string;
 };
 
-const explorer = cosmiconfig('linaria');
+const explorer = cosmiconfig('@brandonkal/linaria');
 
 export default function loadOptions(
   overrides: Partial<PluginOptions> = {}

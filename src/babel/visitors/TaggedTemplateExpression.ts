@@ -40,7 +40,7 @@ export default function TaggedTemplateExpression(
       path.scope,
       state.file.opts.filename,
       'styled',
-      'linaria/react'
+      '@brandonkal/linaria/react'
     )
   ) {
     const tagPath = path.get('tag') as NodePath<t.CallExpression>;
@@ -57,14 +57,20 @@ export default function TaggedTemplateExpression(
       path.scope,
       state.file.opts.filename,
       'styled',
-      'linaria/react'
+      '@brandonkal/linaria/react'
     )
   ) {
     styled = {
       component: { node: t.stringLiteral(tag.property.name) },
     };
   } else if (
-    hasImport(t, path.scope, state.file.opts.filename, 'css', 'linaria')
+    hasImport(
+      t,
+      path.scope,
+      state.file.opts.filename,
+      'css',
+      '@brandonkal/linaria'
+    )
   ) {
     css = t.isIdentifier(tag) && tag.name === 'css';
   } else if (
@@ -73,7 +79,7 @@ export default function TaggedTemplateExpression(
       path.scope,
       state.file.opts.filename,
       'injectGlobal',
-      'linaria'
+      '@brandonkal/linaria'
     )
   ) {
     isGlobal = t.isIdentifier(tag) && tag.name === 'injectGlobal';

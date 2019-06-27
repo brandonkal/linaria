@@ -35,9 +35,9 @@ export default function hasImport(
     // Otherwise try to resolve both and check if they are the same file
     resolveFromFile(value) ===
       // eslint-disable-next-line no-nested-ternary
-      (source === 'linaria'
+      (source === '@brandonkal/linaria'
         ? require.resolve('../../index')
-        : source === 'linaria/react'
+        : source === '@brandonkal/linaria/react'
         ? require.resolve('../../react/')
         : resolveFromFile(source));
 

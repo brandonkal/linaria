@@ -12,7 +12,7 @@ import crypto from 'crypto';
 import dedent from 'dedent';
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
-import { collect } from 'linaria/server'; // eslint-disable-line import/no-unresolved
+import { collect } from '@brandonkal/linaria/server'; // eslint-disable-line import/no-unresolved
 import App from './components/App';
 import config from '../serve.config';
 
