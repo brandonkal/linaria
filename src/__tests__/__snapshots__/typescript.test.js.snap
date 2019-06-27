@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`handles basic typescript 1`] = `
-"import { styled } from 'linaria/react';
+"import { styled } from '@brandonkal/linaria/react';
 export const Title =
 /*#__PURE__*/
 styled(\\"h1\\")({
@@ -26,7 +26,7 @@ Dependencies: NA
 `;
 
 exports[`handles object access 1`] = `
-"import { styled } from 'linaria/react';
+"import { styled } from '@brandonkal/linaria/react';
 const theme = {
   size: {
     small: '5em',
@@ -55,3 +55,19 @@ CSS:
 Dependencies: NA
 
 `;
+
+exports[`throws for objects that cannot serialize with typescript 1`] = `
+"import { styled } from '@brandonkal/linaria/react';
+export const Title = (props => styled.h1\`
+  /* do: comment */
+  \${{
+  filterProps: ({
+    size,
+    ...o
+  }) => o
+}}
+  font-size: \${props.size}px;
+\`)({});"
+`;
+
+exports[`throws for objects that cannot serialize with typescript 2`] = `Object {}`;

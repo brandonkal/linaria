@@ -1,7 +1,7 @@
 /* @flow */
 
 import React from 'react';
-import { styled } from 'linaria/react';
+import { styled } from '@brandonkal/linaria/react';
 import Container from './Container';
 import constants from '../styles/constants';
 import { media } from '../styles/utils';

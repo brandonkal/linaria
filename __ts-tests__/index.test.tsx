@@ -1,6 +1,6 @@
 /* eslint-disable import/no-unresolved */
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { css, cx } from 'linaria';
+import { css, cx } from '@brandonkal/linaria';
 
 const tomato = 'tomato';
 const border = 1;

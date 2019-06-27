@@ -5,7 +5,7 @@ module.exports = {
       'module-resolver',
       {
         alias: {
-          linaria: '../lib',
+          '@brandonkal/linaria': '../lib',
         },
       },
     ],

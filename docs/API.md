@@ -9,7 +9,7 @@ Linaria exposes a core `css` method alongside with small, but just enough amount
 String tag for tagged template literals consisting CSS code. The tagged template literal is evaluated to a unique class name by the Babel plugin:
 
 ```js
-import { css } from 'linaria';
+import { css } from '@brandonkal/linaria';
 
 const flower = css`
   display: inline;
@@ -22,14 +22,18 @@ const flower = css`
 All rules inside the template literal are scoped to the class name, including media queries and animations. For example, we can declare CSS animation like so:
 
 ```js
-import { css } from 'linaria';
+import { css } from '@brandonkal/linaria';
 
 const box = css`
   animation: rotate 1s linear infinite;
 
   @keyframes rotate {
-    { from: 0deg; }
-    { to: 360deg; }
+     {
+      from: 0deg;
+    }
+     {
+      to: 360deg;
+    }
   }
 `;
 ```
@@ -39,7 +43,7 @@ const box = css`
 Takes a list of class names and returns a concatenated string with the class names. Falsy values are ignored.
 
 ```js
-import { css, cx } from 'linaria';
+import { css, cx } from '@brandonkal/linaria';
 
 const cat = css`
   font-weight: bold;
@@ -67,7 +71,7 @@ Helper to build React components. It allows you to write your components in a si
 The syntax is similar to the `css` tag. Additionally, you can use function interpolations that receive the component's props:
 
 ```js
-import { styled } from 'linaria/react';
+import { styled } from '@brandonkal/linaria/react';
 import colors from './colors.json';
 
 const Container = styled.div`

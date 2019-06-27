@@ -11,9 +11,7 @@ import React from 'react';
 
 export function Pager({ index, children }) {
   return (
-    <div style={{ transform: `translateX(${index * 100}%)` }}>
-      {children}
-    </div>
+    <div style={{ transform: `translateX(${index * 100}%)` }}>{children}</div>
   );
 }
 ```
@@ -26,7 +24,7 @@ However, it's not possible to use inline styles with pseudo-selectors or media q
 
 ```js
 import React from 'react';
-import { css, styles } from 'linaria';
+import { css, styles } from '@brandonkal/linaria';
 
 const box = css`
   height: var(--box-size);
@@ -34,12 +32,7 @@ const box = css`
 `;
 
 export function Box({ size }) {
-  return (
-    <div
-      className={box}
-      style={{ '--box-size': size }}
-    />
-  );
+  return <div className={box} style={{ '--box-size': size }} />;
 }
 ```
 
@@ -51,7 +44,7 @@ For color values, browsers support a `currentColor` property which points to the
 
 ```js
 import React from 'react';
-import { css, styles } from 'linaria';
+import { css, styles } from '@brandonkal/linaria';
 
 const box = css`
   background-color: currentColor;
@@ -63,13 +56,8 @@ const content = css`
 
 export function Box({ color }) {
   return (
-    <div
-      className={box}
-      style={{ color }}
-    >
-      <span className={content}>
-        ¯\_(ツ)_/¯
-      </span>
+    <div className={box} style={{ color }}>
+      <span className={content}>¯\_(ツ)_/¯</span>
     </div>
   );
 }

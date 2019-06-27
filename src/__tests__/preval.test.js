@@ -32,7 +32,7 @@ const transpile = async input => {
 it('evaluates identifier in scope', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     const answer = 42;
     const foo = () => answer;
@@ -53,7 +53,7 @@ it('evaluates identifier in scope', async () => {
 it('evaluates local expressions', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     const answer = 42;
     const foo = () => answer;
@@ -73,7 +73,7 @@ it('evaluates local expressions', async () => {
 it('evaluates functions with nested identifiers', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     const objects = { key: { fontSize: 12 } };
     const foo = (k) => {
@@ -94,7 +94,7 @@ it('evaluates functions with nested identifiers', async () => {
 it('evaluates expressions with dependencies', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
     import slugify from '../slugify';
 
     export const Title = styled.h1\`
@@ -112,7 +112,7 @@ it('evaluates expressions with dependencies', async () => {
 it('evaluates expressions with expressions depending on shared dependency', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
     const slugify = require('../slugify').default;
 
     const boo = t => slugify(t) + 'boo';
@@ -133,7 +133,7 @@ it('evaluates expressions with expressions depending on shared dependency', asyn
 it('evaluates multiple expressions with shared dependency', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
     const slugify = require('../slugify').default;
 
     const boo = t => slugify(t) + 'boo';
@@ -155,7 +155,7 @@ it('evaluates multiple expressions with shared dependency', async () => {
 it('evalutes interpolations with sequence expression', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     export const Title = styled.h1\`
       color: ${'${(external, () => "blue")}'};
@@ -170,7 +170,7 @@ it('evalutes interpolations with sequence expression', async () => {
 it('evalutes dependencies with sequence expression', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     const color = (external, () => 'blue');
 
@@ -294,7 +294,7 @@ it('handles wrapping another styled component', async () => {
 it('inlines object styles as CSS string', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     const fill = (top = 0, left = 0, right = 0, bottom = 0) => ({
       position: 'absolute',
@@ -317,7 +317,7 @@ it('inlines object styles as CSS string', async () => {
 it('inlines array styles as CSS string', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     const fill = (top = 0, left = 0, right = 0, bottom = 0) => [
       { position: 'absolute' },
@@ -342,7 +342,7 @@ it('inlines array styles as CSS string', async () => {
 it('ignores inline arrow function expressions', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     export const Title = styled.h1\`
       &:before {
@@ -359,7 +359,7 @@ it('ignores inline arrow function expressions', async () => {
 it('ignores inline vanilla function expressions', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     export const Title = styled.h1\`
       &:before {
@@ -376,7 +376,7 @@ it('ignores inline vanilla function expressions', async () => {
 it('ignores external expressions', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     const generate = props => props.content;
 
@@ -420,7 +420,7 @@ it('throws codeframe error when evaluation fails', async () => {
   try {
     await transpile(
       dedent`
-      import { styled } from 'linaria/react';
+      import { styled } from '@brandonkal/linaria/react';
 
       const foo = props => { throw new Error('This will fail') };
 
@@ -459,7 +459,7 @@ it('handles complex component', async () => {
 it('derives display name from filename', async () => {
   const { code, metadata } = await babel.transformAsync(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     export default styled.h1\`
       font-size: 14px;
@@ -478,7 +478,7 @@ it('derives display name from filename', async () => {
 it('derives display name from parent folder name', async () => {
   const { code, metadata } = await babel.transformAsync(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     export default styled.h1\`
       font-size: 14px;
@@ -500,7 +500,7 @@ it("throws if couldn't determine a display name", async () => {
   try {
     await babel.transformAsync(
       dedent`
-      import { styled } from 'linaria/react';
+      import { styled } from '@brandonkal/linaria/react';
 
       export default styled.h1\`
         font-size: 14px;
@@ -521,7 +521,7 @@ it("throws if couldn't determine a display name", async () => {
 it('does not strip instanbul coverage sequences', async () => {
   const { code, metadata } = await babel.transformAsync(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     const a = 42;
 

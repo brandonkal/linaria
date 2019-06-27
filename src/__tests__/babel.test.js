@@ -20,7 +20,7 @@ const transpile = input =>
 it('transpiles styled template literal with object', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     export const Title = (props => styled.h1\`
       font-size: 14px;
@@ -35,7 +35,7 @@ it('transpiles styled template literal with object', async () => {
 it('ignores commented out expressions', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     export const Title = (props => styled.h1\`
       /* ${'${[props.primary]}'} */
@@ -53,7 +53,7 @@ it('throws if wrapping arrow function is not called immediately', async () => {
   try {
     await transpile(
       dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     export const Title = props => styled.h1\`
       font-size: 14px;
@@ -72,7 +72,7 @@ it('throws if wrapping arrow function is not called with empty object', async ()
   try {
     await transpile(
       dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     export const Title = (props => styled.h1\`
       font-size: 14px;
@@ -91,7 +91,7 @@ it('throws if wrapping arrow function contains more than one argument', async ()
   try {
     await transpile(
       dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     export const Title = ((props, options) => styled.h1\`
       font-size: 14px;
@@ -108,7 +108,7 @@ it('throws if wrapping arrow function contains more than one argument', async ()
 it('handles basic properties', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     export const Title = (props => styled.h1\`
       font-size: ${'${props.size}'}px;
@@ -123,7 +123,7 @@ it('handles basic properties', async () => {
 it('handles variant classes', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     export const Button = (props => styled.button\`
       background: ${'${props.color}'};
@@ -149,7 +149,7 @@ it('throws when object literal cannot serialize', async () => {
   try {
     await transpile(
       dedent`
-      import { styled } from 'linaria/react';
+      import { styled } from '@brandonkal/linaria/react';
 
       const CustomButton = props => <button {...props} />
 
@@ -173,7 +173,7 @@ it('throws when object literal cannot serialize', async () => {
 it('handles modifier condition selector', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     export const Button = (props => styled.button\`
       background: ${'${props.color}'};
@@ -205,7 +205,7 @@ it('handles modifier condition selector', async () => {
 it('transpiles styled template literal with function and tag', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     export const Title = styled('h1')\`
       font-size: 14px;
@@ -220,7 +220,7 @@ it('transpiles styled template literal with function and tag', async () => {
 it('transpiles styled template literal with function and component', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
     const Heading = () => null;
 
     export const Title = styled(Heading)\`
@@ -236,7 +236,7 @@ it('transpiles styled template literal with function and component', async () =>
 it('outputs valid CSS classname', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     export const ᾩPage$Title = styled.h1\`
       font-size: 14px;
@@ -251,7 +251,7 @@ it('outputs valid CSS classname', async () => {
 it('evaluates and inlines expressions in scope', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     const color = 'blue';
 
@@ -269,7 +269,7 @@ it('evaluates and inlines expressions in scope', async () => {
 it('inlines object styles as CSS string', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     const cover = {
       position: 'absolute',
@@ -313,7 +313,7 @@ it('inlines object styles as CSS string', async () => {
 it('inlines array styles as CSS string', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     const styles = [
       { flex: 1 },
@@ -333,7 +333,7 @@ it('inlines array styles as CSS string', async () => {
 it('replaces unknown expressions with CSS custom properties', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     export const Title = styled.h1\`
       font-size: ${'${size}'}px;
@@ -349,7 +349,7 @@ it('replaces unknown expressions with CSS custom properties', async () => {
 it('handles interpolation followed by unit', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     export const Title = styled.h1\`
       font-size: ${'${size}'}em;
@@ -370,7 +370,7 @@ it('handles interpolation followed by unit', async () => {
 it('uses the same custom property for the same identifier', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     export const Box = styled.div\`
       height: ${'${size}'}px;
@@ -386,7 +386,7 @@ it('uses the same custom property for the same identifier', async () => {
 it('uses the same custom property for the same expression', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     export const Box = styled.div\`
       height: ${'${props => props.size}'}px;
@@ -402,7 +402,7 @@ it('uses the same custom property for the same expression', async () => {
 it('handles nested blocks', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     export const Button = styled.button\`
       font-family: ${'${regular}'};
@@ -425,7 +425,7 @@ it('handles nested blocks', async () => {
 it('prevents class name collision', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     export const Title = styled.h1\`
       font-size: ${'${size}'}px;
@@ -462,7 +462,7 @@ it('does not output CSS if none present', async () => {
 it('transpiles css template literal', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { css } from 'linaria';
+    import { css } from '@brandonkal/linaria';
 
     export const title = css\`
       font-size: 14px;
@@ -477,7 +477,7 @@ it('transpiles css template literal', async () => {
 it('transpiles injectGlobal template literal', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { injectGlobal } from 'linaria';
+    import { injectGlobal } from '@brandonkal/linaria';
 
     injectGlobal\`
       font-size: 14px;
@@ -492,7 +492,7 @@ it('transpiles injectGlobal template literal', async () => {
 it('handles css template literal in object property', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { css } from 'linaria';
+    import { css } from '@brandonkal/linaria';
 
     const components = {
       title: css\`
@@ -509,7 +509,7 @@ it('handles css template literal in object property', async () => {
 it('handles css template literal in JSX element', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { css } from 'linaria';
+    import { css } from '@brandonkal/linaria';
 
     <Title class={css\` font-size: 14px; \`} />
     `
@@ -524,7 +524,7 @@ it('throws when contains dynamic expression without evaluate: true in css tag', 
   try {
     await transpile(
       dedent`
-      import { css } from 'linaria';
+      import { css } from '@brandonkal/linaria';
 
       const title = css\`
         font-size: ${'${size}'}px;
@@ -543,7 +543,7 @@ it('throws when modifier selector array contains more than one element', async (
   try {
     await transpile(
       dedent`
-      import { styled } from 'linaria/react';
+      import { styled } from '@brandonkal/linaria/react';
       const size = 18;
 
       export const Modified = (props => styled.div\`
@@ -568,7 +568,7 @@ it('throws if state selector is nested', async () => {
   try {
     await transpile(
       dedent`
-      import { styled } from 'linaria/react';
+      import { styled } from '@brandonkal/linaria/react';
 
       const Page = (props => styled.div\`
         color: #fff;
@@ -594,7 +594,7 @@ it('thows if state selector not not wrapped in arrow function', async () => {
   try {
     await transpile(
       dedent`
-      import { styled } from 'linaria/react';
+      import { styled } from '@brandonkal/linaria/react';
 
       const Page = styled.div\`
         color: #fff;
@@ -616,7 +616,7 @@ it('thows if alternative propName is used and a modifier selector is not a funct
   try {
     await transpile(
       dedent`
-      import { styled } from 'linaria/react';
+      import { styled } from '@brandonkal/linaria/react';
 
       const Page = (state => styled.div\`
         color: #fff;
@@ -636,7 +636,7 @@ it('thows if alternative propName is used and a modifier selector is not a funct
 it('handles alternative propNames', async () => {
   const { code, metadata } = await transpile(
     dedent`
-      import { styled } from 'linaria/react';
+      import { styled } from '@brandonkal/linaria/react';
 
       const Page = (state => styled.div\`
         color: #fff;
@@ -653,7 +653,7 @@ it('handles alternative propNames', async () => {
 it('collapses only one arrow function parent', async () => {
   const { code, metadata } = await transpile(
     dedent`
-      import { styled } from 'linaria/react';
+      import { styled } from '@brandonkal/linaria/react';
 
       export const Page = (props, options) => (props => styled.div\`
       color: #fff;
@@ -670,7 +670,7 @@ it('collapses only one arrow function parent', async () => {
 it('allows simple parent selector for state selector', async () => {
   const { code, metadata } = await transpile(
     dedent`
-      import { styled } from 'linaria/react';
+      import { styled } from '@brandonkal/linaria/react';
 
       export const Page = (props => styled.div\`
         color: #fff;
@@ -687,8 +687,8 @@ it('allows simple parent selector for state selector', async () => {
 it('supports both css and styled tags', async () => {
   const { code, metadata } = await transpile(
     dedent`
-      import { css } from 'linaria';
-      import { styled } from 'linaria/react';
+      import { css } from '@brandonkal/linaria';
+      import { styled } from '@brandonkal/linaria/react';
 
       export const Title = styled.h1\`
         font-size: 14px;
@@ -707,8 +707,8 @@ it('supports both css and styled tags', async () => {
 it('does not include styles if not referenced anywhere', async () => {
   const { code, metadata } = await transpile(
     dedent`
-      import { css } from 'linaria';
-      import { styled } from 'linaria/react';
+      import { css } from '@brandonkal/linaria';
+      import { styled } from '@brandonkal/linaria/react';
 
       const Title = styled.h1\`
         font-size: 14px;
@@ -727,8 +727,8 @@ it('does not include styles if not referenced anywhere', async () => {
 it('includes unreferenced styles for :global', async () => {
   const { code, metadata } = await transpile(
     dedent`
-      import { css } from 'linaria';
-      import { styled } from 'linaria/react';
+      import { css } from '@brandonkal/linaria';
+      import { styled } from '@brandonkal/linaria/react';
 
       const a = css\`
         :global() {

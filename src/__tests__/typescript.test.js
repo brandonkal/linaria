@@ -18,7 +18,7 @@ const transpile = input =>
 it('handles basic typescript', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     interface TitleProps {
       size?: number
@@ -37,7 +37,7 @@ it('handles basic typescript', async () => {
 it('throws for objects that cannot serialize with typescript', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     interface TitleProps {
       size?: number
@@ -58,7 +58,7 @@ it('throws for objects that cannot serialize with typescript', async () => {
 it('handles object access', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { styled } from 'linaria/react';
+    import { styled } from '@brandonkal/linaria/react';
 
     const theme = {
       size: {

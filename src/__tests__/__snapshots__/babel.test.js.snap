@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`allows simple parent selector for state selector 1`] = `
-"import { styled } from 'linaria/react';
+"import { styled } from '@brandonkal/linaria/react';
 export const Page =
 /*#__PURE__*/
 styled(\\"div\\")({
@@ -29,7 +29,7 @@ Dependencies: NA
 `;
 
 exports[`collapses only one arrow function parent 1`] = `
-"import { styled } from 'linaria/react';
+"import { styled } from '@brandonkal/linaria/react';
 export const Page = (props, options) =>
 /*#__PURE__*/
 styled(\\"div\\")({
@@ -57,8 +57,8 @@ Dependencies: NA
 `;
 
 exports[`does not include styles if not referenced anywhere 1`] = `
-"import { css } from 'linaria';
-import { styled } from 'linaria/react';
+"import { css } from '@brandonkal/linaria';
+import { styled } from '@brandonkal/linaria/react';
 const Title =
 /*#__PURE__*/
 styled(\\"h1\\")({
@@ -78,7 +78,7 @@ const title = String.raw\`This is something\`;"
 exports[`does not output CSS if none present 2`] = `Object {}`;
 
 exports[`evaluates and inlines expressions in scope 1`] = `
-"import { styled } from 'linaria/react';
+"import { styled } from '@brandonkal/linaria/react';
 const color = 'blue';
 export const Title =
 /*#__PURE__*/
@@ -102,7 +102,7 @@ Dependencies: NA
 `;
 
 exports[`handles alternative propNames 1`] = `
-"import { styled } from 'linaria/react';
+"import { styled } from '@brandonkal/linaria/react';
 const Page =
 /*#__PURE__*/
 styled(\\"div\\")({
@@ -117,7 +117,7 @@ styled(\\"div\\")({
 exports[`handles alternative propNames 2`] = `Object {}`;
 
 exports[`handles basic properties 1`] = `
-"import { styled } from 'linaria/react';
+"import { styled } from '@brandonkal/linaria/react';
 export const Title =
 /*#__PURE__*/
 styled(\\"h1\\")({
@@ -142,7 +142,7 @@ Dependencies: NA
 `;
 
 exports[`handles css template literal in JSX element 1`] = `
-"import { css } from 'linaria';
+"import { css } from '@brandonkal/linaria';
 <Title class={\\"th6xni0\\"} />;"
 `;
 
@@ -157,7 +157,7 @@ Dependencies: NA
 `;
 
 exports[`handles css template literal in object property 1`] = `
-"import { css } from 'linaria';
+"import { css } from '@brandonkal/linaria';
 const components = {
   title: \\"th6xni0\\"
 };"
@@ -176,7 +176,7 @@ Dependencies: NA
 `;
 
 exports[`handles interpolation followed by unit 1`] = `
-"import { styled } from 'linaria/react';
+"import { styled } from '@brandonkal/linaria/react';
 export const Title =
 /*#__PURE__*/
 styled(\\"h1\\")({
@@ -221,7 +221,7 @@ Dependencies: NA
 `;
 
 exports[`handles modifier condition selector 1`] = `
-"import { styled } from 'linaria/react';
+"import { styled } from '@brandonkal/linaria/react';
 export const Button =
 /*#__PURE__*/
 styled(\\"button\\")({
@@ -266,7 +266,7 @@ Dependencies: NA
 `;
 
 exports[`handles nested blocks 1`] = `
-"import { styled } from 'linaria/react';
+"import { styled } from '@brandonkal/linaria/react';
 export const Button =
 /*#__PURE__*/
 styled(\\"button\\")({
@@ -299,7 +299,7 @@ Dependencies: NA
 `;
 
 exports[`handles variant classes 1`] = `
-"import { styled } from 'linaria/react';
+"import { styled } from '@brandonkal/linaria/react';
 export const Button =
 /*#__PURE__*/
 styled(\\"button\\")({
@@ -333,7 +333,7 @@ Dependencies: NA
 `;
 
 exports[`ignores commented out expressions 1`] = `
-"import { styled } from 'linaria/react';
+"import { styled } from '@brandonkal/linaria/react';
 export const Title =
 /*#__PURE__*/
 styled(\\"h1\\")({
@@ -356,8 +356,8 @@ Dependencies: NA
 `;
 
 exports[`includes unreferenced styles for :global 1`] = `
-"import { css } from 'linaria';
-import { styled } from 'linaria/react';
+"import { css } from '@brandonkal/linaria';
+import { styled } from '@brandonkal/linaria/react';
 const a = \\"ah6xni0\\";
 const B =
 /*#__PURE__*/
@@ -389,7 +389,7 @@ Dependencies: NA
 `;
 
 exports[`inlines array styles as CSS string 1`] = `
-"import { styled } from 'linaria/react';
+"import { styled } from '@brandonkal/linaria/react';
 const styles = [{
   flex: 1
 }, {
@@ -417,7 +417,7 @@ Dependencies: NA
 `;
 
 exports[`inlines object styles as CSS string 1`] = `
-"import { styled } from 'linaria/react';
+"import { styled } from '@brandonkal/linaria/react';
 const cover = {
   position: 'absolute',
   top: 0,
@@ -465,7 +465,7 @@ Dependencies: NA
 `;
 
 exports[`outputs valid CSS classname 1`] = `
-"import { styled } from 'linaria/react';
+"import { styled } from '@brandonkal/linaria/react';
 export const ᾩPage$Title =
 /*#__PURE__*/
 styled(\\"h1\\")({
@@ -487,7 +487,7 @@ Dependencies: NA
 `;
 
 exports[`prevents class name collision 1`] = `
-"import { styled } from 'linaria/react';
+"import { styled } from '@brandonkal/linaria/react';
 export const Title =
 /*#__PURE__*/
 styled(\\"h1\\")({
@@ -530,7 +530,7 @@ Dependencies: NA
 `;
 
 exports[`replaces unknown expressions with CSS custom properties 1`] = `
-"import { styled } from 'linaria/react';
+"import { styled } from '@brandonkal/linaria/react';
 export const Title =
 /*#__PURE__*/
 styled(\\"h1\\")({
@@ -557,8 +557,8 @@ Dependencies: NA
 `;
 
 exports[`supports both css and styled tags 1`] = `
-"import { css } from 'linaria';
-import { styled } from 'linaria/react';
+"import { css } from '@brandonkal/linaria';
+import { styled } from '@brandonkal/linaria/react';
 export const Title =
 /*#__PURE__*/
 styled(\\"h1\\")({
@@ -620,8 +620,8 @@ exports[`throws if wrapping arrow function contains more than one argument 1`] =
 "<<DIRNAME>>/app/index.js: Styled component arrow function can only accept one props argument or things may break from rewrite.
 If this is not an error, wrap it in another arrow function:
 const Button = config => (props => styled.button\`\`)({})
-  1 | import { styled } from 'linaria/react';
-  2 | 
+  1 | import { styled } from '@brandonkal/linaria/react';
+  2 |
 > 3 | export const Title = ((props, options) => styled.h1\`
     |                       ^
   4 |   font-size: 14px;
@@ -630,8 +630,8 @@ const Button = config => (props => styled.button\`\`)({})
 
 exports[`throws if wrapping arrow function is not called immediately 1`] = `
 "<<DIRNAME>>/app/index.js: A styled component's wrapping function must be called immediately
-  1 | import { styled } from 'linaria/react';
-  2 | 
+  1 | import { styled } from '@brandonkal/linaria/react';
+  2 |
 > 3 | export const Title = props => styled.h1\`
     |                      ^
   4 |   font-size: 14px;
@@ -649,7 +649,7 @@ exports[`throws if wrapping arrow function is not called with empty object 1`] =
 exports[`throws when contains dynamic expression without evaluate: true in css tag 1`] = `
 "<<DIRNAME>>/app/index.js: The CSS cannot contain JavaScript expressions when using the 'css' or 'injectGlobal' tag.
 To evaluate the expressions at build time, pass 'evaluate: true' to the babel plugin.
-  2 | 
+  2 |
   3 | const title = css\`
 > 4 |   font-size: \${size}px;
     |                ^
@@ -670,7 +670,7 @@ exports[`throws when modifier selector array contains more than one element 1`] 
 exports[`throws when object literal cannot serialize 1`] = `
 "<<DIRNAME>>/app/index.js: Unexpected object expression.
 To evaluate the expressions at build time, pass 'evaluate: true' to the babel plugin.
-  4 | 
+  4 |
   5 | export const Button = (props => styled(CustomButton)\`
 > 6 |   \${{ filterProps: ({ primary, ...o }) => o }}
     |     ^
@@ -680,7 +680,7 @@ To evaluate the expressions at build time, pass 'evaluate: true' to the babel pl
 `;
 
 exports[`transpiles css template literal 1`] = `
-"import { css } from 'linaria';
+"import { css } from '@brandonkal/linaria';
 export const title = \\"th6xni0\\";"
 `;
 
@@ -696,7 +696,7 @@ Dependencies: NA
 
 `;
 
-exports[`transpiles injectGlobal template literal 1`] = `"import { injectGlobal } from 'linaria';"`;
+exports[`transpiles injectGlobal template literal 1`] = `"import { injectGlobal } from '@brandonkal/linaria';"`;
 
 exports[`transpiles injectGlobal template literal 2`] = `
 
@@ -711,7 +711,7 @@ Dependencies: NA
 `;
 
 exports[`transpiles styled template literal with function and component 1`] = `
-"import { styled } from 'linaria/react';
+"import { styled } from '@brandonkal/linaria/react';
 
 const Heading = () => null;
 
@@ -736,7 +736,7 @@ Dependencies: NA
 `;
 
 exports[`transpiles styled template literal with function and tag 1`] = `
-"import { styled } from 'linaria/react';
+"import { styled } from '@brandonkal/linaria/react';
 export const Title =
 /*#__PURE__*/
 styled('h1')({
@@ -758,7 +758,7 @@ Dependencies: NA
 `;
 
 exports[`transpiles styled template literal with object 1`] = `
-"import { styled } from 'linaria/react';
+"import { styled } from '@brandonkal/linaria/react';
 export const Title =
 /*#__PURE__*/
 styled(\\"h1\\")({
@@ -780,7 +780,7 @@ Dependencies: NA
 `;
 
 exports[`uses the same custom property for the same expression 1`] = `
-"import { styled } from 'linaria/react';
+"import { styled } from '@brandonkal/linaria/react';
 export const Box =
 /*#__PURE__*/
 styled(\\"div\\")({
@@ -806,7 +806,7 @@ Dependencies: NA
 `;
 
 exports[`uses the same custom property for the same identifier 1`] = `
-"import { styled } from 'linaria/react';
+"import { styled } from '@brandonkal/linaria/react';
 export const Box =
 /*#__PURE__*/
 styled(\\"div\\")({
