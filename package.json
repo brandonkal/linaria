@@ -1,6 +1,7 @@
 {
   "name": "@brandonkal/linaria",
-  "version": "2.0.1-1.4.0",
+  "version": "2.0.2",
+  "versionUpstream": "1.4.0",
   "description": "Blazing fast zero-runtime CSS in JS library",
   "main": "lib/index.js",
   "bin": "bin/linaria.js",
