@@ -1,6 +1,6 @@
 {
   "name": "@brandonkal/linaria",
-  "version": "2.0.0-1.4.0",
+  "version": "2.0.1-1.4.0",
   "description": "Blazing fast zero-runtime CSS in JS library",
   "main": "lib/index.js",
   "bin": "bin/linaria.js",
@@ -8,10 +8,13 @@
     "bin/",
     "lib/",
     "react.js",
+    "react.d.ts",
     "rollup.js",
     "server.js",
     "babel.js",
     "loader.js",
+    "fixSourceMap.js",
+    "attachSourceMap.js",
     "stylelint-config.js"
   ],
   "license": "MIT",
