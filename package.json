@@ -1,5 +1,5 @@
 {
-  "name": "linaria",
+  "name": "@brandonkal/linaria",
   "version": "2.0.0-1.4.0",
   "description": "Blazing fast zero-runtime CSS in JS library",
   "main": "lib/index.js",
@@ -15,11 +15,11 @@
     "stylelint-config.js"
   ],
   "license": "MIT",
-  "repository": "git@github.com:callstack/linaria.git",
+  "repository": "https://github.com/brandonkal/linaria.git",
   "bugs": {
-    "url": "https://github.com/callstack/linaria/issues"
+    "url": "https://github.com/brandonkal/linaria/issues"
   },
-  "homepage": "https://github.com/callstack/linaria#readme",
+  "homepage": "https://github.com/brandonkal/linaria.git#readme",
   "keywords": [
     "react",
     "css",
