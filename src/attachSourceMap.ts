@@ -10,7 +10,7 @@ import convert from 'convert-source-map';
  * which will replace the source file name and source contents in the generated source map.
  */
 export default function loader(this: any, code: string, map: any, meta: any) {
-  if (this.resourcePath.includes('@brandonkal/linaria.css')) {
+  if (this.resourcePath.includes('linaria.css')) {
     let re = /\/\*# sourceMappingURL=data:application\/json;base64,.*$/m;
     if (re.test(code)) {
       let match = code.match(re);
