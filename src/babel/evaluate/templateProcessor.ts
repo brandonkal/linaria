@@ -281,7 +281,7 @@ export default function getTemplateProcessor(options: StrictOptions) {
               const value = valueCache.get(ex.node);
               throwIfInvalid(value, ex);
 
-              if (value && typeof value !== 'function') {
+              if (value && (typeof value !== 'function' || isStyled(value))) {
                 // Only insert text for non functions
                 // We don't touch functions because they'll be interpolated at runtime
                 if (isStyled(value)) {
@@ -299,7 +299,6 @@ export default function getTemplateProcessor(options: StrictOptions) {
                   original: loc,
                   length: cssText.length - beforeLength,
                 });
-
                 return;
               }
             } else if (t.isObjectExpression(ex)) {

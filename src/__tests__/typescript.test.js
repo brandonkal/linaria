@@ -3,7 +3,7 @@
 const path = require('path');
 const babel = require('@babel/core');
 const dedent = require('dedent');
-const serializer = require('../__utils__/linaria-snapshot-serializer');
+const serializer = require('./__utils__/linaria-snapshot-serializer');
 import stripAnsi from 'strip-ansi';
 
 expect.addSnapshotSerializer(serializer);

@@ -1,5 +1,6 @@
 import React from 'react'; // eslint-disable-line import/no-extraneous-dependencies
 import { cx } from '../index';
+import { CSSProperties } from '../index';
 
 type Options = {
   name: string;
@@ -140,10 +141,6 @@ export type PropsOf<
 
 type AsProp = { as?: React.ElementType };
 
-export type CSSProperties = {
-  [key: string]: string | number | CSSProperties;
-};
-
 /**
  * _isStyled is a private type to validate that selectors are Styled Components.
  * This is required to ensure extra properties are not attached to StyledComponents that style others:
@@ -180,9 +177,7 @@ type GetProps<T> = T extends keyof JSXInEl
   : {};
 
 // The main styled constructor function
-export type CreateStyled = {
-  readonly [key in keyof JSXInEl]: StyledTag<key>
-} & {
+type CreateStyled = { readonly [key in keyof JSXInEl]: StyledTag<key> } & {
   <Tag extends keyof JSXInEl>(tag: Tag): StyledTag<Tag>;
   <Tag extends React.ComponentType<any>>(tag: Tag): StyledTag<Tag>;
 };
