@@ -14,7 +14,6 @@ type Options = {
   mod?: {
     [key: string]: (props: unknown) => string | number | boolean;
   };
-  f?: (propsToFilter: any) => any;
 };
 
 const warnIfInvalid = (value: any, componentName: string) => {
