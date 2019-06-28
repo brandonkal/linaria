@@ -109,7 +109,8 @@ styled(\\"div\\")({
   name: \\"Page\\",
   class: \\"ph6xni0\\",
   mod: {
-    \\"ph6xni0--primary-0\\": state => state.primary
+    \\"ph6xni0--primary-0\\": state => state.primary,
+    \\"ph6xni0--dark-1\\": state => state.dark
   }
 });"
 `;

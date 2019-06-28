@@ -145,7 +145,6 @@ export default function TaggedTemplateExpression(
       );
     }
     //
-    let propsName;
     if (param && param.node && param.node.name) {
       propsName = param.node.name;
     }
@@ -175,11 +174,6 @@ export default function TaggedTemplateExpression(
       }
 
       let el1 = elements[0];
-      if (!el1 || (propsName && !el1.getSource().includes(propsName))) {
-        throw ex.buildCodeFrameError(
-          `Expected modifier condition to access ${propsName}`
-        );
-      }
       if (!t.isExpression(el1.node)) {
         throw ex.buildCodeFrameError(
           'Expected modifier condition to be an expression'
@@ -201,6 +195,11 @@ export default function TaggedTemplateExpression(
         !t.isArrowFunctionExpression(el1.node)
       ) {
         if (parentWasArrow) {
+          if (!el1 || (propsName && !el1.getSource().includes(propsName))) {
+            throw ex.buildCodeFrameError(
+              `Expected modifier condition to access ${propsName}`
+            );
+          }
           makeArrow(el1, propsName);
         } else {
           throw el1.buildCodeFrameError(

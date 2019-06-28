@@ -643,6 +643,9 @@ it('handles alternative propNames', async () => {
         &${'${[state.primary]}'} {
           color: #241047;
         }
+        &${'${[state.dark]}'} {
+          color: black;
+        }
       \`)({})
       `
   );

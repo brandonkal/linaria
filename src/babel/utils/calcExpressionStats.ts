@@ -93,11 +93,11 @@ export default function(quasis: any, expressions: any[]) {
 
     /**
      * Validate correct usage of dynamic attribute selectors:
-     * Valid line  : &${[props.primary, 1]} span {
-     * Invalid line: &.span ${[props.primary, 1]} {
-     * Invalid line: background: ${[props.primary, 1]};
+     * Valid line  : &${[props.primary]} span {
+     * Invalid line: &.span ${[props.primary]} {
+     * Invalid line: background: ${[props.primary]};
      * Nesting is also invalid:
-     * span { &${[props.primary, 1]} }
+     * span { &${[props.primary]} }
      * However, we do allow parent selectors with spaces for theming:
      * .dark-mode &${[props.primary]}
      * More complex nesting is not allowed and would require traversing the CSS AST:
