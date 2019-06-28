@@ -15,6 +15,40 @@ function makeArrow(ex: NodePath<t.Expression>, propsName = 'props') {
   ex.replaceWith(fn);
 }
 
+/**
+ * Test to see whether an interpolation accesses a given prop object.
+ */
+function hasProp(ex: NodePath, propsName: string) {
+  if (
+    !propsName ||
+    t.isIdentifier(ex.node) ||
+    !ex.getSource().includes(propsName)
+  ) {
+    return false;
+  }
+  let shouldArrowIt = false;
+  if (
+    t.isMemberExpression(ex.node) &&
+    t.isIdentifier(ex.node.object) &&
+    ex.node.object.name === propsName
+  ) {
+    return true;
+  }
+  const memberVisitor = {
+    MemberExpression(path: NodePath<t.MemberExpression>) {
+      if (
+        !shouldArrowIt &&
+        t.isIdentifier(path.node.object) &&
+        path.node.object.name === propsName
+      ) {
+        shouldArrowIt = true;
+      }
+    },
+  };
+  ex.traverse(memberVisitor);
+  return shouldArrowIt;
+}
+
 export default function TaggedTemplateExpression(
   path: NodePath<t.TaggedTemplateExpression>,
   state: State,
@@ -195,7 +229,7 @@ export default function TaggedTemplateExpression(
         !t.isArrowFunctionExpression(el1.node)
       ) {
         if (parentWasArrow) {
-          if (!el1 || (propsName && !el1.getSource().includes(propsName))) {
+          if (!el1 || !hasProp(el1, propsName)) {
             throw ex.buildCodeFrameError(
               `Expected modifier condition to access ${propsName}`
             );
@@ -215,9 +249,9 @@ export default function TaggedTemplateExpression(
       );
     } else if (
       parentWasArrow &&
-      ex.getSource().includes(propsName) &&
       !t.isFunctionExpression(ex.node) &&
-      !t.isArrowFunctionExpression(ex.node)
+      !t.isArrowFunctionExpression(ex.node) &&
+      hasProp(ex, propsName)
     ) {
       makeArrow(ex, propsName);
     }

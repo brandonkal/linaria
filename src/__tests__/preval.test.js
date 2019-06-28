@@ -518,6 +518,64 @@ it("throws if couldn't determine a display name", async () => {
   }
 });
 
+it('does not make identifiers arrow functions', async () => {
+  const { code, metadata } = await transpile(
+    dedent`
+      import { styled } from '../react';
+      const Input = styled.input\`\`;
+
+      export const Page = (p => styled.div\`
+      color: #fff;
+      ${'${Input}'} {
+        color: #241047;
+      }
+      \`)({})
+      `
+  );
+  expect(code).toMatchSnapshot();
+  expect(metadata).toMatchSnapshot();
+});
+
+it('does not transform identifiers to arrows that contain propsName', async () => {
+  const { code, metadata } = await transpile(
+    dedent`
+      import { styled } from '../react';
+      const Classes = { p: 'hello' }
+
+      export const Page = (p => styled.div\`
+      color: #fff;
+      &${'${Classes.p}'} {
+        color: #241047;
+      }
+      \`)({})
+      `
+  );
+  expect(code).toMatchSnapshot();
+  expect(metadata).toMatchSnapshot();
+});
+
+it('does not transform identifiers to arrows that contain propsName 2', async () => {
+  const { code, metadata } = await transpile(
+    dedent`
+      import { styled } from '../react';
+      const Classes = { p: 'hello' }
+      const ap = Classes
+
+      export const Page = (p => styled.div\`
+      color: #fff;
+      &${'${Classes["p"]}'} {
+        color: #241047;
+      }
+      &${'${ap["p"]}'} {
+        color: #241047;
+      }
+      \`)({})
+      `
+  );
+  expect(code).toMatchSnapshot();
+  expect(metadata).toMatchSnapshot();
+});
+
 it('does not strip instanbul coverage sequences', async () => {
   const { code, metadata } = await babel.transformAsync(
     dedent`

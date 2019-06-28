@@ -44,6 +44,38 @@ Dependencies: NA
 
 `;
 
+exports[`does not make identifiers arrow functions 1`] = `
+"import { styled } from '../react';
+const Input =
+/*#__PURE__*/
+styled(\\"input\\")({
+  name: \\"Input\\",
+  class: \\"Input_i1xha7dm\\"
+});
+export const Page =
+/*#__PURE__*/
+styled(\\"div\\")({
+  name: \\"Page\\",
+  class: \\"Page_p1rsdnkv\\"
+});"
+`;
+
+exports[`does not make identifiers arrow functions 2`] = `
+
+CSS:
+
+.Input_i1xha7dm {}
+.Page_p1rsdnkv {
+color: #fff;
+.Input_i1xha7dm {
+  color: #241047;
+}
+}
+
+Dependencies: ../react
+
+`;
+
 exports[`does not strip instanbul coverage sequences 1`] = `
 "var cov_2dr9r1nt95 = function () {
   var path = \\"/home/user/project/file.js\\";
@@ -113,6 +145,66 @@ CSS:
 
 .Title_tow9xsn {
   height: 42px;
+}
+
+Dependencies: NA
+
+`;
+
+exports[`does not transform identifiers to arrows that contain propsName 1`] = `
+"import { styled } from '../react';
+const Classes = {
+  p: 'hello'
+};
+export const Page =
+/*#__PURE__*/
+styled(\\"div\\")({
+  name: \\"Page\\",
+  class: \\"Page_p1xha7dm\\"
+});"
+`;
+
+exports[`does not transform identifiers to arrows that contain propsName 2`] = `
+
+CSS:
+
+.Page_p1xha7dm {
+color: #fff;
+&hello {
+  color: #241047;
+}
+}
+
+Dependencies: NA
+
+`;
+
+exports[`does not transform identifiers to arrows that contain propsName 2 1`] = `
+"import { styled } from '../react';
+const Classes = {
+  p: 'hello'
+};
+const ap = Classes;
+export const Page =
+/*#__PURE__*/
+styled(\\"div\\")({
+  name: \\"Page\\",
+  class: \\"Page_p1xha7dm\\"
+});"
+`;
+
+exports[`does not transform identifiers to arrows that contain propsName 2 2`] = `
+
+CSS:
+
+.Page_p1xha7dm {
+color: #fff;
+&hello {
+  color: #241047;
+}
+&hello {
+  color: #241047;
+}
 }
 
 Dependencies: NA
