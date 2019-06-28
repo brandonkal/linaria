@@ -5,7 +5,7 @@ import dedent from 'dedent';
 import { join, resolve } from 'path';
 import stripAnsi from 'strip-ansi';
 
-import serializer from '../__utils__/linaria-snapshot-serializer';
+import serializer from './__utils__/linaria-snapshot-serializer';
 
 expect.addSnapshotSerializer(serializer);
 
