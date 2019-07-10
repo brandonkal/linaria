@@ -146,7 +146,12 @@ type AsProp = { as?: React.ElementType };
  * ``const Dialog = styled.div` ${Button} { color: red; } ``
  * Without the _isStyled type, Button's properties could appear on Dialog which would be incorrect.
  */
-type _isStyled = { __linaria: true };
+type _isStyled = {
+  __linaria: {
+    className: string;
+    extends: React.ComponentType<any> | string;
+  };
+};
 
 export type StyledComponent<Tag, ExtraProps> = React.FunctionComponent<
   GetProps<Tag> & AsProp & ExtraProps
