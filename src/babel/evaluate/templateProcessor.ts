@@ -448,7 +448,7 @@ export default function getTemplateProcessor(options: StrictOptions) {
       path.replaceWith(t.stringLiteral(className));
     }
 
-    if (!isReferenced && !cssText.includes(':global') && !isGlobal) {
+    if (!isReferenced && !isGlobal) {
       return;
     }
 

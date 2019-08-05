@@ -413,24 +413,39 @@ Normally, the styles are scoped to specific components. But sometimes you may ne
 You can do the following to generate unscoped global styles:
 
 ```js
-export const globals = css`
-  :global() {
-    html {
-      box-sizing: border-box;
-    }
+// file: globalStyles.js
+import { injectGlobal } from '@brandonkal/linaria';
 
-    *,
-    *:before,
-    *:after {
-      box-sizing: inherit;
-    }
+injectGlobal`
+html {
+  box-sizing: border-box;
+}
 
-    @font-face {
-      font-family: 'MaterialIcons';
-      src: url(../assets/fonts/MaterialIcons.ttf) format('truetype');
-    }
-  }
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
+@font-face {
+  font-family: 'MaterialIcons';
+  src: url(../assets/fonts/MaterialIcons.ttf) format('truetype');
+}
 `;
 ```
 
-It's not possible to use dynamic prop based styles inside global styles.
+Using the injectGlobal function will have the side effect of including those styles in the CSS. The example above can be imported as you would import any other CSS file: `import './globalStyles.js'`.
+
+It's not possible to use dynamic prop based styles inside global styles but static values can still be interpolated.
+
+Additionally, using a PostCSS plugin is a simple way to bail out of the automatic scoped styles:
+For example, you may have a script that applies a `tabbing` class to the body if the user is navigating by keyboard.
+
+```js
+const Button = styled.button`
+  :global .tabbing &,
+  &${[p => p.showOutlines]} {
+    outline: 4px orange solid;
+  }
+`;
+```

@@ -727,7 +727,31 @@ it('does not include styles if not referenced anywhere', async () => {
   expect(metadata).toMatchSnapshot();
 });
 
-it('includes unreferenced styles for :global', async () => {
+it('includes unreferenced injectGlobal styles', async () => {
+  const { code, metadata } = await transpile(
+    dedent`
+      import { injectGlobal } from '@brandonkal/linaria';
+      import { styled } from '@brandonkal/linaria/react';
+
+      injectGlobal\`
+        .title {
+          font-size: 14px;
+        }
+      \`;
+
+      const B = styled.div\`
+        .title) {
+          font-size: 14px;
+        }
+      \`;
+      `
+  );
+
+  expect(code).toMatchSnapshot();
+  expect(metadata).toMatchSnapshot();
+});
+
+it('excludes unreferenced styles for :global', async () => {
   const { code, metadata } = await transpile(
     dedent`
       import { css } from '@brandonkal/linaria';

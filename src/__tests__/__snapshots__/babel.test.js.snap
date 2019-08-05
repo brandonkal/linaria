@@ -101,6 +101,20 @@ Dependencies: NA
 
 `;
 
+exports[`excludes unreferenced styles for :global 1`] = `
+"import { css } from '@brandonkal/linaria';
+import { styled } from '@brandonkal/linaria/react';
+const a = \\"ah6xni0\\";
+const B =
+/*#__PURE__*/
+styled(\\"div\\")({
+  name: \\"B\\",
+  class: \\"b1u0rrat\\"
+});"
+`;
+
+exports[`excludes unreferenced styles for :global 2`] = `Object {}`;
+
 exports[`handles alternative propNames 1`] = `
 "import { styled } from '@brandonkal/linaria/react';
 const Page =
@@ -356,10 +370,9 @@ Dependencies: NA
 
 `;
 
-exports[`includes unreferenced styles for :global 1`] = `
-"import { css } from '@brandonkal/linaria';
+exports[`includes unreferenced injectGlobal styles 1`] = `
+"import { injectGlobal } from '@brandonkal/linaria';
 import { styled } from '@brandonkal/linaria/react';
-const a = \\"ah6xni0\\";
 const B =
 /*#__PURE__*/
 styled(\\"div\\")({
@@ -368,19 +381,12 @@ styled(\\"div\\")({
 });"
 `;
 
-exports[`includes unreferenced styles for :global 2`] = `
+exports[`includes unreferenced injectGlobal styles 2`] = `
 
 CSS:
 
-.ah6xni0 {
-  :global() {
-    .title {
-      font-size: 14px;
-    }
-  }
-}
-.b1u0rrat {
-  :global(.title) {
+.global_ah6xni0 {
+  .title {
     font-size: 14px;
   }
 }
