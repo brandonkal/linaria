@@ -1,11 +1,13 @@
 {
-  "increment": "conventional:angular",
-  "scripts": {
-    "changelog": "conventional-changelog -p angular | tail -n +3"
+  "plugins": {
+    "@release-it/conventional-changelog": {
+      "preset": "angular"
+    }
   },
   "git": {
     "commitMessage": "chore: release %s",
-    "tagName": "v%s"
+    "tagName": "v%s",
+    "changelog": "conventional-changelog -p angular | tail -n +3"
   },
   "npm": {
     "publish": true
