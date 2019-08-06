@@ -111,14 +111,14 @@ declare module '@babel/core' {
             | t.Node[]
             | null)
             ? Key
-            : never
+            : never;
         }[keyof AllNodes[T]]
-      >
+      >;
     };
 
     const VISITOR_KEYS: { [T in keyof VisitorKeys]: VisitorKeys[T][] };
     const FLIPPED_ALIAS_KEYS: {
-      [T in keyof t.Aliases]: t.Aliases[T]['type'][]
+      [T in keyof t.Aliases]: t.Aliases[T]['type'][];
     };
 
     function shallowEqual(actual: object, expected: object): boolean;

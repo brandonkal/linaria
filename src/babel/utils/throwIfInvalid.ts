@@ -21,9 +21,7 @@ function throwIfInvalid(value: any, ex: any): void | never {
   // We can't use instanceof here so let's use duck typing
   if (value && value.stack && value.message) {
     throw ex.buildCodeFrameError(
-      `An error occurred when evaluating the expression: ${
-        value.message
-      }. Make sure you are not using a browser or Node specific API.`
+      `An error occurred when evaluating the expression: ${value.message}. Make sure you are not using a browser or Node specific API.`
     );
   }
 

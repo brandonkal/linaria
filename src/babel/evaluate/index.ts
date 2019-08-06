@@ -11,7 +11,14 @@ import generator from '@babel/generator';
 import Module from '../module';
 import { StrictOptions } from '../types';
 
-type DefaultOptions = Partial<TransformOptions> & {
+interface TOptions extends TransformOptions {
+  caller: {
+    name: string;
+    evaluate?: boolean;
+  };
+}
+
+type DefaultOptions = Partial<TOptions> & {
   plugins: PluginItem[];
   presets: PluginItem[];
 };

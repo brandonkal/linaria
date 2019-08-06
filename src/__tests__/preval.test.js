@@ -594,7 +594,7 @@ it('does not strip instanbul coverage sequences', async () => {
       plugins: [
         [
           // eslint-disable-next-line import/no-extraneous-dependencies
-          require('babel-plugin-istanbul').default({ types: babel.types }),
+          require('babel-plugin-istanbul').default,
           { cwd: '/home/user/project' },
         ],
       ],

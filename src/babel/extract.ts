@@ -5,7 +5,6 @@ import { NodePath } from '@babel/traverse';
 import getTemplateProcessor from './evaluate/templateProcessor';
 import shake from './evaluate/shaker';
 import evaluate from './evaluate';
-import Module from './module';
 import {
   State,
   StrictOptions,
@@ -37,9 +36,6 @@ export default function extract(_babel: any, options: StrictOptions) {
           state.index = -1;
           state.dependencies = [];
           state.replacements = [];
-
-          // Invalidate cache for module evaluation to get fresh modules
-          Module.invalidate();
 
           // We need our transforms to run before anything else
           // So we traverse here instead of a in a visitor
@@ -90,9 +86,6 @@ export default function extract(_babel: any, options: StrictOptions) {
               },
             };
           }
-
-          // Invalidate cache for module evaluation when we're done
-          Module.invalidate();
         },
       },
     },

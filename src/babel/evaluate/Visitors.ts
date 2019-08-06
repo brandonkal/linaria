@@ -13,7 +13,7 @@ export type Visitor<TNode extends t.Node> = <TParent extends t.Node>(
 ) => void;
 
 export type Visitors = {
-  [TMethod in t.Node['type']]?: Visitor<NodeOfType<TMethod>>
+  [TMethod in t.Node['type']]?: Visitor<NodeOfType<TMethod>>;
 };
 
 const visitors: Visitors = {

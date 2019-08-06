@@ -21,7 +21,7 @@ function shakeNode<TNode extends t.Node>(
     return shakeNode(node.declaration!, alive) as TNode;
   }
 
-  const keys = getVisitorKeys(node) as Array<keyof TNode>;
+  const keys = (getVisitorKeys(node) as unknown) as (keyof TNode)[];
   const changes: Partial<TNode> = {};
 
   for (const key of keys) {

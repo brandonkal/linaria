@@ -17,7 +17,7 @@ class GraphBuilder extends GraphBuilderState {
     const isExpression = t.isExpression(node);
     const keys = getVisitorKeys(node);
     for (const key of keys) {
-      const subNode = node[key as keyof TNode];
+      const subNode = node[(key as unknown) as keyof TNode];
 
       if (Array.isArray(subNode)) {
         for (let i = 0; i < subNode.length; i++) {
