@@ -47,19 +47,12 @@ function styled(tag: React.ComponentType<any> | string) {
     const render = (props: any, ref: any) => {
       const { as: component = tag, class: className, ...rest } = props;
 
-      let filteredProps;
-
-      // Check if it's an HTML tag and not a custom element
-      if (typeof component === 'string') {
-        filteredProps = {} as { [key: string]: any };
-        for (const key in rest) {
-          if (key[key.length - 1] !== '$') {
-            // Don't pass through invalid attributes to HTML elements
-            filteredProps[key] = rest[key];
-          }
+      let filteredProps = {} as { [key: string]: any };
+      for (const key in rest) {
+        if (key[key.length - 1] !== '$') {
+          // Don't pass through invalid attributes to HTML elements
+          filteredProps[key] = rest[key];
         }
-      } else {
-        filteredProps = rest;
       }
 
       const { vars, mod } = options;
