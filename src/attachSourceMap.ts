@@ -1,5 +1,7 @@
 import convert from 'convert-source-map';
 
+const re = /\/\*# sourceMappingURL=data:application\/json;base64,.*$/m;
+
 /**
  * **Linaria attachSourceMap Loader**
  *
@@ -10,21 +12,18 @@ import convert from 'convert-source-map';
  * which will replace the source file name and source contents in the generated source map.
  */
 export default function loader(this: any, code: string, map: any, meta: any) {
-  if (this.resourcePath.includes('linaria.css')) {
-    let re = /\/\*# sourceMappingURL=data:application\/json;base64,.*$/m;
-    if (re.test(code)) {
-      let match = code.match(re);
-      if (match) {
-        map = convert.fromComment(match.pop());
-      }
-      // Overwrite map and attach meta
-      code = code.replace(re, '');
-      if (!meta) meta = {};
-      meta.linaria = {
-        originalSourceMapConverter: map,
-      };
+  if (this.resourcePath.includes('linaria.css') && re.test(code)) {
+    let match = code.match(re);
+    if (match) {
+      map = convert.fromComment(match.pop());
     }
-    this.callback(null, code, map.toObject(), meta);
+    // Overwrite map and attach meta
+    code = code.replace(re, '');
+    if (!meta) meta = {};
+    meta.linaria = {
+      originalSourceMapConverter: map,
+    };
+    this.callback(null, code, map ? map.toObject() : undefined, meta);
   } else {
     this.callback(null, code, map, meta);
   }
