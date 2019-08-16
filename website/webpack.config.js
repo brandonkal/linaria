@@ -39,22 +39,28 @@ module.exports = {
       },
       {
         test: /\.css$/,
+        exclude: /node_modules/,
         use: [
-          'css-hot-loader',
-          MiniCssExtractPlugin.loader,
           {
-            loader: require.resolve('../lib/fixSourceMap.js'),
+            loader: MiniCssExtractPlugin.loader,
+            options: {
+              hmr: process.env.NODE_ENV === 'development',
+              sourceMap: true,
+            },
           },
           {
             loader: 'css-loader',
-            options: { sourceMap: dev },
+            options: { sourceMap: true },
+          },
+          {
+            loader: require.resolve('../fixSourceMap.js'),
           },
           {
             loader: 'postcss-loader',
             options: { sourceMap: true },
           },
           {
-            loader: require.resolve('../lib/attachSourceMap.js'),
+            loader: require.resolve('../attachSourceMap.js'),
           },
         ],
       },

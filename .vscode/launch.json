@@ -5,8 +5,15 @@
       "type": "node",
       "request": "launch",
       "name": "Launch Webpack Website",
-      "program": "${workspaceFolder}/website/node_modules/webpack/bin/webpack.js",
-      "args": ["--config", "./website/webpack.config.js"]
+      "program": "${workspaceFolder}/node_modules/webpack/bin/webpack.js",
+      "args": [
+        "--config",
+        "webpack.config.js",
+        "-p",
+        "env.NODE_ENV",
+        "production"
+      ],
+      "cwd": "${workspaceFolder}/website"
     },
     {
       "type": "node",
