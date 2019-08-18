@@ -3,25 +3,57 @@ import path from 'path';
 import mkdirp from 'mkdirp';
 import normalize from 'normalize-path';
 import loaderUtils from 'loader-utils';
+import validateOptions from 'schema-utils';
 import enhancedResolve from 'enhanced-resolve';
 import Module from './babel/module';
 import transform from './utils/transform';
+
+const schema = {
+  type: 'object',
+  properties: {
+    displayName: {
+      type: 'boolean',
+    },
+    evaluate: {
+      type: 'boolean',
+    },
+    prefix: {
+      type: 'string',
+    },
+    optimize: {
+      type: 'boolean',
+    },
+    sourceMap: {
+      type: 'boolean',
+    },
+    cacheDirectory: {
+      type: 'string',
+    },
+  },
+};
 
 export default function loader(
   this: any,
   content: string,
   inputSourceMap: Object | null
 ) {
-  const { sourceMap = undefined, cacheDirectory = '.linaria-cache', ...rest } =
-    loaderUtils.getOptions(this) || {};
+  const options = loaderUtils.getOptions(this) || {};
+  validateOptions(schema, options, 'Linaria Loader');
+  const {
+    sourceMap = undefined,
+    cacheDirectory = '.linaria-cache',
+    ...pluginOptions
+  } = options;
+
+  const filePrefix = process.env.NODE_ENV === 'production' ? 'prod' : 'dev';
 
   const outputFilename = path.join(
     path.isAbsolute(cacheDirectory)
       ? cacheDirectory
-      : path.join(this.context, cacheDirectory),
+      : path.join(this.rootContext, cacheDirectory),
     path.relative(
-      this.context,
-      this.resourcePath.replace(/\.[^.]+$/, '.linaria.css')
+      this.rootContext,
+      this.resourcePath.replace(/\.[^.]+$/, `.${filePrefix}.linaria.css`)
     )
   );
 
@@ -57,7 +89,7 @@ export default function loader(
       filename: this.resourcePath,
       inputSourceMap: inputSourceMap != null ? inputSourceMap : undefined,
       outputFilename,
-      pluginOptions: rest,
+      pluginOptions,
     });
   } finally {
     // Restore original behaviour
