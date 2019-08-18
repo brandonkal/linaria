@@ -62,7 +62,6 @@ export default function loader(
       inputSourceMap: inputSourceMap != null ? inputSourceMap : undefined,
       outputFilename,
       pluginOptions: rest,
-      preprocessor,
     });
   } finally {
     // Restore original behaviour
