@@ -110,7 +110,7 @@ const Button = styled.button`
 `;
 
 const CodeSample = styled.img`
-  width: 100%;
+  width: ${() => 50 + 50}%;
   height: auto;
   margin: 64px 24px;
   max-width: calc(100% - 48px);

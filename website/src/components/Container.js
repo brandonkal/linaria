@@ -3,7 +3,9 @@
 import { styled } from '@brandonkal/linaria/react';
 
 const Container = styled.div`
-  max-width: 1140px;
+  &${[p => !p.large$]} {
+    max-width: 1140px;
+  }
   padding: 16px 24px;
   margin: 0 auto;
 `;

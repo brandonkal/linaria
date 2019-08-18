@@ -46,8 +46,10 @@
     "file-loader": "^3.0.1",
     "mini-css-extract-plugin": "^0.5.0",
     "stylelint": "^9.10.1",
+    "stylelint-config-prettier": "^5.2.0",
     "stylelint-config-recommended": "^2.1.0",
-    "webpack": "^4.29.5",
+    "stylelint-config-standard": "^18.3.0",
+    "webpack": "^4.39.2",
     "webpack-cli": "^3.3.6",
     "webpack-serve": "^2.0.3"
   }

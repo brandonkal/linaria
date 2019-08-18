@@ -5,7 +5,8 @@
       "type": "node",
       "request": "launch",
       "name": "Launch Webpack Website",
-      "program": "${workspaceFolder}/node_modules/webpack/bin/webpack.js"
+      "program": "${workspaceFolder}/node_modules/webpack/bin/webpack.js",
+      "env": { "NODE_ENV": "production" }
     }
   ]
 }

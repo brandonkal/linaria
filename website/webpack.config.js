@@ -2,6 +2,8 @@ const webpack = require('webpack'); // eslint-disable-line import/no-extraneous-
 const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin'); // eslint-disable-line import/no-extraneous-dependencies
 
+const LinariaOptimize = require('../lib/plugin.js');
+
 const dev = process.env.NODE_ENV !== 'production';
 
 module.exports = {
@@ -23,6 +25,7 @@ module.exports = {
       'process.env': { NODE_ENV: JSON.stringify(process.env.NODE_ENV) },
     }),
     new MiniCssExtractPlugin({ filename: 'styles.css' }),
+    new LinariaOptimize(),
   ],
   module: {
     rules: [
