@@ -77,8 +77,6 @@ export type CSSIdentifiers = {
 export type State = {
   queue: TemplateExpression[];
   rules: Rules;
-  /** Save for use by the optimizing plugin */
-  identifiers: CSSIdentifiers;
   replacements: Replacement[];
   index: number;
   dependencies: string[];
@@ -98,7 +96,6 @@ export type LinariaMetadata = {
   rules: Rules;
   replacements: Replacement[];
   dependencies: string[];
-  identifiers: CSSIdentifiers;
 };
 
 export type StrictOptions = {

@@ -55,10 +55,6 @@ export default function getTemplateProcessor(options: StrictOptions) {
   ) {
     const { quasi } = path.node;
 
-    let registeredVars: string[] = [];
-    let registeredModifiers: string[] = [];
-    let registeredClassNames: string[] = [];
-
     const interpolations: Interpolation[] = [];
     const modifiers: Modifier[] = [];
     let filterFunction:
@@ -96,9 +92,6 @@ export default function getTemplateProcessor(options: StrictOptions) {
         : slug;
 
     const className = isGlobal ? `global_${cls}` : wrapId(cls!);
-    if (!isGlobal) {
-      registeredClassNames = [className];
-    }
     // We only need a short id for classNames that end in the CSS file.
     let selector = `.${className}`;
 
@@ -334,8 +327,6 @@ export default function getTemplateProcessor(options: StrictOptions) {
 
         let keys = Object.keys(result);
         if (keys.length > 0) {
-          // Register with optimizer
-          registeredVars = Object.values(result).map(it => it.id);
           // Save to compiled JS object
           props.push(
             t.objectProperty(
@@ -377,8 +368,6 @@ export default function getTemplateProcessor(options: StrictOptions) {
 
         let keys = Object.keys(result);
         if (keys.length > 0) {
-          // Register with optimizer
-          registeredModifiers = Object.values(result).map(it => it.id);
           // Save to compiled JS object
           props.push(
             t.objectProperty(
@@ -415,14 +404,6 @@ export default function getTemplateProcessor(options: StrictOptions) {
     if (!isReferenced && !isGlobal) {
       return;
     }
-
-    // Save the registered identifiers to the state, as they are referenced.
-    // We combine them as multiple styled components can exist in one file.
-    state.identifiers = {
-      classNames: [...state.identifiers.classNames, ...registeredClassNames],
-      cssVars: [...state.identifiers.cssVars, ...registeredVars],
-      modifiers: [...state.identifiers.modifiers, ...registeredModifiers],
-    };
 
     state.rules[selector] = {
       cssText,

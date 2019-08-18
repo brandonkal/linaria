@@ -76,7 +76,6 @@ export default function transform(code: string, options: Options): Result {
     rules,
     replacements,
     dependencies,
-    identifiers,
   } = (metadata as babel.BabelFileMetadata & {
     linaria: LinariaMetadata;
   }).linaria;
@@ -106,7 +105,6 @@ export default function transform(code: string, options: Options): Result {
     code: transformedCode || '',
     cssText,
     rules,
-    identifiers,
     replacements,
     dependencies,
     sourceMap: map,

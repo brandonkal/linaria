@@ -106,21 +106,13 @@ export default function loader(
       fs.writeFileSync(outputFilename, cssOutput);
     }
 
-    const meta = {
-      linaria: {
-        type: 'JS',
-        identifiers: result.identifiers,
-      },
-    };
-
     this.callback(
       null,
       `${result.code}\n\nrequire(${loaderUtils.stringifyRequest(
         this,
         normalize(outputFilename)
       )});`,
-      result.sourceMap,
-      meta
+      result.sourceMap
     );
     return;
   }
