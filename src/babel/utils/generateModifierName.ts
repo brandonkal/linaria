@@ -55,6 +55,7 @@ export default function generateModifierName(
 
   // Remove all special characters including spaces
   str = str.replace(/[^\w-]/g, '');
+  str = str.replace(/_/g, '-');
 
   // Remove duplicate dashes
   str = str.replace(/--+/g, '-');

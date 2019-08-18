@@ -9,7 +9,7 @@
       {
         "devDependencies": [
           "**/*.test.{js,ts,jsx,tsx}",
-          "src/{babel,server}/**/*.{js,ts,jsx,tsx}"
+          "src/{babel,server,__tests__}/**/*.{js,ts,jsx,tsx}"
         ]
       }
     ]

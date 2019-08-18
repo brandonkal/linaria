@@ -1,7 +1,7 @@
 /* eslint-disable no-template-curly-in-string */
 
 import dedent from 'dedent';
-import transform from '../transform';
+import transform from '../utils/transform';
 
 it('rewrites a relative path in url() declarations', async () => {
   const { cssText } = await transform(

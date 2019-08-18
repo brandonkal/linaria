@@ -12,19 +12,15 @@ export default function loader(
   content: string,
   inputSourceMap: Object | null
 ) {
-  const {
-    sourceMap = undefined,
-    cacheDirectory = '.linaria-cache',
-    preprocessor = undefined,
-    ...rest
-  } = loaderUtils.getOptions(this) || {};
+  const { sourceMap = undefined, cacheDirectory = '.linaria-cache', ...rest } =
+    loaderUtils.getOptions(this) || {};
 
   const outputFilename = path.join(
     path.isAbsolute(cacheDirectory)
       ? cacheDirectory
-      : path.join(process.cwd(), cacheDirectory),
+      : path.join(this.context, cacheDirectory),
     path.relative(
-      process.cwd(),
+      this.context,
       this.resourcePath.replace(/\.[^.]+$/, '.linaria.css')
     )
   );
@@ -110,10 +106,21 @@ export default function loader(
       fs.writeFileSync(outputFilename, cssOutput);
     }
 
+    const meta = {
+      linaria: {
+        type: 'JS',
+        identifiers: result.identifiers,
+      },
+    };
+
     this.callback(
       null,
-      `${result.code}\n\nrequire("${normalize(outputFilename)}");`,
-      result.sourceMap
+      `${result.code}\n\nrequire(${loaderUtils.stringifyRequest(
+        this,
+        normalize(outputFilename)
+      )});`,
+      result.sourceMap,
+      meta
     );
     return;
   }

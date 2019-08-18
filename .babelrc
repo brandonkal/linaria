@@ -3,15 +3,6 @@
     [
       "@babel/preset-env",
       {
-        "targets": {
-          "browsers": [
-            "last 2 versions",
-            "not ie 11",
-            "not ie_mob 11",
-            "not op_mini all",
-            "not dead"
-          ]
-        },
         "useBuiltIns": "usage",
         "corejs": "2",
         "exclude": [
@@ -28,7 +19,5 @@
     "@babel/preset-typescript",
     "@babel/preset-flow"
   ],
-  "plugins": [
-    "@babel/plugin-proposal-class-properties"
-  ]
+  "plugins": ["@babel/plugin-proposal-class-properties"]
 }

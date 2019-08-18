@@ -4,7 +4,6 @@ import { isValidElementType } from 'react-is';
 import { NodePath } from '@babel/traverse';
 import generator from '@babel/generator';
 import generateModifierName from '../utils/generateModifierName';
-import makeTinyId from './tinyId';
 import { ExpressionMeta } from '../utils/calcExpressionStats';
 
 import { units } from '../units';
@@ -46,13 +45,19 @@ function isStyled(value: any): value is Styled {
 }
 
 export default function getTemplateProcessor(options: StrictOptions) {
-  const tinyId = makeTinyId(options);
+  const wrapId = (id: string) =>
+    options.optimize ? `LINARIA_${id}_LINARIA` : id;
+
   return function process(
     { styled, path, isGlobal }: TemplateExpression,
     state: State,
     valueCache: ValueCache
   ) {
     const { quasi } = path.node;
+
+    let registeredVars: string[] = [];
+    let registeredModifiers: string[] = [];
+    let registeredClassNames: string[] = [];
 
     const interpolations: Interpolation[] = [];
     const modifiers: Modifier[] = [];
@@ -85,11 +90,15 @@ export default function getTemplateProcessor(options: StrictOptions) {
       }
     }
 
-    const cls = options.displayName
-      ? `${toValidCSSIdentifier(displayName!)}_${slug}`
-      : slug;
+    const cls =
+      options.displayName && !options.optimize
+        ? `${toValidCSSIdentifier(displayName!)}_${slug}`
+        : slug;
 
-    const className = isGlobal ? `global_${cls}` : tinyId(cls!);
+    const className = isGlobal ? `global_${cls}` : wrapId(cls!);
+    if (!isGlobal) {
+      registeredClassNames = [className];
+    }
     // We only need a short id for classNames that end in the CSS file.
     let selector = `.${className}`;
 
@@ -182,8 +191,11 @@ export default function getTemplateProcessor(options: StrictOptions) {
                   'unknown'
                 : returns[0];
             const modName = generateModifierName(paramText, bodyText);
-            // Push modifier to array
-            const id = tinyId(`${slug}--${modName}-${i}`);
+            // Push modifier to array -- NOTE: changing format requires updating optimizer
+            const id = `${wrapId(slug!)}${
+              options.optimize ? '-' : `__${modName}_`
+            }${i}`;
+
             modifiers.push({
               id,
               node: modEl.node,
@@ -255,7 +267,7 @@ export default function getTemplateProcessor(options: StrictOptions) {
             }
 
             if (styled) {
-              const id = tinyId(`${slug}-${i}`);
+              const id = `${wrapId(slug!)}-${i}`;
 
               interpolations.push({
                 id,
@@ -322,6 +334,9 @@ export default function getTemplateProcessor(options: StrictOptions) {
 
         let keys = Object.keys(result);
         if (keys.length > 0) {
+          // Register with optimizer
+          registeredVars = Object.values(result).map(it => it.id);
+          // Save to compiled JS object
           props.push(
             t.objectProperty(
               t.identifier('vars'),
@@ -362,6 +377,9 @@ export default function getTemplateProcessor(options: StrictOptions) {
 
         let keys = Object.keys(result);
         if (keys.length > 0) {
+          // Register with optimizer
+          registeredModifiers = Object.values(result).map(it => it.id);
+          // Save to compiled JS object
           props.push(
             t.objectProperty(
               t.identifier('mod'),
@@ -397,6 +415,14 @@ export default function getTemplateProcessor(options: StrictOptions) {
     if (!isReferenced && !isGlobal) {
       return;
     }
+
+    // Save the registered identifiers to the state, as they are referenced.
+    // We combine them as multiple styled components can exist in one file.
+    state.identifiers = {
+      classNames: [...state.identifiers.classNames, ...registeredClassNames],
+      cssVars: [...state.identifiers.cssVars, ...registeredVars],
+      modifiers: [...state.identifiers.modifiers, ...registeredModifiers],
+    };
 
     state.rules[selector] = {
       cssText,
