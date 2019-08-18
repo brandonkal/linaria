@@ -1,21 +1,12 @@
 /* eslint-disable-next-line */
 import { Compiler } from 'webpack';
-/* eslint-disable-next-line */
 import { ReplaceSource } from 'webpack-sources';
 import makeTinyId from './utils/tinyId';
+import loadOptions from './utils/loadOptions';
 
 const NAME = 'linaria-optimize-classnames';
 
 const COMMENT_REGEX = /LINARIA_.*?_LINARIA/g;
-// const WRAP_REGEX = /(?:^LINARIA_|_LINARIA$)/g;
-// const ID_REGEX = /^(?:[a-z0-9]+)/;
-// const MODIFIER_RE = /__(?:\w|-)+_/;
-/**
- * SCHEMA:
- * c19oj5n < component classes contain no dash or underscore.
- * c19oj5n-0 < CSS variables end in -number
- * cvg8y9q__not-large_0 < modifier classes end in _number
- */
 
 interface LinariaPluginOptions {
   exclude?: RegExp;
@@ -29,17 +20,13 @@ interface LinariaPluginOptions {
 export default class LinariaOptimize {
   classes: string[] = [];
   filesToUpdate = new Map<any, Set<string>>();
-  exclude: RegExp;
-  prefix: string;
+  ignore: RegExp;
   tinyId: (str: string) => string;
 
-  constructor({
-    exclude = /node_modules/,
-    prefix = '',
-  }: LinariaPluginOptions = {}) {
-    this.exclude = exclude;
-    this.prefix = prefix;
-    this.tinyId = makeTinyId({ prefix, optimize: true });
+  constructor(options: LinariaPluginOptions = {}) {
+    const opts = loadOptions(options);
+    this.ignore = opts.ignore!;
+    this.tinyId = makeTinyId({ prefix: opts.prefix, optimize: opts.optimize! });
   }
 
   apply(compiler: Compiler) {
@@ -55,7 +42,7 @@ export default class LinariaOptimize {
             if (src) {
               src = src.source();
             }
-            if (!src || !src.includes('LINARIA_')) {
+            if (!src || !src.includes('_LINARIA')) {
               return;
             }
             this.addMatches(file, src);

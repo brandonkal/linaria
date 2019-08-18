@@ -1,7 +1,7 @@
 import { createFilter } from 'rollup-pluginutils';
 import transform from './utils/transform';
 import slugify from './utils/slugify';
-import { PluginOptions } from './babel/utils/loadOptions';
+import { PluginOptions } from './utils/loadOptions';
 
 type RollupPluginOptions = {
   include?: string | string[];

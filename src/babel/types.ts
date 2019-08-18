@@ -103,7 +103,6 @@ export type StrictOptions = {
   evaluate: boolean;
   ignore: RegExp;
   prefix: string;
-  suffix: string;
   optimize: boolean;
   babelOptions: TransformOptions;
 };
