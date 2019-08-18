@@ -36,6 +36,11 @@ export default function extract(_babel: any, options: StrictOptions) {
           state.index = -1;
           state.dependencies = [];
           state.replacements = [];
+          state.identifiers = {
+            classNames: [],
+            cssVars: [],
+            modifiers: [],
+          };
 
           // We need our transforms to run before anything else
           // So we traverse here instead of a in a visitor
@@ -81,6 +86,7 @@ export default function extract(_babel: any, options: StrictOptions) {
             state.file.metadata = {
               linaria: {
                 rules: state.rules,
+                identifiers: state.identifiers,
                 replacements: state.replacements,
                 dependencies: state.dependencies,
               },

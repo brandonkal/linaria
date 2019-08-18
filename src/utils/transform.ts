@@ -1,27 +1,13 @@
 import path from 'path';
 import * as babel from '@babel/core';
 import { SourceMapGenerator } from 'source-map';
-import loadOptions, { PluginOptions } from './babel/utils/loadOptions';
-import { Optional } from './typeUtils';
-
-export type Replacement = {
-  original: { start: Location; end: Location };
-  length: number;
-};
-
-type Location = {
-  line: number;
-  column: number;
-};
-
-type Rules = {
-  [className: string]: {
-    cssText: string;
-    displayName: string;
-    start: Location | null;
-    isGlobal: boolean;
-  };
-};
+import loadOptions, { PluginOptions } from '../babel/utils/loadOptions';
+import {
+  Rules,
+  Replacement,
+  LinariaMetadata,
+  CSSIdentifiers,
+} from '../babel/types';
 
 type Result = {
   code: string;
@@ -31,29 +17,15 @@ type Result = {
   dependencies?: string[];
   rules?: Rules;
   replacements?: Replacement[];
-};
-
-type LinariaMetadata = {
-  rules: Rules;
-  replacements: Replacement[];
-  dependencies: string[];
+  identifiers?: CSSIdentifiers;
 };
 
 type Options = {
   filename: string;
-  preprocessor?: Preprocessor;
   outputFilename?: string;
   inputSourceMap?: Object;
-  pluginOptions?: Optional<PluginOptions>;
+  pluginOptions?: Partial<PluginOptions>;
 };
-
-export type PreprocessorFn = (
-  selector: string,
-  cssText: string,
-  outputLine?: number,
-  originalLocation?: Location
-) => string;
-export type Preprocessor = 'none' | 'stylis' | PreprocessorFn | void;
 
 export default function transform(code: string, options: Options): Result {
   // Check if the file contains `css`, `styled`, or injectGlobal words first
@@ -80,7 +52,7 @@ export default function transform(code: string, options: Options): Result {
     code,
     {
       filename: options.filename,
-      presets: [[require.resolve('./babel'), pluginOptions]],
+      presets: [[require.resolve('../babel'), pluginOptions]],
       babelrc: false,
       configFile: false,
       sourceMaps: true,
@@ -104,6 +76,7 @@ export default function transform(code: string, options: Options): Result {
     rules,
     replacements,
     dependencies,
+    identifiers,
   } = (metadata as babel.BabelFileMetadata & {
     linaria: LinariaMetadata;
   }).linaria;
@@ -133,6 +106,7 @@ export default function transform(code: string, options: Options): Result {
     code: transformedCode || '',
     cssText,
     rules,
+    identifiers,
     replacements,
     dependencies,
     sourceMap: map,

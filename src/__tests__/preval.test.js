@@ -95,7 +95,7 @@ it('evaluates expressions with dependencies', async () => {
   const { code, metadata } = await transpile(
     dedent`
     import { styled } from '@brandonkal/linaria/react';
-    import slugify from '../slugify';
+    import slugify from '../utils/slugify';
 
     export const Title = styled.h1\`
       &:before {
@@ -113,7 +113,7 @@ it('evaluates expressions with expressions depending on shared dependency', asyn
   const { code, metadata } = await transpile(
     dedent`
     import { styled } from '@brandonkal/linaria/react';
-    const slugify = require('../slugify').default;
+    const slugify = require('../utils/slugify').default;
 
     const boo = t => slugify(t) + 'boo';
     const bar = t => slugify(t) + 'bar';
@@ -134,7 +134,7 @@ it('evaluates multiple expressions with shared dependency', async () => {
   const { code, metadata } = await transpile(
     dedent`
     import { styled } from '@brandonkal/linaria/react';
-    const slugify = require('../slugify').default;
+    const slugify = require('../utils/slugify').default;
 
     const boo = t => slugify(t) + 'boo';
     const bar = t => slugify(t) + 'bar';
@@ -438,7 +438,7 @@ it('throws codeframe error when evaluation fails', async () => {
 
 it('handles escapes properly', async () => {
   const { code, metadata } = await babel.transformFileAsync(
-    resolve(__dirname, '../__fixtures__/escape-character.js'),
+    resolve(__dirname, './__fixtures__/escape-character.js'),
     babelrc
   );
 
@@ -448,7 +448,7 @@ it('handles escapes properly', async () => {
 
 it('handles complex component', async () => {
   const { code, metadata } = await babel.transformFileAsync(
-    resolve(__dirname, '../__fixtures__/complex-component.js'),
+    resolve(__dirname, './__fixtures__/complex-component.js'),
     babelrc
   );
 
@@ -458,7 +458,7 @@ it('handles complex component', async () => {
 
 it('generates stable class names', async () => {
   const { code, metadata } = await babel.transformFileAsync(
-    resolve(__dirname, '../__fixtures__/components-library.js'),
+    resolve(__dirname, './__fixtures__/components-library.js'),
     babelrc
   );
 

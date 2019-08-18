@@ -5,7 +5,7 @@ import normalize from 'normalize-path';
 import loaderUtils from 'loader-utils';
 import enhancedResolve from 'enhanced-resolve';
 import Module from './babel/module';
-import transform from './transform';
+import transform from './utils/transform';
 
 export default function loader(
   this: any,

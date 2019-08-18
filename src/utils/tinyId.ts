@@ -1,19 +1,14 @@
 import incstr from 'incstr';
+import blacklist from './blacklist';
 
 const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789';
-// If these strings are found in the resulting generator, find another one
-const bannedWords = ['ad', 'banner'];
 
 function valid(string: string) {
   if (/^[0-9]/.test(string)) {
     return false;
   }
-  return !bannedWords.some(word => string.includes(word));
+  return !blacklist.some(word => string.includes(word));
 }
-
-type Map = {
-  [key: string]: string;
-};
 
 interface factoryOptions {
   prefix?: string;
@@ -26,26 +21,30 @@ export default function makeTinyId({
   suffix = '',
   optimize,
 }: factoryOptions) {
-  const map: Map = {};
+  let map = new Map<string, string>();
   const next = incstr.idGenerator({ alphabet });
 
   function optimizer(string: string) {
     if (optimize) {
-      if (map[string]) {
-        return map[string];
+      if (map.has(string)) {
+        return map.get(string);
       }
 
-      let id;
+      let id: string;
       while (!valid((id = next()))) {
         // empty
       }
-      return (map[string] = id);
+      map.set(string, id);
+      return id;
     } else {
       return string;
     }
   }
 
-  return function(string: string) {
+  const api = function(string: string) {
     return `${prefix}${optimizer(string)}${suffix}`;
   };
+  api.map = map;
+
+  return api;
 }

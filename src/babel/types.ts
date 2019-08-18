@@ -53,24 +53,33 @@ export type TemplateExpression = {
   isGlobal: boolean;
 };
 
+export type Replacement = {
+  original: { start: Location; end: Location };
+  length: number;
+};
+
+export type Rules = {
+  [selector: string]: {
+    className: string;
+    displayName: string;
+    cssText: string;
+    start: Location | null | undefined;
+    isGlobal: boolean;
+  };
+};
+
+export type CSSIdentifiers = {
+  classNames: string[];
+  cssVars: string[];
+  modifiers: string[];
+};
+
 export type State = {
   queue: TemplateExpression[];
-  rules: {
-    [selector: string]: {
-      className: string;
-      displayName: string;
-      cssText: string;
-      start: Location | null | undefined;
-      isGlobal: boolean;
-    };
-  };
-  replacements: Array<{
-    original: {
-      start: Location;
-      end: Location;
-    };
-    length: number;
-  }>;
+  rules: Rules;
+  /** Save for use by the optimizing plugin */
+  identifiers: CSSIdentifiers;
+  replacements: Replacement[];
   index: number;
   dependencies: string[];
   file: {
@@ -79,8 +88,17 @@ export type State = {
       root: string;
       filename: string;
     };
-    metadata: any;
+    metadata: {
+      linaria: LinariaMetadata;
+    };
   };
+};
+
+export type LinariaMetadata = {
+  rules: Rules;
+  replacements: Replacement[];
+  dependencies: string[];
+  identifiers: CSSIdentifiers;
 };
 
 export type StrictOptions = {

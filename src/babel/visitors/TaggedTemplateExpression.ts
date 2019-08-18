@@ -8,7 +8,7 @@ import hasImport from '../utils/hasImport';
 import { State, StrictOptions, ValueType, ExpressionValue } from '../types';
 
 import toValidCSSIdentifier from '../utils/toValidCSSIdentifier';
-import slugify from '../../slugify';
+import slugify from '../../utils/slugify';
 import getLinariaComment from '../utils/getLinariaComment';
 import calcExpressionStats from '../utils/calcExpressionStats';
 
