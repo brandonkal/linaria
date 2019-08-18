@@ -1,7 +1,7 @@
 import path from 'path';
 import * as babel from '@babel/core';
 import { SourceMapGenerator } from 'source-map';
-import loadOptions, { PluginOptions } from '../babel/utils/loadOptions';
+import loadOptions, { PluginOptions } from './loadOptions';
 import {
   Rules,
   Replacement,

@@ -1,5 +1,5 @@
 import cosmiconfig from 'cosmiconfig';
-import { StrictOptions } from '../types';
+import { StrictOptions } from '../babel/types';
 
 export type PluginOptions = StrictOptions & {
   configFile?: string;
@@ -18,10 +18,9 @@ export default function loadOptions(
       : explorer.searchSync();
 
   return {
-    displayName: false,
+    displayName: process.env.NODE_ENV !== 'production',
     evaluate: true,
     prefix: '',
-    suffix: '',
     optimize: process.env.NODE_ENV === 'production',
     ignore: /node_modules/,
     ...(result ? result.config : null),
