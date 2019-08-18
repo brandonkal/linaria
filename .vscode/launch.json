@@ -4,15 +4,9 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Launch Webpack Website",
-      "program": "${workspaceFolder}/node_modules/webpack/bin/webpack.js",
-      "args": [
-        "--config",
-        "webpack.config.js",
-        "-p",
-        "env.NODE_ENV",
-        "production"
-      ],
+      "name": "Webpack Website",
+      "program": "${workspaceFolder}/website/node_modules/webpack/bin/webpack.js",
+      "env": { "NODE_ENV": "production" },
       "cwd": "${workspaceFolder}/website"
     },
     {
