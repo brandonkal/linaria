@@ -71,6 +71,7 @@
     "@types/prettier": "^1.16.3",
     "@types/react": "^16.8.12",
     "@types/react-is": "^16.7.1",
+    "@types/schema-utils": "^1.0.0",
     "@types/strip-ansi": "^5.2.1",
     "@types/webpack-sources": "^0.1.5",
     "@typescript-eslint/eslint-plugin": "^1.6.0",
@@ -99,8 +100,7 @@
     "react-test-renderer": "^16.8.3",
     "release-it": "^12.3.5",
     "typescript": "^3.4.1",
-    "webpack": "^4.39.2",
-    "webpack-sources": "^1.4.3"
+    "webpack": "^4.39.2"
   },
   "dependencies": {
     "@babel/core": "^7.4.3",
@@ -124,8 +124,10 @@
     "postcss": "^7.0.14",
     "react-is": "^16.8.3",
     "rollup-pluginutils": "^2.4.1",
+    "schema-utils": "^2.1.0",
     "source-map": "^0.7.3",
     "strip-ansi": "^5.2.0",
+    "webpack-sources": "^1.4.3",
     "yargs": "^13.2.1"
   },
   "resolutions": {
