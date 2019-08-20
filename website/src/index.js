@@ -1,5 +1,3 @@
-/* @flow */
-
 import { injectGlobal } from '@brandonkal/linaria';
 import React from 'react';
 import ReactDOM from 'react-dom';

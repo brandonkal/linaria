@@ -1,5 +1,3 @@
-/* @flow */
-
 import React from 'react';
 import { styled } from '@brandonkal/linaria/react';
 import { media } from '../styles/utils';
