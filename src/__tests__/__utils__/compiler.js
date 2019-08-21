@@ -55,14 +55,14 @@ export default ({
           },
         },
         {
-          loader: 'css-loader',
+          loader: require.resolve('css-loader'),
           options: { sourceMap: true },
         },
         {
           loader: require.resolve('../../../fixSourceMap.js'),
         },
         {
-          loader: 'postcss-loader',
+          loader: require.resolve('postcss-loader'),
           options: { sourceMap: true },
         },
         {
@@ -70,18 +70,22 @@ export default ({
         },
       ],
     },
-    {
-      test: /\.(png|jpg|gif|svg)$/,
-      use: [{ loader: 'file-loader' }],
-    },
   ];
 
-  const compiler = webpack({
+  const plugins = [
+    new webpack.DefinePlugin({
+      'process.env': { NODE_ENV: mode },
+    }),
+    new MiniCssExtractPlugin({ filename: 'styles.css' }),
+  ];
+  if (complex) {
+    plugins.push(new LinariaOptimize({ optimize: optimize }));
+  }
+
+  const task = webpack({
     mode: mode,
-    context: complex
-      ? path.resolve(__dirname, '../../../')
-      : path.resolve(__dirname, '../__fixtures__'),
-    entry: complex ? `./src/__tests__/__fixtures__/${fixture}` : `./${fixture}`,
+    context: path.resolve(__dirname, '../__fixtures__'),
+    entry: `./${fixture}`,
     output: {
       path: path.resolve(__dirname),
       filename: 'bundle.js',
@@ -98,24 +102,16 @@ export default ({
         '@brandonkal/linaria': path.resolve(__dirname, '../../../lib'),
       },
     },
-    plugins: complex
-      ? [
-          new webpack.DefinePlugin({
-            'process.env': { NODE_ENV: mode },
-          }),
-          new MiniCssExtractPlugin({ filename: 'styles.css' }),
-          new LinariaOptimize(),
-        ]
-      : [],
+    plugins: plugins,
     module: {
       rules: complex ? complexRules : simpleRules,
     },
   });
 
-  compiler.outputFileSystem = new memoryfs();
+  task.outputFileSystem = new memoryfs();
 
   return new Promise((resolve, reject) => {
-    compiler.run((err, stats) => {
+    task.run((err, stats) => {
       if (err) reject(err);
       if (stats.hasErrors()) reject(new Error(stats.toJson().errors));
 

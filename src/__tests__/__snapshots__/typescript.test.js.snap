@@ -6,7 +6,7 @@ export const Title =
 /*#__PURE__*/
 styled(\\"h1\\")({
   name: \\"Title\\",
-  class: \\"th6xni0\\",
+  class: \\"Title_th6xni0\\",
   vars: {
     \\"th6xni0-0\\": [props => props.size, \\"px\\"]
   }
@@ -17,7 +17,7 @@ exports[`handles basic typescript 2`] = `
 
 CSS:
 
-.th6xni0 {
+.Title_th6xni0 {
   font-size: var(--th6xni0-0);
 }
 
@@ -37,7 +37,7 @@ export const Title =
 /*#__PURE__*/
 styled(\\"h1\\")({
   name: \\"Title\\",
-  class: \\"th6xni0\\",
+  class: \\"Title_th6xni0\\",
   vars: {
     \\"th6xni0-0\\": [props => theme.size[props.size], \\"px\\"]
   }
@@ -48,7 +48,7 @@ exports[`handles object access 2`] = `
 
 CSS:
 
-.th6xni0 {
+.Title_th6xni0 {
   font-size: var(--th6xni0-0);
 }
 

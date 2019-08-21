@@ -1,5 +1,35 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`complex loader works -- no-optimize 1`] = `
+"import { styled } from '@brandonkal/linaria/react';
+export var T1 =
+/*#__PURE__*/
+styled(\\"h1\\")({
+  name: \\"T1\\",
+  class: \\"T1_tjd0u1n\\",
+  vars: {
+    \\"tjd0u1n-0\\": [() => window.innerWidth * 0.5, \\"px\\"]
+  }
+});
+export var T2 =
+/*#__PURE__*/
+styled(\\"h2\\")({
+  name: \\"T2\\",
+  class: \\"T2_t1jdyzzg\\",
+  mod: {
+    \\"t1jdyzzg__primary_0\\": p => p.primary$
+  }
+});
+export var T3 =
+/*#__PURE__*/
+styled(\\"h3\\")({
+  name: \\"T3\\",
+  class: \\"T3_t1y4fq36\\"
+});
+
+require(\\"./.linaria-cache/styled-components.dev.linaria.css\\");"
+`;
+
 exports[`complex loader works -- optimizer 1`] = `
 "// JS after Babel plugin before optimization
 import { styled } from '@brandonkal/linaria/react';
@@ -28,7 +58,7 @@ styled(\\"h3\\")({
   class: \\"LINARIA_t1y4fq36_LINARIA\\"
 });
 
-require(\\"./.linaria-cache/styled-components.linaria.css\\");
+require(\\"./.linaria-cache/styled-components.dev.linaria.css\\");
 
 /* CSS after optimization */
 
@@ -51,42 +81,12 @@ require(\\"./.linaria-cache/styled-components.linaria.css\\");
 "
 `;
 
-exports[`complex loader works 1`] = `
-"import { styled } from '@brandonkal/linaria/react';
-export var T1 =
-/*#__PURE__*/
-styled(\\"h1\\")({
-  name: \\"T1\\",
-  class: \\"tjd0u1n\\",
-  vars: {
-    \\"tjd0u1n-0\\": [() => window.innerWidth * 0.5, \\"px\\"]
-  }
-});
-export var T2 =
-/*#__PURE__*/
-styled(\\"h2\\")({
-  name: \\"T2\\",
-  class: \\"t1jdyzzg\\",
-  mod: {
-    \\"t1jdyzzg__primary_0\\": p => p.primary$
-  }
-});
-export var T3 =
-/*#__PURE__*/
-styled(\\"h3\\")({
-  name: \\"T3\\",
-  class: \\"t1y4fq36\\"
-});
-
-require(\\"./.linaria-cache/styled-components.linaria.css\\");"
-`;
-
 exports[`loader requires generated CSS file - css 1`] = `
 "import { css } from '@brandonkal/linaria';
-const Container = \\"c1j2k3d2\\";
+const Container = \\"Container_c1j2k3d2\\";
 export default Container;
 
-require(\\"./.linaria-cache/css-classname.linaria.css\\");"
+require(\\"./.linaria-cache/css-classname.dev.linaria.css\\");"
 `;
 
 exports[`loader requires generated CSS file - styled 1`] = `
@@ -95,7 +95,7 @@ export const T1 =
 /*#__PURE__*/
 styled(\\"h1\\")({
   name: \\"T1\\",
-  class: \\"tjd0u1n\\",
+  class: \\"T1_tjd0u1n\\",
   vars: {
     \\"tjd0u1n-0\\": [() => window.innerWidth * 0.5, \\"px\\"]
   }
@@ -104,7 +104,7 @@ export const T2 =
 /*#__PURE__*/
 styled(\\"h2\\")({
   name: \\"T2\\",
-  class: \\"t1jdyzzg\\",
+  class: \\"T2_t1jdyzzg\\",
   mod: {
     \\"t1jdyzzg__primary_0\\": p => p.primary$
   }
@@ -113,8 +113,8 @@ export const T3 =
 /*#__PURE__*/
 styled(\\"h3\\")({
   name: \\"T3\\",
-  class: \\"t1y4fq36\\"
+  class: \\"T3_t1y4fq36\\"
 });
 
-require(\\"./.linaria-cache/styled-components.linaria.css\\");"
+require(\\"./.linaria-cache/styled-components.dev.linaria.css\\");"
 `;

@@ -13,6 +13,10 @@ interface LinariaPluginOptions {
   prefix?: string;
 }
 
+function uniq(arr: any[]) {
+  return Array.from(new Set(arr));
+}
+
 /**
  * Linaria className optimization plugin.
  * Takes compiled assets and replaces classNames with optimized tiny identifiers.
@@ -49,7 +53,7 @@ export default class LinariaOptimize {
           });
         });
         // Run through all and replace
-        let classes = Array.from(new Set([...this.classes])).sort();
+        let classes = uniq(this.classes).sort();
         classes.forEach(cls => {
           this.tinyId(cls);
         });
