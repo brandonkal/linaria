@@ -47,14 +47,18 @@ describe('webpack loader', () => {
       optimize: true,
     });
     const modules: any[] = stats.toJson().modules;
-    const js = modules.find(v => v.name.endsWith(FILE)).source;
+    let js = modules.find(v => v.name.includes(FILE));
+    if (js.modules && js.modules.length) {
+      js = js.modules.find(v => v.name.includes(FILE));
+    }
+    const jsSrc = js.source;
     const bundle: string = stats.compilation.assets['bundle.js'].source();
     const css: string = stats.compilation.assets['styles.css'].source();
     expect(css.includes('LINARIA')).toBe(false);
     expect(bundle.includes('LINARIA')).toBe(false);
     const snap =
       '// JS after Babel plugin before optimization\n' +
-      js +
+      jsSrc +
       '\n\n/* CSS after optimization */\n' +
       css;
 

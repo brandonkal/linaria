@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`complex loader works -- no-optimize 1`] = `
+exports[`webpack loader complex loader works -- no-optimize 1`] = `
 "import { styled } from '@brandonkal/linaria/react';
 export var T1 =
 /*#__PURE__*/
@@ -30,7 +30,7 @@ styled(\\"h3\\")({
 require(\\"./.linaria-cache/styled-components.dev.linaria.css\\");"
 `;
 
-exports[`complex loader works -- optimizer 1`] = `
+exports[`webpack loader complex loader works -- optimizer 1`] = `
 "// JS after Babel plugin before optimization
 import { styled } from '@brandonkal/linaria/react';
 export var T1 =
@@ -81,7 +81,7 @@ require(\\"./.linaria-cache/styled-components.dev.linaria.css\\");
 "
 `;
 
-exports[`loader requires generated CSS file - css 1`] = `
+exports[`webpack loader loader requires generated CSS file - css 1`] = `
 "import { css } from '@brandonkal/linaria';
 const Container = \\"Container_c1j2k3d2\\";
 export default Container;
@@ -89,7 +89,7 @@ export default Container;
 require(\\"./.linaria-cache/css-classname.dev.linaria.css\\");"
 `;
 
-exports[`loader requires generated CSS file - styled 1`] = `
+exports[`webpack loader loader requires generated CSS file - styled 1`] = `
 "import { styled } from '@brandonkal/linaria/react';
 export const T1 =
 /*#__PURE__*/
