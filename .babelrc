@@ -3,22 +3,18 @@
     [
       "@babel/preset-env",
       {
-        "useBuiltIns": "usage",
-        "corejs": "2",
-        "exclude": [
-          "transform-typeof-symbol",
-          "es6.object.assign",
-          "es6.object.keys",
-          "es6.array.iterator",
-          "web.dom.iterable"
-        ],
-        "loose": true
+        "useBuiltIns": false,
+        "loose": true,
+        "modules": false
       }
     ],
     "@babel/preset-react",
     "@babel/preset-typescript"
   ],
-  "plugins": ["@babel/plugin-proposal-class-properties"],
+  "plugins": [
+    "@babel/plugin-proposal-class-properties",
+    ["@babel/plugin-transform-runtime", { "useESModules": true }]
+  ],
   "env": {
     "node": {
       "presets": [
