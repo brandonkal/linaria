@@ -64,7 +64,7 @@ export default function evaluate(
 
           // If we programmtically pass babel options while there is a .babelrc, babel might throw
           // We need to filter out duplicate presets and plugins so that this doesn't happen
-          // This workaround isn't full proof, but it's still better than nothing
+          // This workaround isn't foolproof, but it's still better than nothing
           const keys: Array<
             keyof TransformOptions & ('presets' | 'plugins')
           > = ['presets', 'plugins'];
