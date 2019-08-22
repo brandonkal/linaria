@@ -15,6 +15,7 @@ interface TOptions extends TransformOptions {
   caller: {
     name: string;
     evaluate?: boolean;
+    _ignoreCSS: boolean;
   };
 }
 
@@ -47,7 +48,11 @@ export default function evaluate(
           ];
 
           const defaults: DefaultOptions = {
-            caller: { name: '@brandonkal/linaria', evaluate: true },
+            caller: {
+              name: '@brandonkal/linaria',
+              evaluate: true,
+              _ignoreCSS: true,
+            },
             filename: this.filename,
             presets: [[require.resolve('../index'), options]],
             plugins: [

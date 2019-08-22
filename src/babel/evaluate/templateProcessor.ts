@@ -57,10 +57,6 @@ export default function getTemplateProcessor(options: StrictOptions) {
 
     const interpolations: Interpolation[] = [];
     const modifiers: Modifier[] = [];
-    let filterFunction:
-      | t.ArrowFunctionExpression
-      | t.FunctionExpression
-      | undefined = undefined;
 
     // Check if the variable is referenced anywhere for basic DCE
     // Only works when it's assigned to a variable
@@ -102,186 +98,188 @@ export default function getTemplateProcessor(options: StrictOptions) {
     const expMeta: ExpressionMeta[] =
       path.state && path.state.expMeta ? path.state.expMeta : [];
 
-    quasi.quasis.forEach((el, i, self) => {
-      let appended = false;
+    if (!options._ignoreCSS) {
+      quasi.quasis.forEach((el, i, self) => {
+        let appended = false;
 
-      if (i !== 0 && el.value && el.value.cooked) {
-        // Check if previous expression was a CSS variable that we replaced
-        // If it has a unit after it, we need to move the unit into the interpolation
-        // e.g. `var(--size)px` should actually be `var(--size)`
-        // So we check if the current text starts with a unit, and add the unit to the previous interpolation
-        // Another approach would be `calc(var(--size) * 1px), but some browsers don't support all units
-        // https://bugzilla.mozilla.org/show_bug.cgi?id=956573
-        const matches = el.value.cooked.match(unitRegex);
+        if (i !== 0 && el.value && el.value.cooked) {
+          // Check if previous expression was a CSS variable that we replaced
+          // If it has a unit after it, we need to move the unit into the interpolation
+          // e.g. `var(--size)px` should actually be `var(--size)`
+          // So we check if the current text starts with a unit, and add the unit to the previous interpolation
+          // Another approach would be `calc(var(--size) * 1px), but some browsers don't support all units
+          // https://bugzilla.mozilla.org/show_bug.cgi?id=956573
+          const matches = el.value.cooked.match(unitRegex);
 
-        if (matches) {
-          const last = interpolations[interpolations.length - 1];
-          const [, unit] = matches;
+          if (matches) {
+            const last = interpolations[interpolations.length - 1];
+            const [, unit] = matches;
 
-          if (last && cssText.endsWith(`var(--${last.id})`)) {
-            last.unit = unit;
-            cssText += el.value.cooked.replace(unitRegex, '$2');
-            appended = true;
+            if (last && cssText.endsWith(`var(--${last.id})`)) {
+              last.unit = unit;
+              cssText += el.value.cooked.replace(unitRegex, '$2');
+              appended = true;
+            }
           }
         }
-      }
 
-      if (!appended) {
-        cssText += el.value.cooked;
-      }
+        if (!appended) {
+          cssText += el.value.cooked;
+        }
 
-      const ex = expressions[i];
+        const ex = expressions[i];
 
-      if (ex) {
-        const getLoc = () => {
-          const { end } = ex.node.loc!;
-          // The location will be end of the current string to start of next string
-          const next = self[i + 1];
-          return {
-            // +1 because the expressions location always shows 1 column before
-            start: { line: el.loc!.end.line, column: el.loc!.end.column + 1 },
-            end: next
-              ? { line: next.loc!.start.line, column: next.loc!.start.column }
-              : { line: end.line, column: end.column + 1 },
-          };
-        };
-        // Test if ex is inline array expression. This has already been validated.
-        if (t.isArrayExpression(ex)) {
-          if (styled) {
-            // Validate
-            // Track if prop should pass through
-            let elements = ex.get('elements') as NodePath<any>[];
-
-            // Generate BEM name from source
-            let modEl = elements[0] as NodePath<t.FunctionExpression>;
-            let param = modEl.node.params[0];
-            let paramText = 'props';
-            if ('name' in param) {
-              paramText = param.name;
-            }
-            const body = modEl.get('body');
-            let returns: string[] = [];
-            const returnVisitor = {
-              ReturnStatement(path: NodePath<t.ReturnStatement>) {
-                let arg = path.get('argument');
-                if (arg) {
-                  const src =
-                    arg.getSource() ||
-                    (arg.node && generator(arg.node).code) ||
-                    'unknown';
-                  returns.push(src);
-                }
-              },
+        if (ex) {
+          const getLoc = () => {
+            const { end } = ex.node.loc!;
+            // The location will be end of the current string to start of next string
+            const next = self[i + 1];
+            return {
+              // +1 because the expressions location always shows 1 column before
+              start: { line: el.loc!.end.line, column: el.loc!.end.column + 1 },
+              end: next
+                ? { line: next.loc!.start.line, column: next.loc!.start.column }
+                : { line: end.line, column: end.column + 1 },
             };
-            body.traverse(returnVisitor);
-            // If no explicit return statement is found, it is likely an arrow return.
-            let bodyText =
-              returns[0] === undefined ||
-              returns[0] === null ||
-              returns[0] === 'unknown'
-                ? body.getSource() ||
-                  (body.node && generator(body.node).code) ||
-                  'unknown'
-                : returns[0];
-            const modName = generateModifierName(paramText, bodyText);
-            // Push modifier to array -- NOTE: changing format requires updating optimizer
-            const id = `${wrapId(slug!)}${
-              options.optimize ? '-' : `__${modName}_`
-            }${i}`;
-
-            modifiers.push({
-              id,
-              node: modEl.node,
-              source: generator(modEl.node).code,
-              inComment: expMeta[i].inComment,
-            });
-
-            cssText += `.${id}`;
-          } else {
-            // CSS modifiers can't be used outside components
-            throw ex.buildCodeFrameError(
-              "The CSS cannot contain modifier expressions outside of the 'styled' tag."
-            );
-          }
-        } else {
-          // Evaluate normal interpolation
-          const result = ex.evaluate();
-          const beforeLength = cssText.length;
-          const loc = getLoc();
-
-          if (result.confident) {
-            throwIfInvalid(result.value, ex);
-
-            if (isSerializable(result.value)) {
-              // If it's a plain object or an array, convert it to a CSS string
-              cssText += stripLines(loc, toCSS(result.value));
-            } else {
-              cssText += stripLines(loc, result.value);
-            }
-
-            state.replacements.push({
-              original: loc,
-              length: cssText.length - beforeLength,
-            });
-          } else {
-            // Try to fetch preval-ed value. If preval, return early.
-            if (
-              options.evaluate &&
-              !(t.isFunctionExpression(ex) || t.isArrowFunctionExpression(ex))
-            ) {
-              const value = valueCache.get(ex.node);
-              throwIfInvalid(value, ex);
-
-              if (value && (typeof value !== 'function' || isStyled(value))) {
-                // Only insert text for non functions
-                // We don't touch functions because they'll be interpolated at runtime
-                if (isStyled(value)) {
-                  // If it's an React component wrapped in styled, get the class name
-                  // Useful for interpolating components
-                  cssText += `.${value.__linaria.className}`;
-                } else if (isSerializable(value)) {
-                  cssText += stripLines(loc, toCSS(value));
-                } else {
-                  // For anything else, assume it'll be stringified
-                  cssText += stripLines(loc, value);
-                }
-
-                state.replacements.push({
-                  original: loc,
-                  length: cssText.length - beforeLength,
-                });
-                return;
-              }
-            } else if (t.isObjectExpression(ex)) {
-              throw ex.buildCodeFrameError(
-                'Unexpected object expression.\n' +
-                  "To evaluate the expressions at build time, pass 'evaluate: true' to the babel plugin."
-              );
-            }
-
+          };
+          // Test if ex is inline array expression. This has already been validated.
+          if (t.isArrayExpression(ex)) {
             if (styled) {
-              const id = `${wrapId(slug!)}-${i}`;
+              // Validate
+              // Track if prop should pass through
+              let elements = ex.get('elements') as NodePath<any>[];
 
-              interpolations.push({
+              // Generate BEM name from source
+              let modEl = elements[0] as NodePath<t.FunctionExpression>;
+              let param = modEl.node.params[0];
+              let paramText = 'props';
+              if ('name' in param) {
+                paramText = param.name;
+              }
+              const body = modEl.get('body');
+              let returns: string[] = [];
+              const returnVisitor = {
+                ReturnStatement(path: NodePath<t.ReturnStatement>) {
+                  let arg = path.get('argument');
+                  if (arg) {
+                    const src =
+                      arg.getSource() ||
+                      (arg.node && generator(arg.node).code) ||
+                      'unknown';
+                    returns.push(src);
+                  }
+                },
+              };
+              body.traverse(returnVisitor);
+              // If no explicit return statement is found, it is likely an arrow return.
+              let bodyText =
+                returns[0] === undefined ||
+                returns[0] === null ||
+                returns[0] === 'unknown'
+                  ? body.getSource() ||
+                    (body.node && generator(body.node).code) ||
+                    'unknown'
+                  : returns[0];
+              const modName = generateModifierName(paramText, bodyText);
+              // Push modifier to array -- NOTE: changing format requires updating optimizer
+              const id = `${wrapId(slug!)}${
+                options.optimize ? '-' : `__${modName}_`
+              }${i}`;
+
+              modifiers.push({
                 id,
-                node: ex.node,
-                source: ex.getSource() || generator(ex.node).code,
-                unit: '',
+                node: modEl.node,
+                source: generator(modEl.node).code,
                 inComment: expMeta[i].inComment,
               });
 
-              cssText += `var(--${id})`;
+              cssText += `.${id}`;
             } else {
-              // CSS custom properties can't be used outside components
+              // CSS modifiers can't be used outside components
               throw ex.buildCodeFrameError(
-                "The CSS cannot contain JavaScript expressions when using the 'css' or 'injectGlobal' tag.\n" +
-                  "To evaluate the expressions at build time, pass 'evaluate: true' to the babel plugin."
+                "The CSS cannot contain modifier expressions outside of the 'styled' tag."
               );
+            }
+          } else {
+            // Evaluate normal interpolation
+            const result = ex.evaluate();
+            const beforeLength = cssText.length;
+            const loc = getLoc();
+
+            if (result.confident) {
+              throwIfInvalid(result.value, ex);
+
+              if (isSerializable(result.value)) {
+                // If it's a plain object or an array, convert it to a CSS string
+                cssText += stripLines(loc, toCSS(result.value));
+              } else {
+                cssText += stripLines(loc, result.value);
+              }
+
+              state.replacements.push({
+                original: loc,
+                length: cssText.length - beforeLength,
+              });
+            } else {
+              // Try to fetch preval-ed value. If preval, return early.
+              if (
+                options.evaluate &&
+                !(t.isFunctionExpression(ex) || t.isArrowFunctionExpression(ex))
+              ) {
+                const value = valueCache.get(ex.node);
+                throwIfInvalid(value, ex);
+
+                if (value && (typeof value !== 'function' || isStyled(value))) {
+                  // Only insert text for non functions
+                  // We don't touch functions because they'll be interpolated at runtime
+                  if (isStyled(value)) {
+                    // If it's an React component wrapped in styled, get the class name
+                    // Useful for interpolating components
+                    cssText += `.${value.__linaria.className}`;
+                  } else if (isSerializable(value)) {
+                    cssText += stripLines(loc, toCSS(value));
+                  } else {
+                    // For anything else, assume it'll be stringified
+                    cssText += stripLines(loc, value);
+                  }
+
+                  state.replacements.push({
+                    original: loc,
+                    length: cssText.length - beforeLength,
+                  });
+                  return;
+                }
+              } else if (t.isObjectExpression(ex)) {
+                throw ex.buildCodeFrameError(
+                  'Unexpected object expression.\n' +
+                    "To evaluate the expressions at build time, pass 'evaluate: true' to the babel plugin."
+                );
+              }
+
+              if (styled) {
+                const id = `${wrapId(slug!)}-${i}`;
+
+                interpolations.push({
+                  id,
+                  node: ex.node,
+                  source: ex.getSource() || generator(ex.node).code,
+                  unit: '',
+                  inComment: expMeta[i].inComment,
+                });
+
+                cssText += `var(--${id})`;
+              } else {
+                // CSS custom properties can't be used outside components
+                throw ex.buildCodeFrameError(
+                  "The CSS cannot contain JavaScript expressions when using the 'css' or 'injectGlobal' tag.\n" +
+                    "To evaluate the expressions at build time, pass 'evaluate: true' to the babel plugin."
+                );
+              }
             }
           }
         }
-      }
-    });
+      });
+    }
 
     if (styled) {
       // If `styled` wraps another component and not a primitive,
@@ -381,10 +379,6 @@ export default function getTemplateProcessor(options: StrictOptions) {
             )
           );
         }
-      }
-
-      if (filterFunction) {
-        props.push(t.objectProperty(t.identifier('f'), filterFunction));
       }
 
       path.replaceWith(

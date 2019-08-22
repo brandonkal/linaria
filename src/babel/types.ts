@@ -105,6 +105,8 @@ export type StrictOptions = {
   prefix: string;
   optimize: boolean;
   babelOptions: TransformOptions;
+  /** ignore CSS content to speed up compilation when we only wish to extract classNames for evaluation */
+  _ignoreCSS: boolean;
 };
 
 export type Location = {

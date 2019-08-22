@@ -6,6 +6,7 @@ import { NodePath } from '@babel/traverse';
 import throwIfInvalid from '../utils/throwIfInvalid';
 import hasImport from '../utils/hasImport';
 import { State, StrictOptions, ValueType, ExpressionValue } from '../types';
+import { ExpressionMeta } from '../utils/calcExpressionStats';
 
 import toValidCSSIdentifier from '../utils/toValidCSSIdentifier';
 import slugify from '../../utils/slugify';
@@ -59,6 +60,7 @@ export default function TaggedTemplateExpression(
   state: State,
   options: StrictOptions
 ) {
+  const { _ignoreCSS } = options;
   const { tag } = path.node;
 
   let styled: {
@@ -147,7 +149,7 @@ export default function TaggedTemplateExpression(
     const params = path.parentPath.get('params') as any[];
     if (!params || params.length !== 1) {
       throw path.parentPath.buildCodeFrameError(
-        'Styled component arrow function can only accept one props argument or things may break from rewrite.\n' +
+        'Styled component arrow function can only accept one argument or things may break from rewrite.\n' +
           'If this is not an error, wrap it in another arrow function:\n' +
           'const Button = config => (props => styled.button``)({})'
       );
@@ -195,75 +197,79 @@ export default function TaggedTemplateExpression(
     return;
   }
 
-  const expressions = path.get('quasi').get('expressions');
-  const quasis = path.get('quasi').get('quasis');
-  // Evaluate CSS comment location and nesting depth
-  const expMeta = calcExpressionStats(quasis, expressions);
-  // Validate and transform all expressions
-  expressions.forEach((ex, i) => {
-    if (t.isStringLiteral(ex)) {
-      return;
-    } else if (t.isArrayExpression(ex) && styled) {
-      // Validate
-      let elements = ex.get('elements') as NodePath<any>[];
-      if (elements.length !== 1) {
-        throw ex.buildCodeFrameError(
-          'Modifier expression array must contain only 1 element'
-        );
-      }
-
-      let el1 = elements[0];
-      if (!t.isExpression(el1.node)) {
-        throw ex.buildCodeFrameError(
-          'Expected modifier condition to be an expression'
-        );
-      }
-
-      if (expMeta[i].nestLevel > 0 && !expMeta[i].inComment) {
-        throw ex.buildCodeFrameError('Modifier expression must not be nested.');
-      }
-
-      if (!expMeta[i].valid && !expMeta[i].inComment) {
-        throw ex.buildCodeFrameError(
-          'Modifier expressions must target the root selector and may not be preceded by a dot.'
-        );
-      }
-
-      if (
-        !t.isFunctionExpression(el1.node) &&
-        !t.isArrowFunctionExpression(el1.node)
-      ) {
-        if (parentWasArrow) {
-          if (!el1 || !hasProp(el1, propsName)) {
-            throw ex.buildCodeFrameError(
-              `Expected modifier condition to access ${propsName}`
-            );
-          }
-          makeArrow(el1, propsName);
-        } else {
-          throw el1.buildCodeFrameError(
-            'You must wrap the styled tag in an arrow function or this condition must be a function.'
+  let expressionValues: ExpressionValue[] = [];
+  let expMeta: ExpressionMeta[] = [];
+  if (!_ignoreCSS) {
+    const expressions = path.get('quasi').get('expressions');
+    const quasis = path.get('quasi').get('quasis');
+    // Evaluate CSS comment location and nesting depth
+    expMeta = calcExpressionStats(quasis, expressions);
+    // Validate and transform all expressions
+    expressions.forEach((ex, i) => {
+      if (t.isStringLiteral(ex)) {
+        return;
+      } else if (t.isArrayExpression(ex) && styled) {
+        // Validate
+        let elements = ex.get('elements') as NodePath<any>[];
+        if (elements.length !== 1) {
+          throw ex.buildCodeFrameError(
+            'Modifier expression array must contain only 1 element'
           );
         }
+
+        let el1 = elements[0];
+        if (!t.isExpression(el1.node)) {
+          throw ex.buildCodeFrameError(
+            'Expected modifier condition to be an expression'
+          );
+        }
+
+        if (expMeta[i].nestLevel > 0 && !expMeta[i].inComment) {
+          throw ex.buildCodeFrameError(
+            'Modifier expression must not be nested.'
+          );
+        }
+
+        if (!expMeta[i].valid && !expMeta[i].inComment) {
+          throw ex.buildCodeFrameError(
+            'Modifier expressions must target the root selector and may not be preceded by a dot.'
+          );
+        }
+
+        if (
+          !t.isFunctionExpression(el1.node) &&
+          !t.isArrowFunctionExpression(el1.node)
+        ) {
+          if (parentWasArrow) {
+            if (!el1 || !hasProp(el1, propsName)) {
+              throw ex.buildCodeFrameError(
+                `Expected modifier condition to access ${propsName}`
+              );
+            }
+            makeArrow(el1, propsName);
+          } else {
+            throw el1.buildCodeFrameError(
+              'You must wrap the styled tag in an arrow function or this condition must be a function.'
+            );
+          }
+        }
+
+        // Transform to arrow function if props are referenced
+      } else if (t.isArrayExpression(ex) && !styled) {
+        throw ex.buildCodeFrameError(
+          'Modifier expressions can only be used with styled components'
+        );
+      } else if (
+        parentWasArrow &&
+        !t.isFunctionExpression(ex.node) &&
+        !t.isArrowFunctionExpression(ex.node) &&
+        hasProp(ex, propsName)
+      ) {
+        makeArrow(ex, propsName);
       }
+    });
 
-      // Transform to arrow function if props are referenced
-    } else if (t.isArrayExpression(ex) && !styled) {
-      throw ex.buildCodeFrameError(
-        'Modifier expressions can only be used with styled components'
-      );
-    } else if (
-      parentWasArrow &&
-      !t.isFunctionExpression(ex.node) &&
-      !t.isArrowFunctionExpression(ex.node) &&
-      hasProp(ex, propsName)
-    ) {
-      makeArrow(ex, propsName);
-    }
-  });
-
-  const expressionValues: ExpressionValue[] = expressions.map(
-    (ex: NodePath<t.Expression>, i) => {
+    expressionValues = expressions.map((ex: NodePath<t.Expression>, i) => {
       if (expMeta[i].inComment) {
         return { kind: ValueType.VALUE, value: expMeta[i].placeholder };
       }
@@ -285,8 +291,8 @@ export default function TaggedTemplateExpression(
       }
 
       return { kind: ValueType.RUNTIME, ex };
-    }
-  );
+    });
+  }
 
   // Increment the index of the style we're processing
   // This is used for slug generation to prevent collision
