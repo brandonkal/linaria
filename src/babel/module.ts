@@ -1,5 +1,3 @@
-// TypeScript Version: 3.2
-
 /**
  * This is a custom implementation for the module system for evaluating code.
  *
@@ -107,7 +105,7 @@ class Module {
     this.exports = {};
 
     // We support following extensions by default
-    this.extensions = ['.json', '.js', '.jsx', '.ts', '.tsx'];
+    this.extensions = ['.tsx', '.ts', '.js', '.jsx', '.json'];
   }
 
   resolve = (id: string) => {

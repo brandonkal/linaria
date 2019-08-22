@@ -624,7 +624,7 @@ exports[`throws if state selector is nested 1`] = `
 `;
 
 exports[`throws if wrapping arrow function contains more than one argument 1`] = `
-"<<DIRNAME>>/app/index.js: Styled component arrow function can only accept one props argument or things may break from rewrite.
+"<<DIRNAME>>/app/index.js: Styled component arrow function can only accept one argument or things may break from rewrite.
 If this is not an error, wrap it in another arrow function:
 const Button = config => (props => styled.button\`\`)({})
   1 | import { styled } from '@brandonkal/linaria/react';
