@@ -21,7 +21,7 @@ export type Styled = ElementType & {
 
 export enum ValueType {
   LAZY,
-  FUNCTION,
+  RUNTIME,
   VALUE,
 }
 
@@ -34,8 +34,8 @@ export type LazyValue = {
   ex: NodePath<t.Expression> | t.Expression | string;
 };
 
-export type FunctionValue = {
-  kind: ValueType.FUNCTION;
+export type RuntimeValue = {
+  kind: ValueType.RUNTIME;
   ex: any;
 };
 
@@ -44,7 +44,7 @@ export type EvaluatedValue = {
   value: Value;
 };
 
-export type ExpressionValue = LazyValue | FunctionValue | EvaluatedValue;
+export type ExpressionValue = LazyValue | RuntimeValue | EvaluatedValue;
 
 export type TemplateExpression = {
   styled?: { component: any };

@@ -275,12 +275,16 @@ export default function TaggedTemplateExpression(
 
       if (
         options.evaluate &&
-        !(t.isFunctionExpression(ex) || t.isArrowFunctionExpression(ex))
+        !(
+          t.isFunctionExpression(ex) ||
+          t.isArrowFunctionExpression(ex) ||
+          t.isArrayExpression(ex)
+        )
       ) {
         return { kind: ValueType.LAZY, ex };
       }
 
-      return { kind: ValueType.FUNCTION, ex };
+      return { kind: ValueType.RUNTIME, ex };
     }
   );
 
