@@ -1,5 +1,3 @@
-/* @flow */
-
 const babel = require('@babel/core');
 
 it('replaces dynamic imports with a noop', async () => {

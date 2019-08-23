@@ -1,5 +1,3 @@
-/* @flow */
-
 const React = require('react');
 const renderer = require('react-test-renderer');
 const styled = require('../react/styled').default;

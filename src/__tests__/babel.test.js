@@ -1,6 +1,4 @@
 /* eslint-disable no-template-curly-in-string */
-/* @flow */
-
 const path = require('path');
 const babel = require('@babel/core');
 const dedent = require('dedent');

@@ -1,5 +1,3 @@
-// TypeScript Version: 3.2
-
 import {
   transformSync,
   BabelFileResult,

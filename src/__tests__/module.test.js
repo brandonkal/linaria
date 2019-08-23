@@ -1,5 +1,3 @@
-/* @flow */
-
 import path from 'path';
 import dedent from 'dedent';
 import * as babel from '@babel/core';
