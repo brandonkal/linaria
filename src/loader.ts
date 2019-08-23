@@ -7,6 +7,7 @@ import validateOptions from 'schema-utils';
 import enhancedResolve from 'enhanced-resolve';
 import Module from './babel/module';
 import transform from './utils/transform';
+import findCacheDir from 'find-cache-dir';
 
 const schema = {
   type: 'object',
@@ -39,11 +40,11 @@ export default function loader(
 ) {
   const options = loaderUtils.getOptions(this) || {};
   validateOptions(schema, options, 'Linaria Loader');
-  const {
-    sourceMap = undefined,
-    cacheDirectory = '.linaria-cache',
-    ...pluginOptions
-  } = options;
+  const { sourceMap, cacheDirectory: cacheConfig, ...pluginOptions } = options;
+  const cacheDirectory: string =
+    cacheConfig ||
+    findCacheDir({ name: '@brandonkal/linaria' }) ||
+    '.linaria-cache';
 
   const filePrefix = process.env.NODE_ENV === 'production' ? 'prod' : 'dev';
 
