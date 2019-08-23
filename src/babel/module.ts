@@ -6,7 +6,6 @@
  * - Allow us to invalidate the module cache without affecting other stuff, necessary for rebuilds
  *
  * We also use it to transpile the code with Babel by default.
- * We also store source maps for it to provide correct error stacktraces.
  *
  */
 
@@ -154,6 +153,10 @@ class Module {
 
         return null;
       }
+      if (id.includes('core-js')) {
+        // Polyfills don't need to be evaluated. This can happen if a dependency includes it.
+        return null;
+      }
 
       // Resolve module id (and filename) relatively to parent module
       const filename = this.resolve(id);
@@ -214,8 +217,11 @@ class Module {
     log(`evaluating ${this.transform ? '(T)' : '(NT)'} ${this.filename}`);
     // For JavaScript files, we need to transpile it and to get the exports of the module
     const code = this.transform ? this.transform(text)!.code : text;
+    // Passing exports as context is ignored in strict mode. Thus, we redefine the alias.
+    // We do this even for non-transformed files (node_modules)
+    const toExec = 'var exports = module.exports;\n' + code!;
 
-    const script = new vm.Script(code!, {
+    const script = new vm.Script(toExec, {
       filename: this.filename,
     });
 

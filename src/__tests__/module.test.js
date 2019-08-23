@@ -3,6 +3,8 @@ import dedent from 'dedent';
 import * as babel from '@babel/core';
 import Module from '../babel/module';
 
+const test = path.resolve(__dirname, './__fixtures__/test.js');
+
 beforeEach(() => Module.invalidate());
 
 function transform(text) {
@@ -22,8 +24,20 @@ it('creates module for JS files', () => {
   expect(mod.filename).toBe(filename);
 });
 
+it('evaluates files with global exports in strict mode', () => {
+  const mod = new Module(test);
+
+  mod.evaluate(dedent`
+      'use strict'
+      exports = module.exports = function funcToExport() {}
+      exports['default'] = exports;
+  `);
+  expect(typeof mod.exports).toBe('function');
+  expect(typeof mod.exports.default).toBe('function');
+});
+
 it('requires JS files', () => {
-  const mod = new Module(path.resolve(__dirname, './__fixtures__/test.js'));
+  const mod = new Module(test);
 
   mod.evaluate(dedent`
     const answer = require('./sample-script');
@@ -35,7 +49,7 @@ it('requires JS files', () => {
 });
 
 it('requires JSON files', () => {
-  const mod = new Module(path.resolve(__dirname, './__fixtures__/test.js'));
+  const mod = new Module(test);
 
   mod.evaluate(dedent`
     const data = require('./sample-data.json');
@@ -47,7 +61,7 @@ it('requires JSON files', () => {
 });
 
 it('imports JS files', () => {
-  const mod = new Module(path.resolve(__dirname, './__fixtures__/test.js'));
+  const mod = new Module(test);
 
   mod.transform = transform;
   mod.evaluate(dedent`
@@ -73,7 +87,7 @@ it('imports TypeScript files', () => {
 });
 
 it('imports JSON files', () => {
-  const mod = new Module(path.resolve(__dirname, './__fixtures__/test.js'));
+  const mod = new Module(test);
 
   mod.transform = transform;
   mod.evaluate(dedent`
@@ -90,7 +104,7 @@ it('imports JSON files', () => {
 it('returns module from the cache', () => {
   /* eslint-disable no-self-compare */
 
-  const filename = path.resolve(__dirname, './__fixtures__/test.js');
+  const filename = test;
   const mod = new Module(filename);
   const id = './sample-data.json';
 
@@ -102,7 +116,7 @@ it('returns module from the cache', () => {
 });
 
 it('clears modules from the cache', () => {
-  const filename = path.resolve(__dirname, './__fixtures__/test.js');
+  const filename = test;
   const id = './sample-data.json';
 
   const result = new Module(filename).require(id);
@@ -115,25 +129,25 @@ it('clears modules from the cache', () => {
 });
 
 it('exports the path for non JS/JSON files', () => {
-  const mod = new Module(path.resolve(__dirname, './__fixtures__/test.js'));
+  const mod = new Module(test);
 
   expect(mod.require('./sample-asset.png')).toBe('./sample-asset.png');
 });
 
 it('returns module when requiring mocked builtin node modules', () => {
-  const mod = new Module(path.resolve(__dirname, './__fixtures__/test.js'));
+  const mod = new Module(test);
 
   expect(mod.require('path')).toBe(require('path'));
 });
 
 it('returns null when requiring empty builtin node modules', () => {
-  const mod = new Module(path.resolve(__dirname, './__fixtures__/test.js'));
+  const mod = new Module(test);
 
   expect(mod.require('fs')).toBe(null);
 });
 
 it('throws when requiring unmocked builtin node modules', () => {
-  const mod = new Module(path.resolve(__dirname, './__fixtures__/test.js'));
+  const mod = new Module(test);
 
   expect(() => mod.require('perf_hooks')).toThrow(
     'Unable to import "perf_hooks". Importing Node builtins is not supported in the sandbox.'
@@ -141,7 +155,7 @@ it('throws when requiring unmocked builtin node modules', () => {
 });
 
 it('has access to the global object', () => {
-  const mod = new Module(path.resolve(__dirname, './__fixtures__/test.js'));
+  const mod = new Module(test);
 
   expect(() =>
     mod.evaluate(dedent`
@@ -151,7 +165,7 @@ it('has access to the global object', () => {
 });
 
 it("doesn't have access to the process object", () => {
-  const mod = new Module(path.resolve(__dirname, './__fixtures__/test.js'));
+  const mod = new Module(test);
 
   expect(() =>
     mod.evaluate(dedent`
@@ -161,7 +175,7 @@ it("doesn't have access to the process object", () => {
 });
 
 it('has access to NODE_ENV', () => {
-  const mod = new Module(path.resolve(__dirname, './__fixtures__/test.js'));
+  const mod = new Module(test);
 
   mod.evaluate(dedent`
   module.exports = process.env.NODE_ENV;
@@ -171,7 +185,7 @@ it('has access to NODE_ENV', () => {
 });
 
 it('has require.resolve available', () => {
-  const mod = new Module(path.resolve(__dirname, './__fixtures__/test.js'));
+  const mod = new Module(test);
 
   mod.evaluate(dedent`
   module.exports = require.resolve('./sample-script');
@@ -183,7 +197,7 @@ it('has require.resolve available', () => {
 });
 
 it('has require.ensure available', () => {
-  const mod = new Module(path.resolve(__dirname, './__fixtures__/test.js'));
+  const mod = new Module(test);
 
   expect(() =>
     mod.evaluate(dedent`
@@ -193,7 +207,7 @@ it('has require.ensure available', () => {
 });
 
 it('has __filename available', () => {
-  const mod = new Module(path.resolve(__dirname, './__fixtures__/test.js'));
+  const mod = new Module(test);
 
   mod.evaluate(dedent`
   module.exports = __filename;
@@ -203,7 +217,7 @@ it('has __filename available', () => {
 });
 
 it('has __dirname available', () => {
-  const mod = new Module(path.resolve(__dirname, './__fixtures__/test.js'));
+  const mod = new Module(test);
 
   mod.evaluate(dedent`
   module.exports = __dirname;
@@ -217,7 +231,7 @@ it('changes resolve behaviour on overriding _resolveFilename', () => {
 
   Module._resolveFilename = id => (id === 'foo' ? 'bar' : id);
 
-  const mod = new Module(path.resolve(__dirname, './__fixtures__/test.js'));
+  const mod = new Module(test);
 
   mod.evaluate(dedent`
   module.exports = [
