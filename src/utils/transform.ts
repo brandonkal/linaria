@@ -30,7 +30,10 @@ type Options = {
 export default function transform(code: string, options: Options): Result {
   // Check if the file contains `css`, `styled`, or injectGlobal words first
   // Otherwise we should skip transforming
-  if (!/\b(styled|css|injectGlobal)/.test(code)) {
+  if (
+    !/\b(styled|css|injectGlobal)/.test(code) &&
+    !code.includes('@brandonkal/linaria')
+  ) {
     return {
       code,
       sourceMap: options.inputSourceMap,
