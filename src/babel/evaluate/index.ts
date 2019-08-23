@@ -86,30 +86,32 @@ function getOptions(options: StrictOptions | undefined, filename: string) {
     'plugins',
   ];
   keys.forEach(field => {
-    babelOptions[field] = babelOptions[field]
-      ? babelOptions[field]!.filter((item: PluginItem) => {
-          // If item is an array it's a preset/plugin with options ([preset, options])
-          // Get the first item to get the preset.plugin name
-          // Otheriwse it's a plugin name (can be a function too)
-          const name = Array.isArray(item) ? item[0] : item;
-          if (
-            // In our case, a preset might also be referring to linaria/babel
-            // We require the file from internal path which is not the same one that we export
-            // This case won't get caught and the preset won't filtered, even if they are same
-            // So we add an extra check for top level linaria/babel
-            name === '@brandonkal/linaria/babel' ||
-            name === require.resolve('../../../babel') ||
-            // Also add a check for the plugin names we include for bundler support
-            plugins.includes(name)
-          ) {
-            return false;
+    babelOptions[field]
+      ? (babelOptions[field] = babelOptions[field]!.filter(
+          (item: PluginItem) => {
+            // If item is an array it's a preset/plugin with options ([preset, options])
+            // Get the first item to get the preset.plugin name
+            // Otherwise it's a plugin name (can be a function too)
+            const name = Array.isArray(item) ? item[0] : item;
+            if (
+              // In our case, a preset might also be referring to linaria/babel
+              // We require the file from internal path which is not the same one that we export
+              // This case won't get caught and the preset won't be filtered, even if they are same
+              // So we add an extra check for top level linaria/babel
+              name === '@brandonkal/linaria/babel' ||
+              name === require.resolve('../../../babel') ||
+              // Also add a check for the plugin names we include for bundler support
+              plugins.includes(name)
+            ) {
+              return false;
+            }
+            // Loop through the default presets/plugins to see if it already exists
+            return !defaults[field].some(it =>
+              // The default presets/plugins can also have nested arrays,
+              Array.isArray(it) ? it[0] === name : it === name
+            );
           }
-          // Loop through the default presets/plugins to see if it already exists
-          return !defaults[field].some(it =>
-            // The default presets/plugins can also have nested arrays,
-            Array.isArray(it) ? it[0] === name : it === name
-          );
-        })
+        ))
       : [];
   });
   const transformOptions = {
