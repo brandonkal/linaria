@@ -5,6 +5,8 @@ import { NodePath } from '@babel/traverse';
 import getTemplateProcessor from './evaluate/templateProcessor';
 import shake from './evaluate/shaker';
 import evaluate from './evaluate';
+import debug from 'debug';
+const log = debug('linaria:babel');
 import {
   State,
   StrictOptions,
@@ -37,6 +39,8 @@ export default function extract(_babel: any, options: StrictOptions) {
           state.dependencies = [];
           state.replacements = [];
 
+          log('traversing file');
+
           // We need our transforms to run before anything else
           // So we traverse here instead of a in a visitor
           path.traverse({
@@ -56,9 +60,12 @@ export default function extract(_babel: any, options: StrictOptions) {
             [] as Array<t.Expression | string>
           );
 
+          log(`found ${lazyDeps.length} lazy deps`);
+
           let lazyValues: any[] = [];
           if (lazyDeps.length) {
             const [shaken] = shake(path.node, lazyDeps);
+            log(`evaluating shaken ${state.file.opts.filename} for lazy deps`);
             const evaluation = evaluate(
               shaken,
               state.file.opts.filename,
@@ -72,10 +79,13 @@ export default function extract(_babel: any, options: StrictOptions) {
 
           const valueCache: ValueCache = new Map();
           lazyDeps.forEach((key, idx) => valueCache.set(key, lazyValues[idx]));
-
+          log(
+            `processing ${state.queue.length} items ${state.file.opts.filename}`
+          );
           state.queue.forEach(item => process(item, state, valueCache));
         },
         exit(_: any, state: State) {
+          log(`exiting ${state.file.opts.filename}`);
           if (Object.keys(state.rules).length) {
             // Store the result as the file metadata
             state.file.metadata = {

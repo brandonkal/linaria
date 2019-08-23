@@ -13,6 +13,9 @@ import slugify from '../../utils/slugify';
 import getLinariaComment from '../utils/getLinariaComment';
 import calcExpressionStats from '../utils/calcExpressionStats';
 
+import debug from 'debug';
+const log = debug('linaria:traverse');
+
 function makeArrow(ex: NodePath<t.Expression>, propsName = 'props') {
   let loc = ex.node.loc;
   let ident = t.identifier(propsName);
@@ -127,6 +130,7 @@ export default function TaggedTemplateExpression(
   }
 
   if (!styled && !css && !isGlobal) {
+    log('no linaria import found. Skipping traverse.');
     return;
   }
 
@@ -146,6 +150,7 @@ export default function TaggedTemplateExpression(
 
   // Remove Arrow Function Wrapper
   if (!parentWasArrow && parentIsArrow) {
+    log('collapsing styled component arrow wrapper');
     const params = path.parentPath.get('params') as any[];
     if (!params || params.length !== 1) {
       throw path.parentPath.buildCodeFrameError(
@@ -200,6 +205,7 @@ export default function TaggedTemplateExpression(
   let expressionValues: ExpressionValue[] = [];
   let expMeta: ExpressionMeta[] = [];
   if (!_ignoreCSS) {
+    log('collecting expressions');
     const expressions = path.get('quasi').get('expressions');
     const quasis = path.get('quasi').get('quasis');
     // Evaluate CSS comment location and nesting depth
@@ -292,6 +298,8 @@ export default function TaggedTemplateExpression(
 
       return { kind: ValueType.RUNTIME, ex };
     });
+  } else {
+    log('ignoring CSS expressions');
   }
 
   // Increment the index of the style we're processing

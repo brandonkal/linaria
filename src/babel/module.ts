@@ -16,6 +16,8 @@ import fs from 'fs';
 import path from 'path';
 import * as process from './process';
 import { BabelFileResult } from '@babel/core';
+import debug from 'debug';
+const log = debug('linaria:module');
 
 // Supported node builtins based on the modules polyfilled by webpack
 // `true` means module is polyfilled, `false` means module is empty
@@ -167,10 +169,13 @@ class Module {
 
       let m = cache[filename];
 
+      log(`resolving require for ${id}`);
+
       if (!m) {
         // Create the module if cached module is not available
         m = new Module(filename);
         m.transform = this.transform;
+        log(`creating new module for ${id}`);
 
         // Store it in cache at this point with, otherwise
         // we would end up in infinite loop with cyclic dependencies
@@ -206,12 +211,15 @@ class Module {
   );
 
   evaluate(text: string) {
+    log(`evaluating ${this.transform ? '(T)' : '(NT)'} ${this.filename}`);
     // For JavaScript files, we need to transpile it and to get the exports of the module
     const code = this.transform ? this.transform(text)!.code : text;
 
     const script = new vm.Script(code!, {
       filename: this.filename,
     });
+
+    log(`executing ${this.filename}`);
 
     script.runInContext(
       vm.createContext({

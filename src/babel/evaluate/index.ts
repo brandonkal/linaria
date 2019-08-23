@@ -8,6 +8,8 @@ import {
 import generator from '@babel/generator';
 import Module from '../module';
 import { StrictOptions } from '../types';
+import debug from 'debug';
+const log = debug('linaria:evaluate');
 
 interface TOptions extends TransformOptions {
   caller: {
@@ -36,6 +38,7 @@ export default function evaluate(
       ? transformer
       : function transform(this: Module, text) {
           if (options && options.ignore && options.ignore.test(this.filename)) {
+            log(`skipping transform for ${this.filename}. ignored.`);
             return { code: text };
           }
 
@@ -44,6 +47,7 @@ export default function evaluate(
             '@babel/plugin-transform-modules-commonjs',
             '@babel/plugin-proposal-export-namespace-from',
           ];
+          const transformOptions = getOptions(options, this.filename);
 
           const defaults: DefaultOptions = {
             caller: {

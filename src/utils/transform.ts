@@ -2,6 +2,8 @@ import path from 'path';
 import * as babel from '@babel/core';
 import { SourceMapGenerator } from 'source-map';
 import loadOptions, { PluginOptions } from './loadOptions';
+import debug from 'debug';
+const log = debug('linaria:loader');
 import {
   Rules,
   Replacement,
@@ -31,9 +33,12 @@ export default function transform(code: string, options: Options): Result {
   // Check if the file contains `css`, `styled`, or injectGlobal words first
   // Otherwise we should skip transforming
   if (
-    !/\b(styled|css|injectGlobal)/.test(code) &&
-    !code.includes('@brandonkal/linaria')
+    !(
+      /\b(styled|css|injectGlobal)/.test(code) &&
+      code.includes('@brandonkal/linaria')
+    )
   ) {
+    log(`skipping ${options.filename}: linaria usage not found`);
     return {
       code,
       sourceMap: options.inputSourceMap,
@@ -42,6 +47,8 @@ export default function transform(code: string, options: Options): Result {
 
   const pluginOptions = loadOptions(options.pluginOptions);
 
+  log(`parsing ${options.filename}`);
+
   // Parse the code first so babel uses user's babel config for parsing
   // We don't want to use user's config when transforming the code
   const ast = babel.parseSync(code, {
@@ -49,6 +56,8 @@ export default function transform(code: string, options: Options): Result {
     filename: options.filename,
     caller: { name: '@brandonkal/linaria' },
   });
+
+  log(`transforming ${options.filename}`);
 
   const { metadata, code: transformedCode, map } = babel.transformFromAstSync(
     ast!,
@@ -63,6 +72,8 @@ export default function transform(code: string, options: Options): Result {
       inputSourceMap: options.inputSourceMap,
     }
   )!;
+
+  log(`transform complete ${options.filename}`);
 
   if (
     !metadata ||
