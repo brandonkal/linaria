@@ -9,6 +9,7 @@ export const browser = true;
 export const argv = [];
 
 export const binding = function binding() {
+  /* istanbul ignore next */
   throw new Error('No such module. (Possibly not yet loaded)');
 };
 

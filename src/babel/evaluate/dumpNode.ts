@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { types } from '@babel/core';
 
 type Hooks = {
