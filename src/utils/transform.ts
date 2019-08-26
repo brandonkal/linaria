@@ -52,7 +52,7 @@ export default function transform(code: string, options: Options): Result {
   // Parse the code first so babel uses user's babel config for parsing
   // We don't want to use user's config when transforming the code
   const ast = babel.parseSync(code, {
-    ...(pluginOptions ? pluginOptions.babelOptions : null),
+    ...(pluginOptions && pluginOptions.babelOptions),
     filename: options.filename,
     caller: { name: '@brandonkal/linaria' },
   });

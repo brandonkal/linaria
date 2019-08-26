@@ -48,7 +48,7 @@ export default function getTemplateProcessor(options: StrictOptions) {
   const wrapId = (id: string) =>
     options.optimize ? `LINARIA_${id}_LINARIA` : id;
 
-  return function process(
+  return function extract(
     { styled, path, isGlobal }: TemplateExpression,
     state: State,
     valueCache: ValueCache

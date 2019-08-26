@@ -1,10 +1,10 @@
 import path from 'path';
 import webpack from 'webpack';
 import memoryfs from 'memory-fs';
-const LinariaOptimize = require('../../../lib/plugin.js');
+const LinariaOptimize = require('../../plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
-const loaderPath = require.resolve('../../../lib/loader');
+const loaderPath = require.resolve('../../loader');
 
 const simpleRules = [
   {
@@ -14,6 +14,7 @@ const simpleRules = [
         loader: loaderPath,
         options: {
           sourceMap: false,
+          cacheDirectory: './.linaria-cache',
         },
       },
     ],
@@ -39,7 +40,11 @@ export default ({
         { loader: 'babel-loader' },
         {
           loader: loaderPath,
-          options: { sourceMap: true, optimize: optimize },
+          options: {
+            sourceMap: true,
+            optimize: optimize,
+            cacheDirectory: './.linaria-cache',
+          },
         },
       ],
     },

@@ -26,7 +26,7 @@ function isNodePath(obj: any): obj is NodePath {
 }
 
 export default function extract(_babel: any, options: StrictOptions) {
-  const process = getTemplateProcessor(options);
+  const extract = getTemplateProcessor(options);
 
   return {
     visitor: {
@@ -82,7 +82,7 @@ export default function extract(_babel: any, options: StrictOptions) {
           log(
             `processing ${state.queue.length} items ${state.file.opts.filename}`
           );
-          state.queue.forEach(item => process(item, state, valueCache));
+          state.queue.forEach(item => extract(item, state, valueCache));
         },
         exit(_: any, state: State) {
           log(`exiting ${state.file.opts.filename}`);
