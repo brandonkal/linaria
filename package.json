@@ -157,7 +157,13 @@
     "setupFiles": [
       "<rootDir>/jest/resolveTypescript.js"
     ],
-    "collectCoverage": false
+    "collectCoverage": false,
+    "collectCoverageFrom": [
+      "src/**",
+      "!**/node_modules/**",
+      "!**/__tests__/**",
+      "!**/__fixtures__/**"
+    ]
   },
   "browserslist": [
     "> 0.25% in US",
