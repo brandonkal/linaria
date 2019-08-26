@@ -1,13 +1,13 @@
 /* eslint-disable no-template-curly-in-string */
-const path = require('path');
-const babel = require('@babel/core');
-const dedent = require('dedent');
-const stripAnsi = require('strip-ansi');
-const serializer = require('./__utils__/linaria-snapshot-serializer');
+import path from 'path';
+import * as babel from '@babel/core';
+import dedent from 'dedent';
+import stripAnsi from 'strip-ansi';
+import serializer from './__utils__/linaria-snapshot-serializer';
 
 expect.addSnapshotSerializer(serializer);
 
-const transpile = input =>
+const transpile = (input: string) =>
   babel.transformAsync(input, {
     babelrc: false,
     presets: [[require.resolve('../babel'), { evaluate: false }]],

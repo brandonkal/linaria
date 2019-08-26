@@ -1,4 +1,4 @@
-const babel = require('@babel/core');
+import * as babel from '@babel/core';
 
 it('replaces dynamic imports with a noop', async () => {
   const { code } = await babel.transformAsync(

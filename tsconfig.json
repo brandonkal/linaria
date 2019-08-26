@@ -13,7 +13,6 @@
     "moduleResolution": "node",
     "strict": true,
     "target": "esnext",
-    "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
