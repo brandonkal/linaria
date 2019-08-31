@@ -41,6 +41,7 @@
     "test": "jest",
     "add-contributor": "all-contributors add",
     "build": "bash scripts/build.sh",
+    "postinstall": "node scripts/postinstall.js",
     "dev": "bash scripts/build.sh -w",
     "build:declarations": "tsc --noEmit false --emitDeclarationOnly --outDir lib",
     "prepare": "yarn build && yarn build:declarations",
@@ -62,6 +63,7 @@
     "@callstack/eslint-config": "6",
     "@commitlint/config-conventional": "^8.1.0",
     "@release-it/conventional-changelog": "^1.1.0",
+    "@types/babel__code-frame": "^7.0.1",
     "@types/cosmiconfig": "^5.0.3",
     "@types/debug": "^4.1.5",
     "@types/dedent": "^0.7.0",
@@ -76,6 +78,7 @@
     "@types/react": "^16.8.12",
     "@types/react-is": "^16.7.1",
     "@types/schema-utils": "^1.0.0",
+    "@types/source-map-support": "^0.5.0",
     "@types/strip-ansi": "^5.2.1",
     "@types/webpack-sources": "^0.1.5",
     "@typescript-eslint/eslint-plugin": "^1.6.0",
@@ -108,6 +111,7 @@
     "webpack": "^4.39.2"
   },
   "dependencies": {
+    "@babel/code-frame": "^7.5.5",
     "@babel/core": "^7.4.3",
     "@babel/generator": "^7.4.0",
     "@babel/plugin-proposal-export-namespace-from": "^7.2.0",
@@ -132,6 +136,7 @@
     "rollup-pluginutils": "^2.4.1",
     "schema-utils": "^2.1.0",
     "source-map": "^0.7.3",
+    "source-map-support": "^0.5.13",
     "strip-ansi": "^5.2.0",
     "webpack-sources": "^1.4.3",
     "yargs": "^13.2.1"
