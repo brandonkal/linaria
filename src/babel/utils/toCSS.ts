@@ -15,7 +15,7 @@ const hyphenate = (s: string) =>
 // To support them transparently, we convert JS objects to CSS strings
 export default function toCSS(o: JSONValue): string {
   if (Array.isArray(o)) {
-    return o.map(toCSS).join('\n');
+    return o.map(toCSS).join(' ');
   }
 
   return Object.entries(o)
