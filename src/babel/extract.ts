@@ -4,8 +4,9 @@ import { types as t } from '@babel/core';
 import { NodePath } from '@babel/traverse';
 import getTemplateProcessor from './evaluate/templateProcessor';
 import shake from './evaluate/shaker';
-import evaluate from './evaluate';
+import evaluate from './evaluate/evaluate';
 import debug from 'debug';
+import generator from '@babel/generator';
 const log = debug('linaria:babel');
 import {
   State,
@@ -25,6 +26,7 @@ function isNodePath(obj: any): obj is NodePath {
   return obj && obj.node !== undefined;
 }
 
+// NOTE: used and imported by index.ts
 export default function extract(_babel: any, options: StrictOptions) {
   const extract = getTemplateProcessor(options);
 
@@ -66,10 +68,10 @@ export default function extract(_babel: any, options: StrictOptions) {
           if (lazyDeps.length) {
             const [shaken] = shake(path.node, lazyDeps);
             log(`evaluating shaken ${state.file.opts.filename} for lazy deps`);
+            const { code } = generator(shaken);
             const evaluation = evaluate(
-              shaken,
+              code,
               state.file.opts.filename,
-              undefined,
               options
             );
 

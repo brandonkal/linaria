@@ -3,9 +3,12 @@ import {
   BabelFileResult,
   PluginItem,
   TransformOptions,
-  types as t,
+  loadPartialConfig,
+  createConfigItem,
+  PartialConfig,
+  ConfigItem,
 } from '@babel/core';
-import generator from '@babel/generator';
+
 import Module from '../module';
 import { StrictOptions } from '../types';
 import debug from 'debug';
@@ -23,30 +26,31 @@ type DefaultOptions = Partial<TOptions> & {
   presets: PluginItem[];
 };
 
+const babelPreset = require.resolve('../index');
+const topLevelBabelPreset = require.resolve('../../../babel');
+const dynamicImportNOOP = require.resolve('../dynamic-import-noop');
+
 export default function evaluate(
-  path: t.Node,
+  code: string,
   filename: string,
-  transformer?: (text: string) => BabelFileResult | null,
   options?: StrictOptions
 ) {
   const m = new Module(filename);
 
   m.dependencies = [];
-  m.transform =
-    typeof transformer !== 'undefined'
-      ? transformer
-      : function transform(this: Module, text) {
-          if (options && options.ignore && options.ignore.test(this.filename)) {
-            log(`skipping transform for ${this.filename}. ignored.`);
-            return { code: text };
-          }
+  m.transform = function transform(this: Module, text) {
+    if (options && options.ignore && options.ignore.test(this.filename)) {
+      log(`skipping transform for ${this.filename}. ignored.`);
+      return { code: text };
+    }
 
-          const transformOptions = getOptions(options, this.filename);
+    const transformOptions = getOptions(options, this.filename);
+    const optsJSON = JSON.stringify(transformOptions);
+    this.cacheKey = optsJSON;
 
-          return transformSync(text, transformOptions);
-        };
+    return transformSync(text, transformOptions) as BabelFileResult;
+  };
 
-  const { code } = generator(path);
   m.evaluate(code);
 
   return {
@@ -55,7 +59,10 @@ export default function evaluate(
   };
 }
 
-function getOptions(options: StrictOptions | undefined, filename: string) {
+function getOptions(
+  pluginOptions: StrictOptions | undefined,
+  filename: string
+) {
   const plugins: Array<string | object> = [
     // Include these plugins to avoid extra config when using { module: false } for webpack
     '@babel/plugin-transform-modules-commonjs',
@@ -67,18 +74,21 @@ function getOptions(options: StrictOptions | undefined, filename: string) {
       evaluate: true,
     },
     filename: filename,
-    presets: [[require.resolve('../index'), { ...options, _ignoreCSS: true }]],
+    sourceMaps: true, // Required for stack traces
+    presets: [[babelPreset, { ...pluginOptions, _ignoreCSS: true }]],
     plugins: [
       ...plugins.map(name => require.resolve(name as string)),
       // We don't support dynamic imports when evaluating, but don't want a syntax error
       // This will replace dynamic imports with an object that does nothing
-      require.resolve('../dynamic-import-noop'),
+      dynamicImportNOOP,
     ],
   };
   const babelOptions =
     // Shallow copy the babel options because we mutate it later
-    options && options.babelOptions ? { ...options.babelOptions } : {};
-  // If we programmtically pass babel options while there is a .babelrc, babel might throw
+    pluginOptions && pluginOptions.babelOptions
+      ? { ...pluginOptions.babelOptions }
+      : {};
+  // If we programatically pass babel options while there is a .babelrc, babel might throw
   // We need to filter out duplicate presets and plugins so that this doesn't happen
   // This workaround isn't foolproof, but it's still better than nothing
   const keys: Array<keyof TransformOptions & ('presets' | 'plugins')> = [
@@ -98,7 +108,7 @@ function getOptions(options: StrictOptions | undefined, filename: string) {
             // This case won't get caught and the preset won't be filtered, even if they are same
             // So we add an extra check for top level linaria/babel
             name === '@brandonkal/linaria/babel' ||
-            name === require.resolve('../../../babel') ||
+            name === topLevelBabelPreset ||
             // Also add a check for the plugin names we include for bundler support
             plugins.includes(name)
           ) {
@@ -130,5 +140,28 @@ function getOptions(options: StrictOptions | undefined, filename: string) {
       ...babelOptions.plugins!,
     ],
   };
-  return transformOptions;
+  const { options } = loadPartialConfig(transformOptions) as Readonly<
+    PartialConfig
+  >;
+  // We override the preset-env if it was specified to target Node only.
+  const presetEnvIndex = options.presets!.findIndex(item => {
+    return (
+      (item as ConfigItem).file &&
+      (item as ConfigItem).file!.request === '@babel/preset-env'
+    );
+  });
+  if (presetEnvIndex !== -1) {
+    // @ts-ignore
+    const presetEnv = options!.presets![presetEnvIndex] as ConfigItem;
+    const nextOptions = {
+      ...presetEnv.options,
+      targets: { node: 'current' },
+    } as any;
+    options.presets![presetEnvIndex] = createConfigItem([
+      presetEnv.value,
+      nextOptions,
+    ]);
+  }
+
+  return options;
 }
