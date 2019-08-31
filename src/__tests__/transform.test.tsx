@@ -140,6 +140,45 @@ it('respects passed babel options', async () => {
   ).not.toThrow('Unexpected token');
 });
 
+it('handles transpiled template literals', async () => {
+  expect.assertions(1);
+
+  const result = await transform(
+    dedent`
+    import { css } from '@brandonkal/linaria';
+
+    export const ok = <jsx />;
+    export const title = css\`
+      background-image: url(/assets/test.jpg);
+    \`;
+    `,
+    {
+      filename: './test.js',
+      outputFilename: '../.linaria-cache/test.css',
+      pluginOptions: {
+        babelOptions: {
+          babelrc: false,
+          configFile: false,
+          presets: [
+            [
+              '@babel/preset-env',
+              {
+                loose: true,
+                targets: {
+                  ie: 11,
+                },
+              },
+            ],
+            '@babel/preset-react',
+          ],
+        },
+      },
+    }
+  );
+
+  await expect(result).toMatchSnapshot();
+});
+
 it("doesn't throw due to duplicate preset", async () => {
   expect.assertions(1);
 

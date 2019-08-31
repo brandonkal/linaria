@@ -9,6 +9,58 @@ exports[`doesn't rewrite an absolute path in url() declarations 1`] = `
 "
 `;
 
+exports[`handles transpiled template literals 1`] = `
+Object {
+  "code": "import { css } from '@brandonkal/linaria';
+export const ok = <jsx />;
+export const title = \\"title_tpyglzj\\";",
+  "cssSourceMapText": "{\\"version\\":3,\\"sources\\":[\\"./test.js\\"],\\"names\\":[],\\"mappings\\":\\"AAAA\\",\\"file\\":\\"./test.js\\",\\"sourcesContent\\":[\\"import { css } from '@brandonkal/linaria';\\\\n\\\\nexport const ok = <jsx />;\\\\nexport const title = css\`\\\\n  background-image: url(/assets/test.jpg);\\\\n\`;\\"]}",
+  "cssText": "
+
+
+.title_tpyglzj {
+  background-image: url(/assets/test.jpg);
+ }
+",
+  "dependencies": Array [],
+  "replacements": Array [],
+  "rules": Object {
+    ".title_tpyglzj": Object {
+      "className": "title_tpyglzj",
+      "cssText": "
+  background-image: url(/assets/test.jpg);
+",
+      "displayName": "title",
+      "isGlobal": false,
+      "start": Position {
+        "column": 13,
+        "line": 4,
+      },
+    },
+  },
+  "sourceMap": Object {
+    "mappings": "AAAA,SAASA,GAAT,QAAoB,qBAApB;AAEA,OAAO,MAAMC,EAAE,GAAG,CAAC,GAAD,GAAX;AACP,OAAO,MAAMC,KAAK,kBAAX",
+    "names": Array [
+      "css",
+      "ok",
+      "title",
+    ],
+    "sources": Array [
+      "./test.js",
+    ],
+    "sourcesContent": Array [
+      "import { css } from '@brandonkal/linaria';
+
+export const ok = <jsx />;
+export const title = css\`
+  background-image: url(/assets/test.jpg);
+\`;",
+    ],
+    "version": 3,
+  },
+}
+`;
+
 exports[`injects global rules to the global scope 1`] = `
 "
 
