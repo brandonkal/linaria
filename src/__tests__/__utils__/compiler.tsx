@@ -8,7 +8,7 @@ const loaderPath = require.resolve('../../loader');
 
 const simpleRules = [
   {
-    test: /\.js$/,
+    test: /\.(js|jsx|ts|tsx)$/,
     use: [
       {
         loader: loaderPath,
@@ -27,6 +27,7 @@ const simpleRules = [
 
 export default ({
   fixture,
+  folder = '',
   production = false,
   complex = false,
   optimize = false,
@@ -34,7 +35,7 @@ export default ({
   const mode = production ? 'production' : 'development';
   const complexRules = [
     {
-      test: /\.js$/,
+      test: /\.(js|jsx|ts|tsx)$/,
       exclude: /node_modules/,
       use: [
         { loader: 'babel-loader' },
@@ -89,7 +90,7 @@ export default ({
 
   const task = webpack({
     mode: mode,
-    context: path.resolve(__dirname, '../__fixtures__'),
+    context: path.resolve(path.join(__dirname, '../__fixtures__', folder)),
     entry: `./${fixture}`,
     output: {
       path: path.resolve(__dirname),
@@ -105,6 +106,10 @@ export default ({
     resolve: {
       alias: {
         '@brandonkal/linaria': path.resolve(__dirname, '../../../lib'),
+        components: path.resolve(
+          __dirname,
+          '../__fixtures__/project/components'
+        ),
       },
     },
     plugins: plugins,
@@ -113,12 +118,13 @@ export default ({
     },
   });
 
+  // @ts-ignore
   task.outputFileSystem = new memoryfs();
 
-  return new Promise((resolve, reject) => {
+  return new Promise<webpack.Stats>((resolve, reject) => {
     task.run((err, stats) => {
       if (err) reject(err);
-      if (stats.hasErrors()) reject(new Error(stats.toJson().errors));
+      if (stats.hasErrors()) reject(new Error(stats.toJson().errors.join(' ')));
 
       resolve(stats);
     });
