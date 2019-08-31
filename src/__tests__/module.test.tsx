@@ -2,6 +2,7 @@ import path from 'path';
 import dedent from 'dedent';
 import * as babel from '@babel/core';
 import Module from '../babel/module';
+import stripAnsi from 'strip-ansi';
 
 const test = path.resolve(__dirname, './__fixtures__/test.js');
 
@@ -154,12 +155,28 @@ it('throws when requiring unmocked builtin node modules', () => {
   );
 });
 
+it('includes code frame in Errors', () => {
+  const mod = new Module(test);
+  try {
+    mod.evaluate(dedent`
+    const a = 1;
+    const b = 2;
+    throw new Error ('cleanup on isle 3');
+    `);
+  } catch (e) {
+    expect(e.message).toBe('cleanup on isle 3');
+    expect(
+      stripAnsi(e.stack.replace(__dirname, '<<DIRNAME>>'))
+    ).toMatchSnapshot();
+  }
+});
+
 it('has access to the global object', () => {
   const mod = new Module(test);
 
   expect(() =>
     mod.evaluate(dedent`
-    new global.Set();
+    new global.URL('http://example.com');
   `)
   ).not.toThrow();
 });

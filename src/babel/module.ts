@@ -13,9 +13,11 @@ import NativeModule from 'module';
 import vm from 'vm';
 import fs from 'fs';
 import path from 'path';
-import * as process from './process';
+import * as sandboxProcess from './process';
 import { BabelFileResult } from '@babel/core';
 import debug from 'debug';
+import { codeFrameColumns } from '@babel/code-frame';
+import sourceMapSupport from 'source-map-support';
 const log = debug('linaria:module');
 
 // Supported node builtins based on the modules polyfilled by webpack
@@ -56,18 +58,96 @@ const builtins = {
   zlib: true,
 };
 
-// Separate cache for evaled modules
+// Separate cache for evaluated modules. Also available on require.cache
 let cache: { [id: string]: Module } = {};
+// Transformed module cache to persist on disk
+let compileCache: { [id: string]: any } = {};
+let maps: Record<string, any> = {};
+
+function retrieveSourceMap(filename: string) {
+  const map = maps && maps[filename];
+  if (map) {
+    return {
+      url: '',
+      map,
+    };
+  } else {
+    return null;
+  }
+}
+
+// @ts-ignore
+if (Error.prepareStackTrace && global.retriveMapHandlers) {
+  // If source-map-support is already installed in use, add our handler.
+  //@ts-ignore
+  global.retrieveMapHandlers.unshift(retrieveSourceMap);
+} else {
+  // Register additional source map support for vm.
+  sourceMapSupport.install({
+    handleUncaughtExceptions: false,
+    environment: 'node',
+    retrieveSourceMap,
+  });
+}
 
 const NOOP = () => {};
 
+const sandbox = vm.createContext(
+  {
+    global: {
+      URL,
+      Buffer,
+      console,
+      URLSearchParams,
+      enableSourceMapSupport: true,
+    },
+    URL,
+    URLSearchParams,
+    Buffer,
+    console,
+    process: sandboxProcess,
+    TypeError: TypeError,
+    Error: Error,
+    linariaVM: true,
+    linariaMaps: maps,
+  },
+  {
+    name: 'Linaria Preval',
+    codeGeneration: {
+      strings: false,
+      wasm: false,
+    },
+  }
+);
+
+function mtime(filename: string) {
+  return +fs.statSync(filename).mtime;
+}
+
+interface NM extends NativeModule {
+  _nodeModulePaths: (filename: string) => string[];
+  _resolveFilename: (id: string, options: any) => string;
+}
+
 class Module {
-  static invalidate: () => void;
-  static _resolveFilename: (
+  /**
+   * Alias to resolve the module using node's resolve algorithm
+   * This static property can be overriden by the webpack loader
+   * This allows us to use webpack's module resolution algorithm
+   */
+  static _resolveFilename = (
     id: string,
     options: { id: string; filename: string; paths: string[] }
-  ) => string;
-  static _nodeModulePaths: (filename: string) => string[];
+  ) => ((NativeModule as any) as NM)._resolveFilename(id, options);
+
+  static _nodeModulePaths = (filename: string) =>
+    ((NativeModule as any) as NM)._nodeModulePaths(filename);
+
+  static invalidate = () => {
+    cache = {};
+    compileCache = {};
+    maps = {};
+  };
 
   id: string;
   filename: string;
@@ -75,7 +155,9 @@ class Module {
   exports: any;
   extensions: string[];
   dependencies: (string[]) | null;
-  transform: ((text: string) => BabelFileResult | null) | null;
+  transform: ((text: string) => BabelFileResult) | null;
+  cacheKey?: string;
+  source?: string;
 
   constructor(filename: string) {
     this.id = filename;
@@ -95,9 +177,7 @@ class Module {
       },
       paths: {
         value: Object.freeze(
-          ((NativeModule as unknown) as {
-            _nodeModulePaths(filename: string): string[];
-          })._nodeModulePaths(path.dirname(filename))
+          ((NativeModule as any) as NM)._nodeModulePaths(path.dirname(filename))
         ),
         writable: false,
       },
@@ -121,7 +201,6 @@ class Module {
         if (ext in extensions) {
           return;
         }
-
         // When an extension is not supported, add it
         // And keep track of it to clean it up after resolving
         // Use noop for the tranform function since we handle it
@@ -180,8 +259,8 @@ class Module {
         m.transform = this.transform;
         log(`creating new module for ${id}`);
 
-        // Store it in cache at this point with, otherwise
-        // we would end up in infinite loop with cyclic dependencies
+        // Store it in cache at this point, otherwise we would
+        // end up in infinite loop with cyclic dependencies
         cache[filename] = m;
 
         if (this.extensions.includes(path.extname(filename))) {
@@ -213,49 +292,88 @@ class Module {
     }
   );
 
-  evaluate(text: string) {
-    log(`evaluating ${this.transform ? '(T)' : '(NT)'} ${this.filename}`);
-    // For JavaScript files, we need to transpile it and to get the exports of the module
-    const code = this.transform ? this.transform(text)!.code : text;
-    // Passing exports as context is ignored in strict mode. Thus, we redefine the alias.
-    // We do this even for non-transformed files (node_modules)
-    const toExec = 'var exports = module.exports;\n' + code!;
+  /** For JavaScript files, we need to transpile it and to get the exports of the module */
+  private _compile(text: string): string {
+    const transformed = this.transform ? this.transform(text) : { code: text };
+    // Save in cache
+    return this.cacheKey
+      ? ((maps[this.filename] = transformed.map!),
+        (compileCache[this.cacheKey] = '' + transformed.code))
+      : '' + transformed.code;
+  }
 
-    const script = new vm.Script(toExec, {
-      filename: this.filename,
-    });
+  /** compiles the string and executes it in the sandbox context. Stores exports on this module. */
+  evaluate(text: string) {
+    if (typeof text !== 'string') {
+      throw new Error('Expected a string to evaluate');
+    }
+    log(`evaluating ${this.filename}`);
+    this.source = text;
+    const code = this._compile(text);
 
     log(`executing ${this.filename}`);
 
-    script.runInContext(
-      vm.createContext({
-        global,
-        process,
-        module: this,
-        exports: this.exports,
-        require: this.require,
-        __filename: this.filename,
-        __dirname: path.dirname(this.filename),
-      })
+    const fn = vm.compileFunction(
+      code,
+      ['exports', 'require', 'module', '__filename', '__dirname'],
+      {
+        parsingContext: sandbox,
+        filename: this.filename,
+      }
     );
+    try {
+      fn(
+        this.exports,
+        this.require,
+        this,
+        this.filename,
+        path.dirname(this.filename)
+      );
+    } catch (e) {
+      // Clean Stack Trace as the evaluator can recurse deeply.
+      this._prepareStack(e);
+    }
+  }
+
+  private _prepareStack(e: Error) {
+    try {
+      let split: string[] = e.stack!.split('\n').reverse();
+      const idx = split.findIndex(v =>
+        v.includes(path.basename(this.filename))
+      );
+      if (idx === -1 || !split.length) {
+        throw e;
+      }
+      split = split.slice(idx, split.length).reverse();
+      // Parse stack trace to produce a pretty code frame
+      const matches = split[split.length - 1].match(/:(\d+)(?::(\d+))?/);
+      if (matches) {
+        const line = parseInt(matches[1]);
+        const column = parseInt(matches[2]);
+        const firstTraceLineIdx = split.findIndex(v => v.startsWith('    at '));
+        const result: string = codeFrameColumns(
+          this.source!,
+          {
+            start: { line: line, column: column },
+          },
+          {
+            highlightCode: true,
+            linesAbove: 2,
+            linesBelow: 2,
+            message: e.message,
+          }
+        );
+        e.stack = [
+          'Linaria preval Error',
+          result,
+          split.slice(firstTraceLineIdx).join('\n'),
+        ].join('\n');
+      }
+    } catch (err) {
+      /*noop */
+    }
+    throw e;
   }
 }
-
-Module.invalidate = () => {
-  cache = {};
-};
-
-// Alias to resolve the module using node's resolve algorithm
-// This static property can be overriden by the webpack loader
-// This allows us to use webpack's module resolution algorithm
-Module._resolveFilename = (id, options) =>
-  ((NativeModule as unknown) as {
-    _resolveFilename: (id: string, options: any) => string;
-  })._resolveFilename(id, options);
-
-Module._nodeModulePaths = (filename: string) =>
-  ((NativeModule as unknown) as {
-    _nodeModulePaths: (filename: string) => string[];
-  })._nodeModulePaths(filename);
 
 export default Module;

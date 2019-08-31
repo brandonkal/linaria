@@ -1,0 +1,10 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`includes code frame in Errors 1`] = `
+"Linaria preval Error
+  1 | const a = 1;
+  2 | const b = 2;
+> 3 | throw new Error ('cleanup on isle 3');
+    |       ^ cleanup on isle 3
+    at <<DIRNAME>>/__fixtures__/test.js:3:7"
+`;
