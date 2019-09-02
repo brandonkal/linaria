@@ -168,10 +168,46 @@ const visitors: Visitors = {
     node: t.ExportNamedDeclaration
   ) {
     this.baseVisit(node);
+    this.graph.exports.add(node);
     if (node.declaration) {
       this.graph.addEdge(node.declaration, node);
       this.graph.addEdge(node, node.declaration);
+      this.graph.exports.add(node.declaration);
     }
+  },
+
+  ExportDefaultDeclaration(
+    this: GraphBuilderState,
+    node: t.ExportDefaultDeclaration
+  ) {
+    this.baseVisit(node);
+    this.graph.exports.add(node);
+  },
+
+  FunctionDeclaration(this: GraphBuilderState, node: t.FunctionDeclaration) {
+    this.baseVisit(node);
+    if (node.id) {
+      this.graph.addEdge(node.id, node);
+      this.graph.addEdge(node, node.id);
+    }
+    if (node.params) {
+      node.params.forEach(param => {
+        this.graph.addEdge(node, param);
+        this.graph.addEdge(param, node);
+      });
+    }
+    // Add the body to the graph to shake it.
+    this.graph.exports.add(node.body);
+    // this.graph.exports.add(node);
+  },
+
+  ExportSpecifier(this: GraphBuilderState, node: t.ExportSpecifier) {
+    this.baseVisit(node);
+    this.graph.exports.add(node);
+    this.graph.addEdge(node.local, node);
+    this.graph.addEdge(node.exported, node);
+    if (node.local) this.graph.exports.add(node.local);
+    if (node.exported) this.graph.exports.add(node.exported);
   },
 
   ImportDeclaration(this: GraphBuilderState, node: t.ImportDeclaration) {

@@ -27,7 +27,7 @@ const wrap = fn => {
   }
 };
 
-module.exports = [wrap(() => fill1), wrap(() => fill2)];"
+module.exports.__linariaPreval = [wrap(() => fill1), wrap(() => fill2)];"
 `;
 
 exports[`keeps only code which is related to \`a\` 1`] = `
@@ -47,7 +47,7 @@ const wrap = fn => {
   }
 };
 
-module.exports = [wrap(() => a)];"
+module.exports.__linariaPreval = [wrap(() => a)];"
 `;
 
 exports[`keeps only code which is related to \`anotherColor\` 1`] = `
@@ -63,7 +63,7 @@ const wrap = fn => {
   }
 };
 
-module.exports = [wrap(() => anotherColor)];"
+module.exports.__linariaPreval = [wrap(() => anotherColor)];"
 `;
 
 exports[`keeps only code which is related to \`color\` 1`] = `
@@ -81,7 +81,46 @@ const wrap_1 = fn => {
   }
 };
 
-module.exports = [wrap_1(() => color)];"
+module.exports.__linariaPreval = [wrap_1(() => color)];"
+`;
+
+exports[`shakes export declaration 1`] = `
+"export function shakeMe() {
+  console.log('hello');
+
+  if (favorite) {
+    return 'the color is ' + a;
+  }
+
+  return 'no favorite color';
+}
+module.exports.__linariaPreval = [];"
+`;
+
+exports[`shakes export functions 1`] = `
+"import { whiteColor as color, anotherColor } from '…';
+export const a = color;
+export { anotherColor as green };
+export default async function now() {}
+export function shakeMe() {
+  console.log('hello');
+
+  if (favorite) {
+    return 'the color is ' + a;
+  }
+
+  return 'no favorite color';
+}
+
+const wrap = fn => {
+  try {
+    return fn();
+  } catch (e) {
+    return e;
+  }
+};
+
+module.exports.__linariaPreval = [wrap(() => a)];"
 `;
 
 exports[`shakes exports 1`] = `
@@ -96,7 +135,7 @@ const wrap = fn => {
   }
 };
 
-module.exports = [wrap(() => a)];"
+module.exports.__linariaPreval = [wrap(() => a)];"
 `;
 
 exports[`shakes imports 1`] = `
@@ -111,7 +150,7 @@ const wrap = fn => {
   }
 };
 
-module.exports = [wrap(() => color), wrap(() => defaultColor)];"
+module.exports.__linariaPreval = [wrap(() => color), wrap(() => defaultColor)];"
 `;
 
 exports[`shakes sequence expression 1`] = `
@@ -127,7 +166,7 @@ const wrap = fn => {
   }
 };
 
-module.exports = [wrap(() => color2)];"
+module.exports.__linariaPreval = [wrap(() => color2)];"
 `;
 
 exports[`should keep member expression key 1`] = `
@@ -145,7 +184,7 @@ const wrap = fn => {
   }
 };
 
-module.exports = [wrap(() => blue)];"
+module.exports.__linariaPreval = [wrap(() => blue)];"
 `;
 
 exports[`should throw away any side effects 1`] = `
@@ -168,5 +207,5 @@ const wrap = fn => {
   }
 };
 
-module.exports = [wrap(() => foo)];"
+module.exports.__linariaPreval = [wrap(() => foo)];"
 `;

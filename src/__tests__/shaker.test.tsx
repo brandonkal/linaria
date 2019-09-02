@@ -33,7 +33,7 @@ it('removes all', () => {
     color.green = '#0f0';
   `;
 
-  expect(shaken).toBe('module.exports = [];');
+  expect(shaken).toBe('module.exports.__linariaPreval = [];');
 });
 
 it('keeps only code which is related to `color`', () => {
@@ -97,6 +97,40 @@ it('shakes exports', () => {
     import { whiteColor as color, anotherColor } from '…';
     export const a = color;
     export { anotherColor };
+  `;
+
+  expect(shaken).toMatchSnapshot();
+});
+
+it('shakes export functions', () => {
+  const [shaken] = _shake(['a'])`
+    import { whiteColor as color, anotherColor } from '…';
+    export const a = color;
+    export { anotherColor as green };
+    export default async function now() {}
+    export function shakeMe(favorite) {
+      console.log('hello')
+      if (favorite) {
+        return 'the color is ' + a
+      }
+      return 'no favorite color'
+    }
+  `;
+
+  expect(shaken).toMatchSnapshot();
+});
+
+it('shakes export declaration', () => {
+  const [shaken] = _shake([])`
+    import { whiteColor as color, anotherColor } from '…';
+    const a = 42
+    export function shakeMe(favorite) {
+      console.log('hello')
+      if (favorite) {
+        return 'the color is ' + a
+      }
+      return 'no favorite color'
+    }
   `;
 
   expect(shaken).toMatchSnapshot();

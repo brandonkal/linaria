@@ -15,6 +15,8 @@ export default class DepsGraph {
   private readonly dependents: Map<t.Node, t.Node[]> = new Map();
   private readonly bindingsDependencies: Map<string, t.Node[]> = new Map();
   private readonly bindingsDependents: Map<string, t.Node[]> = new Map();
+  /** track exported nodes to avoid removing them */
+  public exports = new Set<t.Node>();
 
   constructor(private scope: ScopeManager) {}
 

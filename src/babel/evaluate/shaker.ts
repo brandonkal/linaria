@@ -3,6 +3,7 @@ import build from './graphBuilder';
 import { ExternalDep } from './DepsGraph';
 import isNode from '../utils/isNode';
 import getVisitorKeys from '../utils/getVisitorKeys';
+import dumpNode from './dumpNode';
 
 /*
  * Returns new tree without dead nodes
@@ -17,8 +18,7 @@ function shakeNode<TNode extends t.Node>(
      * - export const a = 42;
      * + const a = 42;
      */
-
-    return shakeNode(node.declaration!, alive) as TNode;
+    // return shakeNode(node.declaration!, alive) as TNode;
   }
 
   const keys = (getVisitorKeys(node) as unknown) as (keyof TNode)[];
@@ -85,8 +85,22 @@ export default function shake(
 ): [t.Program, ExternalDep[]] {
   const depsGraph = build(rootPath);
   const topLevelDeps = depsGraph.getLeafs(nodes);
+  // TEMP: add exports here
+  // const theExports: (t.Node)[] = [];
+  // rootPath.body.forEach(node => {
+  //   if (t.isExportDeclaration(node)) {
+  //     theExports.push(node.declaration);
+  //     node.specifiers.forEach(sp => {
+  //       theExports.push(sp.local);
+  //       theExports.push(sp.exported);
+  //       theExports.push(sp);
+  //     });
+  //     theExports.push(node);
+  //   }
+  // });
+  // END TEMP:
   const alive = new Set<t.Node>();
-  let deps: t.Node[] = topLevelDeps;
+  let deps: t.Node[] = [...topLevelDeps, ...depsGraph.exports];
   while (deps.length > 0) {
     // Mark all dependencies as alive
     deps.forEach(d => alive.add(d));
@@ -95,11 +109,14 @@ export default function shake(
     deps = depsGraph.getDependencies(deps).filter(d => !alive.has(d));
   }
 
+  // Shake exports
+  depsGraph.exports.forEach(exp => shakeNode(exp, alive));
+
   const shaken = shakeNode(rootPath, alive) as t.Program;
   /*
-   * If we want to know what is really happen with our code tree,
-   * we can print formatted tree here by `dumpNode(program, alive)`
+   * If we want to know what is really happened with our code tree, we can print formatted tree here
    */
+  dumpNode(rootPath, alive);
 
   // By default `wrap` is used as a name of the function …
   let wrapName = 'wrap';
@@ -136,7 +153,10 @@ export default function shake(
     t.expressionStatement(
       t.assignmentExpression(
         '=',
-        t.memberExpression(t.identifier('module'), t.identifier('exports')),
+        t.memberExpression(
+          t.memberExpression(t.identifier('module'), t.identifier('exports')),
+          t.identifier('__linariaPreval')
+        ),
         t.arrayExpression(forExport)
       )
     )
