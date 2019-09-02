@@ -127,6 +127,7 @@ function mtime(filename: string) {
 interface NM extends NativeModule {
   _nodeModulePaths: (filename: string) => string[];
   _resolveFilename: (id: string, options: any) => string;
+  _extensions: { [key: string]: Function };
 }
 
 class Module {
@@ -190,9 +191,7 @@ class Module {
   }
 
   resolve = (id: string) => {
-    const extensions = ((NativeModule as unknown) as {
-      _extensions: { [key: string]: Function };
-    })._extensions;
+    const extensions = ((NativeModule as any) as NM)._extensions;
     const added: string[] = [];
 
     try {
@@ -293,8 +292,10 @@ class Module {
   );
 
   /** For JavaScript files, we need to transpile it and to get the exports of the module */
-  private _compile(text: string): string {
-    const transformed = this.transform ? this.transform(text) : { code: text };
+  private _transform(source: string): string {
+    const transformed = this.transform
+      ? this.transform(source)
+      : { code: source };
     // Save in cache
     return this.cacheKey
       ? ((maps[this.filename] = transformed.map!),
@@ -303,13 +304,13 @@ class Module {
   }
 
   /** compiles the string and executes it in the sandbox context. Stores exports on this module. */
-  evaluate(text: string) {
-    if (typeof text !== 'string') {
+  evaluate(source: string) {
+    if (typeof source !== 'string') {
       throw new Error('Expected a string to evaluate');
     }
     log(`evaluating ${this.filename}`);
-    this.source = text;
-    const code = this._compile(text);
+    this.source = source;
+    const code = this._transform(source);
 
     log(`executing ${this.filename}`);
 

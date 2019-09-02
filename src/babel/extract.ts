@@ -28,7 +28,7 @@ function isNodePath(obj: any): obj is NodePath {
 
 // NOTE: used and imported by index.ts
 export default function extract(_babel: any, options: StrictOptions) {
-  const extract = getTemplateProcessor(options);
+  const processTemplate = getTemplateProcessor(options);
 
   return {
     visitor: {
@@ -59,7 +59,7 @@ export default function extract(_babel: any, options: StrictOptions) {
               );
               return acc;
             },
-            [] as Array<t.Expression | string>
+            [] as (t.Expression | string)[]
           );
 
           log(`found ${lazyDeps.length} lazy deps`);
@@ -76,7 +76,7 @@ export default function extract(_babel: any, options: StrictOptions) {
             );
 
             state.dependencies.push(...evaluation.dependencies);
-            lazyValues = evaluation.value;
+            lazyValues = evaluation.value.__linariaPreval;
           }
 
           const valueCache: ValueCache = new Map();
@@ -84,7 +84,7 @@ export default function extract(_babel: any, options: StrictOptions) {
           log(
             `processing ${state.queue.length} items ${state.file.opts.filename}`
           );
-          state.queue.forEach(item => extract(item, state, valueCache));
+          state.queue.forEach(item => processTemplate(item, state, valueCache));
         },
         exit(_: any, state: State) {
           log(`exiting ${state.file.opts.filename}`);
