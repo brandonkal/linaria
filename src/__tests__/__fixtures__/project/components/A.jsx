@@ -1,7 +1,7 @@
 import deadDep from 'camelcase';
 import { styled } from '@brandonkal/linaria/react';
 
-export const deadValue = deadDep();
+export const deadValue = deadDep('make-camel');
 
 const objects = { font: { fontSize: 12 }, box: { border: '1px solid red' } };
 const foo = k => {
