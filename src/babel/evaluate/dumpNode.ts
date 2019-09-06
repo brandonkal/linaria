@@ -1,5 +1,7 @@
 /* istanbul ignore file */
 import { types } from '@babel/core';
+import debug from 'debug';
+const log = debug('linaria:shake');
 
 type Hooks = {
   [key: string]: (node: any) => string | number;
@@ -30,20 +32,17 @@ export default function dumpNode<T extends types.Node>(
         }`;
 
   const { type } = node;
-  process.stdout.write(
-    `${prefix}${type}${type in hooks ? ` ${hooks[type](node)}` : ''}`
+  const suffix = alive ? (alive.has(node) ? ' ✅' : ' ❌') : '';
+  log(
+    `${prefix}${type}${type in hooks ? ` ${hooks[type](node)}` : ''}${suffix}`
   );
 
-  if (alive) {
-    process.stdout.write(alive.has(node) ? ' ✅' : ' ❌');
-  }
-
-  process.stdout.write('\n');
+  // log('\n');
   const keys = types.VISITOR_KEYS[type] as Array<keyof T>;
   for (const key of keys) {
     const subNode = node[key];
 
-    process.stdout.write(`${'| '.repeat(level)}|-${key}\n`);
+    log(`${'| '.repeat(level)}|-${key}`);
     if (Array.isArray(subNode)) {
       for (let i = 0; i < subNode.length; i++) {
         const child = subNode[i];
