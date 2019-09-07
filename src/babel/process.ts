@@ -29,4 +29,8 @@ export const features = {};
 export const env = {
   NODE_ENV: process.env.NODE_ENV,
   isVM: true,
+  DEBUG: process.env.DEBUG,
 };
+
+export const stderr = process.stderr;
+export const stdout = process.stdout;

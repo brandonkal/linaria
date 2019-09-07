@@ -1,6 +1,5 @@
 /* eslint-disable no-param-reassign */
 import { types as t } from '@babel/core';
-import { isValidElementType } from 'react-is';
 import { NodePath } from '@babel/traverse';
 import generator from '@babel/generator';
 import generateModifierName from '../utils/generateModifierName';
@@ -9,14 +8,12 @@ import { ExpressionMeta } from '../utils/calcExpressionStats';
 import { units } from '../units';
 import {
   State,
-  Styled,
   StrictOptions,
   TemplateExpression,
-  ValueCache,
+  ValueStrings,
 } from '../types';
 
 import throwIfInvalid from '../utils/throwIfInvalid';
-import isSerializable from '../utils/isSerializable';
 import stripLines from '../utils/stripLines';
 import toValidCSSIdentifier from '../utils/toValidCSSIdentifier';
 import toCSS from '../utils/toCSS';
@@ -40,18 +37,14 @@ type Modifier = {
   inComment: boolean;
 };
 
-function isStyled(value: any): value is Styled {
-  return isValidElementType(value) && (value as any).__linaria;
-}
-
 export default function getTemplateProcessor(options: StrictOptions) {
   const wrapId = (id: string) =>
     options.optimize ? `LINARIA_${id}_LINARIA` : id;
 
-  return function extract(
+  return function processTemplate(
     { styled, path, isGlobal }: TemplateExpression,
     state: State,
-    valueCache: ValueCache
+    valueStrings: ValueStrings
   ) {
     const { quasi } = path.node;
 
@@ -89,7 +82,8 @@ export default function getTemplateProcessor(options: StrictOptions) {
 
     const className = isGlobal ? `global_${cls}` : wrapId(cls!);
     // We only need a short id for classNames that end in the CSS file.
-    let selector = `.${className}`;
+    let prevalStrings: string[] = [];
+    let selectorWrap: string | undefined;
 
     // Serialize the tagged template literal to a string
     let cssText = '';
@@ -209,12 +203,7 @@ export default function getTemplateProcessor(options: StrictOptions) {
             if (result.confident) {
               throwIfInvalid(result.value, ex);
 
-              if (isSerializable(result.value)) {
-                // If it's a plain object or an array, convert it to a CSS string
-                cssText += stripLines(loc, toCSS(result.value));
-              } else {
-                cssText += stripLines(loc, result.value);
-              }
+              cssText += stripLines(loc, toCSS(result.value));
 
               state.replacements.push({
                 original: loc,
@@ -226,22 +215,12 @@ export default function getTemplateProcessor(options: StrictOptions) {
                 options.evaluate &&
                 !(t.isFunctionExpression(ex) || t.isArrowFunctionExpression(ex))
               ) {
-                const value = valueCache.get(ex.node);
+                const value = valueStrings.get(ex);
                 throwIfInvalid(value, ex);
 
-                if (value && (typeof value !== 'function' || isStyled(value))) {
-                  // Only insert text for non functions
-                  // We don't touch functions because they'll be interpolated at runtime
-                  if (isStyled(value)) {
-                    // If it's an React component wrapped in styled, get the class name
-                    // Useful for interpolating components
-                    cssText += `.${value.__linaria.className}`;
-                  } else if (isSerializable(value)) {
-                    cssText += stripLines(loc, toCSS(value));
-                  } else {
-                    // For anything else, assume it'll be stringified
-                    cssText += stripLines(loc, value);
-                  }
+                if (value) {
+                  prevalStrings.push(value);
+                  cssText += stripLines(loc, toCSS(value));
 
                   state.replacements.push({
                     original: loc,
@@ -254,9 +233,7 @@ export default function getTemplateProcessor(options: StrictOptions) {
                   'Unexpected object expression.\n' +
                     "To evaluate the expressions at build time, pass 'evaluate: true' to the babel plugin."
                 );
-              }
-
-              if (styled) {
+              } else if (styled) {
                 const id = `${wrapId(slug!)}-${i}`;
 
                 interpolations.push({
@@ -283,14 +260,11 @@ export default function getTemplateProcessor(options: StrictOptions) {
 
     if (styled) {
       // If `styled` wraps another component and not a primitive,
-      // get its class name to create a more specific selector
-      // it'll ensure that styles are overridden properly
+      // we should create a more specific selector
+      // here we set selectorWrap to the nodePath to evaluate this lazily
       if (options.evaluate && t.isIdentifier(styled.component.node)) {
-        let value = valueCache.get(styled.component.node.name);
-        while (isValidElementType(value) && value.__linaria) {
-          selector += `.${value.__linaria.className}`;
-          value = value.__linaria.extends;
-        }
+        // prettier-ignore
+        selectorWrap = valueStrings.get(styled.component as NodePath<t.Expression>);
       }
 
       const props = [];
@@ -399,12 +373,14 @@ export default function getTemplateProcessor(options: StrictOptions) {
       return;
     }
 
-    state.rules[selector] = {
+    state.rules[className] = {
       cssText,
       className,
+      selectorWrap,
       displayName: displayName!,
-      start: path.parent && path.parent.loc ? path.parent.loc.start : null,
+      start: path.parent && path.parent.loc ? path.parent.loc.start : undefined,
       isGlobal,
+      prevalStrings,
     };
   };
 }

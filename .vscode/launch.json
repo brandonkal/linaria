@@ -14,10 +14,14 @@
       "name": "vscode-jest-tests",
       "request": "launch",
       "program": "${workspaceFolder}/node_modules/jest/bin/jest",
-      "args": ["--runInBand"],
+      "args": ["--runInBand", "--resetModules", "--useStderr"],
+      "env": {
+        "DEBUG_HIDE_DATE": "true",
+        "DEBUG": "linaria:*"
+      },
       "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen"
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": ["<node_internals>/**"]
     }
   ]
 }

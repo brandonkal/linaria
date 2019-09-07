@@ -79,6 +79,12 @@ const visitors: Visitors = {
     this.graph.addEdge(peek(this.fnStack), node);
   },
 
+  IfStatement(this: GraphBuilderState, node: t.IfStatement) {
+    this.baseVisit(node);
+    // Closest function depends on if statement
+    this.graph.addEdge(peek(this.fnStack), node);
+  },
+
   ThrowStatement(this: GraphBuilderState, node: t.ThrowStatement) {
     this.baseVisit(node);
     this.graph.addEdge(node, node.argument);
@@ -172,7 +178,12 @@ const visitors: Visitors = {
     if (node.declaration) {
       this.graph.addEdge(node.declaration, node);
       this.graph.addEdge(node, node.declaration);
-      this.graph.exports.add(node.declaration);
+      if (t.isVariableDeclaration(node.declaration)) {
+        node.declaration.declarations.forEach(decl => {
+          this.graph.addEdge(node.declaration!, decl);
+        });
+      }
+      // this.graph.exports.add(node.declaration);
     }
   },
 

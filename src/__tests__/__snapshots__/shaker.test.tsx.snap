@@ -84,10 +84,42 @@ const wrap_1 = fn => {
 module.exports.__linariaPreval = [wrap_1(() => color)];"
 `;
 
-exports[`shakes export declaration 1`] = `
-"export function shakeMe() {
-  console.log('hello');
+exports[`keeps undefined definitions 1`] = `
+"const {
+  styled
+} = require('../react');
 
+let fontSize;
+export const Title = styled.h1\`
+  font-size: \${fontSize};
+\`;
+
+const wrap = fn => {
+  try {
+    return fn();
+  } catch (e) {
+    return e;
+  }
+};
+
+module.exports.__linariaPreval = [wrap(() => fontSize)];"
+`;
+
+exports[`shakes export assignments 1`] = `
+"const {
+  styled
+} = require('../react');
+
+let fontSize;
+export const Title = styled.h1\`
+  font-size: \${fontSize};
+\`;
+module.exports.__linariaPreval = [];"
+`;
+
+exports[`shakes export declaration 1`] = `
+"const a = 42;
+export function shakeMe(favorite) {
   if (favorite) {
     return 'the color is ' + a;
   }
@@ -102,9 +134,7 @@ exports[`shakes export functions 1`] = `
 export const a = color;
 export { anotherColor as green };
 export default async function now() {}
-export function shakeMe() {
-  console.log('hello');
-
+export function shakeMe(favorite) {
   if (favorite) {
     return 'the color is ' + a;
   }
@@ -124,8 +154,9 @@ module.exports.__linariaPreval = [wrap(() => a)];"
 `;
 
 exports[`shakes exports 1`] = `
-"import { whiteColor as color } from '…';
-const a = color;
+"import { whiteColor as color, anotherColor } from '…';
+export const a = color;
+export { anotherColor };
 
 const wrap = fn => {
   try {
@@ -141,6 +172,7 @@ module.exports.__linariaPreval = [wrap(() => a)];"
 exports[`shakes imports 1`] = `
 "import { whiteColor as color } from '…';
 import defaultColor from '…';
+export default color;
 
 const wrap = fn => {
   try {

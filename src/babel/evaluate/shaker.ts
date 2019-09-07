@@ -3,7 +3,8 @@ import build from './graphBuilder';
 import { ExternalDep } from './DepsGraph';
 import isNode from '../utils/isNode';
 import getVisitorKeys from '../utils/getVisitorKeys';
-import dumpNode from './dumpNode';
+import dumpNode from './dumpNode'; // eslint-disable-line
+import cloneNode, { findCloned } from './cloneNode';
 
 /*
  * Returns new tree without dead nodes
@@ -80,27 +81,21 @@ const expWrapper = exprStatement.expression;
  * Returns new AST and an array of external dependencies.
  */
 export default function shake(
-  rootPath: t.Program,
-  nodes: Array<t.Expression | string>
+  rootNode: t.Program,
+  nodes: Array<t.Expression | string>,
+  generateNewAst = true
 ): [t.Program, ExternalDep[]] {
-  const depsGraph = build(rootPath);
-  const topLevelDeps = depsGraph.getLeafs(nodes);
-  // TEMP: add exports here
-  // const theExports: (t.Node)[] = [];
-  // rootPath.body.forEach(node => {
-  //   if (t.isExportDeclaration(node)) {
-  //     theExports.push(node.declaration);
-  //     node.specifiers.forEach(sp => {
-  //       theExports.push(sp.local);
-  //       theExports.push(sp.exported);
-  //       theExports.push(sp);
-  //     });
-  //     theExports.push(node);
-  //   }
-  // });
-  // END TEMP:
+  let program = generateNewAst ? cloneNode(rootNode) : rootNode;
+  const depsGraph = build(program);
+  const clonedNodes = generateNewAst
+    ? nodes.map(node =>
+        typeof node === 'string' ? node : findCloned.get(node)
+      )
+    : nodes;
+  const topLevelDeps = depsGraph.getLeafs(clonedNodes);
+
   const alive = new Set<t.Node>();
-  let deps: t.Node[] = [...topLevelDeps, ...depsGraph.exports];
+  let deps: t.Node[] = topLevelDeps;
   while (deps.length > 0) {
     // Mark all dependencies as alive
     deps.forEach(d => alive.add(d));
@@ -108,15 +103,25 @@ export default function shake(
     // Collect new dependencies of dependencies
     deps = depsGraph.getDependencies(deps).filter(d => !alive.has(d));
   }
+  let exportDeps: t.Node[] = Array.from(depsGraph.exports);
+  while (exportDeps.length > 0) {
+    // Mark all dependencies as alive
+    exportDeps.forEach(d => alive.add(d));
+
+    // Collect new dependencies of dependencies
+    exportDeps = depsGraph
+      .getDependencies(exportDeps)
+      .filter(d => !alive.has(d));
+  }
 
   // Shake exports
   depsGraph.exports.forEach(exp => shakeNode(exp, alive));
 
-  const shaken = shakeNode(rootPath, alive) as t.Program;
+  const shaken = shakeNode(program, alive) as t.Program;
   /*
    * If we want to know what is really happened with our code tree, we can print formatted tree here
    */
-  dumpNode(rootPath, alive);
+  dumpNode(program, alive);
 
   // By default `wrap` is used as a name of the function …
   let wrapName = 'wrap';

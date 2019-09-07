@@ -11,19 +11,18 @@ const log = debug('linaria:babel');
 import {
   State,
   StrictOptions,
+  ValueStrings,
   LazyValue,
   ExpressionValue,
   ValueType,
-  ValueCache,
+  Value,
 } from './types';
 import TaggedTemplateExpression from './visitors/TaggedTemplateExpression';
+import generateReplaceMap from './evaluate/generateReplaceMap';
+import buildCSS from './utils/buildCSS';
 
 function isLazyValue(v: ExpressionValue): v is LazyValue {
   return v.kind === ValueType.LAZY;
-}
-
-function isNodePath(obj: any): obj is NodePath {
-  return obj && obj.node !== undefined;
 }
 
 // NOTE: used and imported by index.ts
@@ -50,41 +49,74 @@ export default function extract(_babel: any, options: StrictOptions) {
               TaggedTemplateExpression(p, state, options),
           });
 
-          const lazyDeps = state.queue.reduce(
+          const valueStrings: ValueStrings = new Map();
+          const nodePathFromString = new Map<string, NodePath<t.Expression>>();
+
+          const lazyDepsPaths = state.queue.reduce(
             (acc, { expressionValues: values }) => {
-              acc.push(
-                ...values
-                  .filter(isLazyValue)
-                  .map(v => (isNodePath(v.ex) ? v.ex.node : v.ex))
-              );
+              acc.push(...values.filter(isLazyValue).map(v => v.ex));
               return acc;
             },
-            [] as (t.Expression | string)[]
+            [] as NodePath<t.Expression>[]
           );
+          const lazyDeps = lazyDepsPaths.map(v => v.node);
+
+          lazyDepsPaths.forEach((key, idx) => {
+            valueStrings.set(key, `LINARIA_PREVAL_${idx}`);
+            nodePathFromString.set(`LINARIA_PREVAL_${idx}`, key);
+            // a[idx] = key;
+          });
 
           log(`found ${lazyDeps.length} lazy deps`);
-
-          let lazyValues: any[] = [];
+          let valueNode;
           if (lazyDeps.length) {
+            // push all lazyDeps into the program. These are required for the shaker and evaluation.
+            // After evaluation, they are removed.
+            valueNode = t.variableDeclaration('const', [
+              t.variableDeclarator(
+                t.identifier('__linariaValues'),
+                t.arrayExpression(lazyDeps)
+              ),
+            ]);
+            path.node.body.push(valueNode);
+          }
+
+          log(
+            `processing ${state.queue.length} items ${state.file.opts.filename}`
+          );
+          state.queue.forEach(item =>
+            processTemplate(item, state, valueStrings)
+          );
+
+          let lazyValues: Value[] = [];
+
+          // TODO: always shake if evaluating
+          if (lazyDeps.length || options._isEvaluatePass) {
+            // TEMP: show code before shake
+            // eslint-disable-next-line
+            const { code: codeBeforeShake } = generator(path.node);
+            // TODO: don't generate seperate AST if preval pass?
             const [shaken] = shake(path.node, lazyDeps);
             log(`evaluating shaken ${state.file.opts.filename} for lazy deps`);
-            const { code } = generator(shaken);
+            // TODO: don't evaluate here if evaluate pass, the module system handles that.
             const evaluation = evaluate(
-              code,
+              shaken,
               state.file.opts.filename,
               options
             );
 
             state.dependencies.push(...evaluation.dependencies);
             lazyValues = evaluation.value.__linariaPreval;
+
+            // Remove the __linariaValues constant from the program.
+            if (path.node.body[path.node.body.length - 1] === valueNode) {
+              path.node.body.pop();
+            }
           }
 
-          const valueCache: ValueCache = new Map();
-          lazyDeps.forEach((key, idx) => valueCache.set(key, lazyValues[idx]));
-          log(
-            `processing ${state.queue.length} items ${state.file.opts.filename}`
-          );
-          state.queue.forEach(item => processTemplate(item, state, valueCache));
+          // TODO: save CSS for later visits. If CSS saved for filename, ignore in processTemplate.
+          const replacer = generateReplaceMap(lazyValues, nodePathFromString);
+          state.cssText = buildCSS(state.rules, replacer);
         },
         exit(_: any, state: State) {
           log(`exiting ${state.file.opts.filename}`);
@@ -92,6 +124,7 @@ export default function extract(_babel: any, options: StrictOptions) {
             // Store the result as the file metadata
             state.file.metadata = {
               linaria: {
+                cssText: state.cssText,
                 rules: state.rules,
                 replacements: state.replacements,
                 dependencies: state.dependencies,

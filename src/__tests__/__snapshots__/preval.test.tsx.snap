@@ -172,7 +172,7 @@ color: #fff;
 }
 }
 
-Dependencies: NA
+Dependencies: ../react
 
 `;
 
@@ -204,7 +204,7 @@ color: #fff;
 }
 }
 
-Dependencies: NA
+Dependencies: ../react
 
 `;
 
@@ -230,7 +230,7 @@ CSS:
 .bareIconClass_b1xha7dm {}
 .XS_x1rsdnkv {&.bareIconClass_b1xha7dm { font-size: 16.5px; }}
 
-Dependencies: ../index.ts
+Dependencies: NA
 
 `;
 
@@ -260,6 +260,7 @@ CSS:
 .Title_t1xha7dm {
   color: red;
 }
+
 .Paragraph_p1rsdnkv {
   .Title_t1xha7dm {
     color: blue;
@@ -291,7 +292,7 @@ CSS:
   }
 }
 
-Dependencies: @babel/runtime/helpers/interopRequireDefault, ../utils/slugify
+Dependencies: @babel/runtime/helpers/interopRequireDefault, ../react, ../utils/slugify
 
 `;
 
@@ -322,7 +323,7 @@ CSS:
   }
 }
 
-Dependencies: ../utils/slugify
+Dependencies: ../react, ../utils/slugify
 
 `;
 
@@ -355,7 +356,7 @@ CSS:
   font-size: 12px;
 }
 
-Dependencies: NA
+Dependencies: ../react
 
 `;
 
@@ -384,7 +385,7 @@ CSS:
   }
 }
 
-Dependencies: NA
+Dependencies: ../react
 
 `;
 
@@ -412,7 +413,7 @@ CSS:
   }
 }
 
-Dependencies: NA
+Dependencies: ../react
 
 `;
 
@@ -444,7 +445,7 @@ CSS:
   }
 }
 
-Dependencies: ../utils/slugify
+Dependencies: ../react, ../utils/slugify
 
 `;
 
@@ -470,7 +471,7 @@ CSS:
   color: var(--t1xha7dm-0);
 }
 
-Dependencies: NA
+Dependencies: ../react
 
 `;
 
@@ -542,10 +543,10 @@ Dependencies: ../../react
 `;
 
 exports[`handles complex component 1`] = `
-"// Dead code in this file should be ignored
-import deadDep from 'unknown-dependency';
-import { styled } from '@brandonkal/linaria/react';
-export const deadValue = deadDep();
+"import deadDep from 'unknown-dependency';
+import { styled } from '../../react';
+const deadValue = deadDep(); // Dead code in this file should be ignored
+
 const objects = {
   font: {
     fontSize: 12
@@ -581,12 +582,12 @@ CSS:
   border: 1px solid red;
 }
 
-Dependencies: NA
+Dependencies: ../../react
 
 `;
 
 exports[`handles escapes properly 1`] = `
-"import { styled } from '@brandonkal/linaria/react';
+"import { styled } from '../../react';
 const selectors = ['a', 'b'];
 export const Block =
 /*#__PURE__*/
@@ -604,7 +605,7 @@ CSS:
   a { content: "\\u000A"; } b { content: "\\u000A"; };
 }
 
-Dependencies: @babel/runtime/helpers/interopRequireDefault, @babel/runtime/helpers/taggedTemplateLiteralLoose
+Dependencies: ../../react
 
 `;
 
@@ -634,6 +635,7 @@ CSS:
 .Title_t1xha7dm {
   color: red;
 }
+
 .CustomTitle_c1rsdnkv.Title_t1xha7dm {
   font-size: 24px;
   color: blue;
@@ -669,7 +671,7 @@ CSS:
   }
 }
 
-Dependencies: NA
+Dependencies: ../react
 
 `;
 
@@ -757,7 +759,7 @@ CSS:
   position: absolute; top: 0; right: 0; bottom: 0; left: 0;
 }
 
-Dependencies: NA
+Dependencies: ../react
 
 `;
 
@@ -788,12 +790,13 @@ CSS:
   position: absolute; top: 0; right: 0; bottom: 0; left: 0;
 }
 
-Dependencies: NA
+Dependencies: ../react
 
 `;
 
 exports[`throws codeframe error when evaluation fails 1`] = `
-"<<DIRNAME>>/source.js: An error occurred when evaluating the expression: This will fail. Make sure you are not using a browser or Node specific API.
+"<<DIRNAME>>/source.js: An error occurred when evaluating the expression: This will fail.
+Make sure you are not using a browser or Node specific API.
   4 | 
   5 | export const Title = styled.h1\`
 > 6 |   font-size: \${foo()}px;
@@ -816,7 +819,8 @@ exports[`throws if couldn't determine a display name 1`] = `
 `;
 
 exports[`throws when interpolation evaluates to NaN 1`] = `
-"<<DIRNAME>>/source.js: The expression evaluated to 'NaN', which is probably a mistake. If you want it to be inserted into CSS, explicitly cast or transform the value to a string, e.g. - 'String(height)'.
+"<<DIRNAME>>/source.js: The expression evaluated to 'NaN', which is probably a mistake.
+If you want it to be inserted into CSS, explicitly cast or transform the value to a string, e.g. - 'String(height)'.
   4 | 
   5 | export const Title = styled.h1\`
 > 6 |   height: \${height}px;
@@ -825,7 +829,8 @@ exports[`throws when interpolation evaluates to NaN 1`] = `
 `;
 
 exports[`throws when interpolation evaluates to null 1`] = `
-"<<DIRNAME>>/source.js: The expression evaluated to 'null', which is probably a mistake. If you want it to be inserted into CSS, explicitly cast or transform the value to a string, e.g. - 'String(color)'.
+"<<DIRNAME>>/source.js: The expression evaluated to 'null', which is probably a mistake.
+If you want it to be inserted into CSS, explicitly cast or transform the value to a string, e.g. - 'String(color)'.
   4 | 
   5 | export const Title = styled.h1\`
 > 6 |   color: \${color};
@@ -834,7 +839,8 @@ exports[`throws when interpolation evaluates to null 1`] = `
 `;
 
 exports[`throws when interpolation evaluates to undefined 1`] = `
-"<<DIRNAME>>/source.js: The expression evaluated to 'undefined', which is probably a mistake. If you want it to be inserted into CSS, explicitly cast or transform the value to a string, e.g. - 'String(fontSize)'.
+"<<DIRNAME>>/source.js: The expression evaluated to 'undefined', which is probably a mistake.
+If you want it to be inserted into CSS, explicitly cast or transform the value to a string, e.g. - 'String(fontSize)'.
   4 | 
   5 | export const Title = styled.h1\`
 > 6 |   font-size: \${fontSize};

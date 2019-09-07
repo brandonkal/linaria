@@ -1,4 +1,4 @@
-import { styled } from '@brandonkal/linaria/react';
+import { styled } from '../../react';
 
 const selectors = ['a', 'b'];
 

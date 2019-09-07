@@ -7,11 +7,15 @@ import {
   createConfigItem,
   PartialConfig,
   ConfigItem,
+  transformFromAstSync,
+  Node,
 } from '@babel/core';
+import generator from '@babel/generator';
 
-import Module from '../module';
+import Module, { makeModule } from '../module';
 import { StrictOptions } from '../types';
 import debug from 'debug';
+import slugify from '../../utils/slugify';
 const log = debug('linaria:evaluate');
 
 interface TOptions extends TransformOptions {
@@ -31,27 +35,43 @@ const topLevelBabelPreset = require.resolve('../../../babel');
 const dynamicImportNOOP = require.resolve('../dynamic-import-noop');
 
 export default function evaluate(
-  code: string,
+  codeOrNode: string | Node,
   filename: string,
   options?: StrictOptions
 ) {
-  const m = new Module(filename);
-
+  const m = makeModule(filename);
   m.dependencies = [];
-  m.transform = function transform(this: Module, text) {
+
+  m.transform = function transform(this: Module, text, ast?: Node) {
     if (options && options.ignore && options.ignore.test(this.filename)) {
       log(`skipping transform for ${this.filename}. ignored.`);
       return { code: text };
     }
 
-    const transformOptions = getOptions(options, this.filename);
-    const optsJSON = JSON.stringify(transformOptions);
-    this.cacheKey = optsJSON;
+    // If we have already run linaria on this file,
+    // there is no need to repeat the process on the shaken file.
+    const removeLinariaPreset = text.includes('__linariaPreval');
 
-    return transformSync(text, transformOptions) as BabelFileResult;
+    const transformOptions = getOptions(options, this.filename);
+    this.cacheKey = slugify(JSON.stringify(transformOptions));
+    if (removeLinariaPreset) {
+      transformOptions.presets!.pop();
+    }
+
+    return ast
+      ? (transformFromAstSync(ast, text, transformOptions) as BabelFileResult)
+      : (transformSync(text, transformOptions) as BabelFileResult);
   };
 
-  m.evaluate(code);
+  // generate code
+  let code: string;
+  if (typeof codeOrNode !== 'string') {
+    code = generator(codeOrNode).code;
+    m.evaluate(code, codeOrNode);
+  } else {
+    code = codeOrNode;
+    m.evaluate(code);
+  }
 
   return {
     value: m.exports,
@@ -75,7 +95,7 @@ function getOptions(
     },
     filename: filename,
     sourceMaps: true, // Required for stack traces
-    presets: [[babelPreset, { ...pluginOptions, _ignoreCSS: true }]],
+    presets: [[babelPreset, pluginOptions]],
     plugins: [
       ...plugins.map(name => require.resolve(name as string)),
       // We don't support dynamic imports when evaluating, but don't want a syntax error

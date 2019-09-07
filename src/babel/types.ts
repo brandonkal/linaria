@@ -27,11 +27,11 @@ export enum ValueType {
 
 export type Value = Function | Styled | string | number;
 
-export type ValueCache = Map<t.Expression | string, Value>;
+export type ValueStrings = Map<NodePath<t.Expression>, string>;
 
 export type LazyValue = {
   kind: ValueType.LAZY;
-  ex: NodePath<t.Expression> | t.Expression | string;
+  ex: NodePath<t.Expression>;
 };
 
 export type RuntimeValue = {
@@ -47,7 +47,9 @@ export type EvaluatedValue = {
 export type ExpressionValue = LazyValue | RuntimeValue | EvaluatedValue;
 
 export type TemplateExpression = {
-  styled?: { component: any };
+  styled?: {
+    component: NodePath<t.Expression> | { node: t.StringLiteral };
+  };
   path: NodePath<t.TaggedTemplateExpression>;
   expressionValues: ExpressionValue[];
   isGlobal: boolean;
@@ -63,8 +65,12 @@ export type Rules = {
     className: string;
     displayName: string;
     cssText: string;
-    start: Location | null | undefined;
+    start?: Location;
     isGlobal: boolean;
+    /** keep track of strings that should be replaced. */
+    prevalStrings: string[];
+    /** set selectorWrap for wrapped styled components to evaluate a more specific selector. */
+    selectorWrap?: string;
   };
 };
 
@@ -77,6 +83,7 @@ export type CSSIdentifiers = {
 export type State = {
   queue: TemplateExpression[];
   rules: Rules;
+  cssText: string;
   replacements: Replacement[];
   index: number;
   dependencies: string[];
@@ -94,6 +101,7 @@ export type State = {
 
 export type LinariaMetadata = {
   rules: Rules;
+  cssText: string;
   replacements: Replacement[];
   dependencies: string[];
 };
@@ -107,6 +115,8 @@ export type StrictOptions = {
   babelOptions: TransformOptions;
   /** ignore CSS content to speed up compilation when we only wish to extract classNames for evaluation */
   _ignoreCSS: boolean;
+  /** set to true when evaluating modules for preval. */
+  _isEvaluatePass: boolean;
 };
 
 export type Location = {

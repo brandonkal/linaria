@@ -20,6 +20,7 @@ export default class DepsGraph {
 
   constructor(private scope: ScopeManager) {}
 
+  /** addEdge adds an edge to the graph. Records that `a` depends on `b`. */
   addEdge(a: t.Node, b: t.Node) {
     this.edges.push([a, b]);
     if (!this.dependencies.has(a)) {

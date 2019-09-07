@@ -14,7 +14,9 @@ const hyphenate = (s: string) =>
 // Some tools such as polished.js output JS objects
 // To support them transparently, we convert JS objects to CSS strings
 export default function toCSS(o: JSONValue): string {
-  if (Array.isArray(o)) {
+  if (typeof o === 'string' || typeof o === 'number') {
+    return String(o);
+  } else if (Array.isArray(o)) {
     return o.map(toCSS).join(' ');
   }
 

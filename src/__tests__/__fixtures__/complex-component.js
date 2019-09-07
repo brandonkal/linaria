@@ -1,9 +1,7 @@
-// Dead code in this file should be ignored
-
 import deadDep from 'unknown-dependency';
-import { styled } from '@brandonkal/linaria/react';
+import { styled } from '../../react';
 
-export const deadValue = deadDep();
+const deadValue = deadDep(); // Dead code in this file should be ignored
 
 const objects = { font: { fontSize: 12 }, box: { border: '1px solid red' } };
 const foo = k => {

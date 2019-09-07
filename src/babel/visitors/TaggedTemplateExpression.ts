@@ -66,11 +66,11 @@ export default function TaggedTemplateExpression(
   const { _ignoreCSS } = options;
   const { tag } = path.node;
 
-  let styled: {
-    component: {
-      node: t.Expression | NodePath<t.Expression>;
-    };
-  } | null = null;
+  let styled:
+    | {
+        component: NodePath<t.Expression> | { node: t.StringLiteral };
+      }
+    | undefined;
   let css: boolean = false;
   let isGlobal: boolean = false;
 
@@ -174,7 +174,7 @@ export default function TaggedTemplateExpression(
       );
     }
     let args = callExpPath.get('arguments');
-    const isEmptyObjOrAsExpression = (theArgs: NodePath<t.Node>[]) =>
+    const isEmptyObjOrAsExpression = (theArgs: NodePath[]) =>
       theArgs.length === 1 &&
       (t.isTSAsExpression(theArgs[0].node) ||
         (t.isObjectExpression(theArgs[0].node) &&
@@ -375,7 +375,7 @@ export default function TaggedTemplateExpression(
   if (styled && 'name' in styled.component.node) {
     expressionValues.push({
       kind: ValueType.LAZY,
-      ex: styled.component.node.name,
+      ex: styled.component as NodePath<t.Expression>,
     });
   }
 
@@ -386,7 +386,7 @@ export default function TaggedTemplateExpression(
   path.state.expMeta = expMeta;
 
   state.queue.push({
-    styled: styled || undefined,
+    styled,
     path,
     expressionValues,
     isGlobal,

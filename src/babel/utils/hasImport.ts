@@ -1,8 +1,8 @@
 import { dirname } from 'path';
 import Module from '../module';
+import memoize from 'memoize-one';
 
-// Verify if the binding is imported from the specified source
-export default function hasImport(
+function hasImport(
   t: any,
   scope: any,
   filename: string,
@@ -66,3 +66,6 @@ export default function hasImport(
 
   return false;
 }
+
+/** Verify if the binding is imported from the specified source */
+export default memoize(hasImport);

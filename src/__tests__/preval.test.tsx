@@ -16,8 +16,13 @@ const babelrc = {
   ],
 };
 
-const transpile = async input => {
-  const { code, metadata } = await babel.transformAsync(input, {
+const FULL = '@brandonkal/linaria/react';
+const SHORT = '../react';
+
+const transpile = async (input: string) => {
+  const replaced = input.includes(FULL);
+  const codeInput = input.replace(FULL, SHORT);
+  const { code, metadata } = await babel.transformAsync(codeInput, {
     ...babelrc,
     filename: join(__dirname, 'source.js'),
   });
@@ -25,7 +30,7 @@ const transpile = async input => {
   // The slug will be machine specific, so replace it with a consistent one
   return {
     metadata,
-    code,
+    code: replaced ? code.replace(SHORT, FULL) : code,
   };
 };
 

@@ -30,7 +30,34 @@ it('removes all', () => {
   const [shaken] = _shake([])`
     const { whiteColor: color, anotherColor } = require('…');
     const a = color || anotherColor;
+    let fontSize = undefined;
     color.green = '#0f0';
+  `;
+
+  expect(shaken).toBe('module.exports.__linariaPreval = [];');
+});
+
+it('handles arrays', () => {
+  const [shaken] = _shake([])`
+    const arr = [first, second];
+    export const one = arr[0];
+    let two = null;
+    function five() {
+      return 5
+    }
+    export const another = [arr, two, 2 + 4 + five()];
+  `;
+
+  expect(shaken).toBe('module.exports.__linariaPreval = [];');
+});
+
+it('handles function declaration', () => {
+  const [shaken] = _shake([])`
+    let two = null;
+    function five() {
+      return 5
+    }
+    export const nine = 4 + five();
   `;
 
   expect(shaken).toBe('module.exports.__linariaPreval = [];');
@@ -120,6 +147,20 @@ it('shakes export functions', () => {
   expect(shaken).toMatchSnapshot();
 });
 
+it('shakes export assignments', () => {
+  const [shaken] = _shake([])`
+  const { styled } = require('../react');
+
+  let fontSize;
+
+  export const Title = styled.h1\`
+    font-size: ${'${fontSize}'};
+  \`;
+  `;
+
+  expect(shaken).toMatchSnapshot();
+});
+
 it('shakes export declaration', () => {
   const [shaken] = _shake([])`
     import { whiteColor as color, anotherColor } from '…';
@@ -179,6 +220,20 @@ it('shakes sequence expression', () => {
     const color1 = (external, () => 'blue');
     let local = '';
     const color2 = (local = color1(), () => local);
+  `;
+
+  expect(shaken).toMatchSnapshot();
+});
+
+it('keeps undefined definitions', () => {
+  const [shaken] = _shake(['fontSize'])`
+  const { styled } = require('../react');
+
+  let fontSize;
+
+  export const Title = styled.h1\`
+    font-size: ${'${fontSize}'};
+  \`;
   `;
 
   expect(shaken).toMatchSnapshot();

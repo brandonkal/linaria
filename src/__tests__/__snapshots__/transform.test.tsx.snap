@@ -5,7 +5,7 @@ exports[`doesn't rewrite an absolute path in url() declarations 1`] = `
 
 .title_tpyglzj {
   background-image: url(/assets/test.jpg);
- }
+}
 "
 `;
 
@@ -20,18 +20,20 @@ export const title = \\"title_tpyglzj\\";",
 
 .title_tpyglzj {
   background-image: url(/assets/test.jpg);
- }
+}
 ",
   "dependencies": Array [],
   "replacements": Array [],
   "rules": Object {
-    ".title_tpyglzj": Object {
+    "title_tpyglzj": Object {
       "className": "title_tpyglzj",
       "cssText": "
   background-image: url(/assets/test.jpg);
 ",
       "displayName": "title",
       "isGlobal": false,
+      "prevalStrings": Array [],
+      "selectorWrap": undefined,
       "start": Position {
         "column": 13,
         "line": 4,
@@ -85,7 +87,7 @@ exports[`rewrites a relative path in url() declarations 1`] = `
 
 .title_tpyglzj {
   background-image: url(../linaria/assets/test.jpg);
- }
+}
 "
 `;
 
@@ -97,6 +99,6 @@ exports[`rewrites multiple relative paths in url() declarations 1`] = `
     font-family: Test;
     src: url(../linaria/assets/font.woff2) format(\\"woff2\\"), url(../linaria/assets/font.woff) format(\\"woff\\");
   }
- }
+}
 "
 `;

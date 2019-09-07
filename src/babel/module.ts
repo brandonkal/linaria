@@ -14,7 +14,7 @@ import vm from 'vm';
 import fs from 'fs';
 import path from 'path';
 import * as sandboxProcess from './process';
-import { BabelFileResult } from '@babel/core';
+import { BabelFileResult, Node } from '@babel/core';
 import debug from 'debug';
 import { codeFrameColumns } from '@babel/code-frame';
 import sourceMapSupport from 'source-map-support';
@@ -130,6 +130,19 @@ interface NM extends NativeModule {
   _extensions: { [key: string]: Function };
 }
 
+/**
+ * makeModule gets the module if it already is cached or
+ * creates a new Module and adds it to the cache.
+ */
+export function makeModule(filename: string) {
+  let m = cache[filename];
+  if (!m) {
+    m = new Module(filename);
+    cache[filename] = m;
+  }
+  return m;
+}
+
 class Module {
   /**
    * Alias to resolve the module using node's resolve algorithm
@@ -155,8 +168,8 @@ class Module {
   paths: string[];
   exports: any;
   extensions: string[];
-  dependencies: (string[]) | null;
-  transform: ((text: string) => BabelFileResult) | null;
+  dependencies: string[];
+  transform: ((code: string, ast?: Node) => BabelFileResult) | null;
   cacheKey?: string;
   source?: string;
 
@@ -164,7 +177,7 @@ class Module {
     this.id = filename;
     this.filename = filename;
     this.paths = [];
-    this.dependencies = null;
+    this.dependencies = [];
     this.transform = null;
 
     Object.defineProperties(this, {
@@ -246,7 +259,7 @@ class Module {
         );
       }
 
-      this.dependencies && this.dependencies.push(id);
+      this.dependencies.push(id);
 
       let m = cache[filename];
 
@@ -292,9 +305,9 @@ class Module {
   );
 
   /** For JavaScript files, we need to transpile it and to get the exports of the module */
-  private _transform(source: string): string {
+  private _transform(source: string, ast?: Node): string {
     const transformed = this.transform
-      ? this.transform(source)
+      ? this.transform(source, ast)
       : { code: source };
     // Save in cache
     return this.cacheKey
@@ -304,13 +317,13 @@ class Module {
   }
 
   /** compiles the string and executes it in the sandbox context. Stores exports on this module. */
-  evaluate(source: string) {
+  evaluate(source: string, ast?: Node) {
     if (typeof source !== 'string') {
       throw new Error('Expected a string to evaluate');
     }
     log(`evaluating ${this.filename}`);
     this.source = source;
-    const code = this._transform(source);
+    const code = this._transform(source, ast);
 
     log(`executing ${this.filename}`);
 

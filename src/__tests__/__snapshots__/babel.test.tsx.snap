@@ -45,7 +45,7 @@ exports[`collapses only one arrow function parent 2`] = `
 
 CSS:
 
-.Page_ph6xni0 {
+.Page_ph6xni0 {     
 color: #fff;
 &.ph6xni0__primary_0 {
   color: #241047;
@@ -339,8 +339,6 @@ CSS:
     color: var(--bh6xni0-0);
     background: white;
   }
-
-
 }
 
 Dependencies: NA
@@ -385,11 +383,10 @@ exports[`includes unreferenced injectGlobal styles 2`] = `
 
 CSS:
 
-.global_app0_ah6xni0 {
   .title {
     font-size: 14px;
   }
-}
+
 
 Dependencies: NA
 
@@ -582,6 +579,7 @@ CSS:
 .Title_th6xni0 {
   font-size: 14px;
 }
+
 .title_t1u0rrat {
   color: blue;
 }
@@ -709,9 +707,8 @@ exports[`transpiles injectGlobal template literal 2`] = `
 
 CSS:
 
-.global_app0_ah6xni0 {
   font-size: 14px;
-}
+
 
 Dependencies: NA
 

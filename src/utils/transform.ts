@@ -10,6 +10,7 @@ import {
   LinariaMetadata,
   CSSIdentifiers,
 } from '../babel/types';
+import buildCSS from '../babel/utils/buildCSS';
 
 type Result = {
   code: string;
@@ -144,35 +145,4 @@ export default function transform(code: string, options: Options): Result {
       return generator.toString();
     },
   };
-}
-
-function buildCSS(rules: Rules) {
-  let cssText = '';
-  if (!rules) {
-    return cssText;
-  }
-  Object.keys(rules).forEach(selector => {
-    const rule = rules[selector];
-    // Append new lines until we get to the start line number
-    let line = cssText.split('\n').length;
-    while (rule.start && line < rule.start.line) {
-      cssText += '\n';
-      line++;
-    }
-    if (!rule.isGlobal) {
-      cssText += `${selector} {`;
-    }
-    // Append blank spaces until we get to the start column number
-    const last = cssText.split('\n').pop();
-    let column = last ? last.length : 0;
-    while (rule.start && column < rule.start.column) {
-      cssText += ' ';
-      column++;
-    }
-    cssText += rule.cssText;
-    if (!rule.isGlobal) {
-      cssText += ' }';
-    }
-  });
-  return cssText;
 }

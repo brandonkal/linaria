@@ -3,9 +3,7 @@ module.exports = {
   print: ({ linaria }) => `
 CSS:
 
-${Object.keys(linaria.rules)
-  .map(selector => `${selector} {${linaria.rules[selector].cssText}}`)
-  .join('\n')}
+${linaria.cssText.replace(/^\n\n/gm, '').replace(/^\n/, '')}
 
 Dependencies: ${
     linaria.dependencies.length ? linaria.dependencies.join(', ') : 'NA'
