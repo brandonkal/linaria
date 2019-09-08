@@ -77,7 +77,7 @@ function retrieveSourceMap(filename: string) {
 }
 
 // @ts-ignore
-if (Error.prepareStackTrace && global.retriveMapHandlers) {
+if (Error.prepareStackTrace && global.retrieveMapHandlers) {
   // If source-map-support is already installed in use, add our handler.
   //@ts-ignore
   global.retrieveMapHandlers.unshift(retrieveSourceMap);
