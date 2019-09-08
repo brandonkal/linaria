@@ -92,24 +92,36 @@ if (Error.prepareStackTrace && global.retriveMapHandlers) {
 
 const NOOP = () => {};
 
+const vmGlobal = {
+  URL,
+  URLSearchParams,
+  process: sandboxProcess,
+  // required for babel-jest
+  enableSourceMapSupport: true,
+  // @ts-ignore
+  retrieveMapHandlers: global.retrieveMapHandlers,
+  linariaVM: true,
+  Buffer,
+  console,
+  setTimeout,
+  clearTimeout,
+  setImmediate,
+  setInterval,
+  clearInterval,
+  // pass all errors through so instanceof works
+  Error,
+  TypeError,
+  ReferenceError,
+  URIError,
+  EvalError,
+  RangeError,
+};
+
 const sandbox = vm.createContext(
   {
-    global: {
-      URL,
-      Buffer,
-      console,
-      URLSearchParams,
-      enableSourceMapSupport: true,
-    },
-    URL,
-    URLSearchParams,
-    Buffer,
-    console,
-    process: sandboxProcess,
-    TypeError: TypeError,
-    Error: Error,
-    linariaVM: true,
-    linariaMaps: maps,
+    global: vmGlobal,
+    ...vmGlobal,
+    window: {},
   },
   {
     name: 'Linaria Preval',
