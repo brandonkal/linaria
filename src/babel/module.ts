@@ -362,24 +362,24 @@ class Module {
       );
     } catch (e) {
       // Clean Stack Trace as the evaluator can recurse deeply.
-      this._prepareStack(e);
+      throw this._prepareStack(e);
     }
   }
 
   private _prepareStack(e: Error | { message: string; stack: string }) {
-    if (!(e instanceof Error)) {
-      const fauxError = Error(e.message);
-      fauxError.message = e.message;
-      fauxError.stack = e.stack;
-      e = fauxError;
-    }
     try {
+      if (!(e instanceof Error)) {
+        const fauxError = Error(e.message);
+        fauxError.message = e.message;
+        fauxError.stack = e.stack;
+        e = fauxError;
+      }
       let split: string[] = e.stack!.split('\n').reverse();
       const idx = split.findIndex(v =>
         v.includes(path.basename(this.filename))
       );
       if (idx === -1 || !split.length) {
-        throw e;
+        return e;
       }
       split = split.slice(idx, split.length).reverse();
       // Parse stack trace to produce a pretty code frame
@@ -415,7 +415,7 @@ class Module {
     } catch (err) {
       /*noop */
     }
-    throw e;
+    return e;
   }
 }
 
