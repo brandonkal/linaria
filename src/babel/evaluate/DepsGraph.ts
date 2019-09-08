@@ -104,4 +104,23 @@ export default class DepsGraph {
   isDeclared(name: string) {
     return this.scope.isDeclared(`0:${name}`);
   }
+
+  getAlive(topLevelDeps: t.Expression[]) {
+    const alive = new Set<t.Node>();
+    let deps: t.Node[] = topLevelDeps;
+    while (deps.length > 0) {
+      // Mark all dependencies as alive
+      deps.forEach(d => alive.add(d));
+      // Collect new dependencies of dependencies
+      deps = this.getDependencies(deps).filter(d => !alive.has(d));
+    }
+    let exportDeps: t.Node[] = Array.from(this.exports);
+    while (exportDeps.length > 0) {
+      // Mark all dependencies as alive
+      exportDeps.forEach(d => alive.add(d));
+      // Collect new dependencies of dependencies
+      exportDeps = this.getDependencies(exportDeps).filter(d => !alive.has(d));
+    }
+    return alive;
+  }
 }

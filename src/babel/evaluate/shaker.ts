@@ -13,15 +13,6 @@ function shakeNode<TNode extends t.Node>(
   node: TNode,
   alive: Set<t.Node>
 ): TNode {
-  if (t.isExportNamedDeclaration(node)) {
-    /*
-     * We don't need exports so just replace it by declaration
-     * - export const a = 42;
-     * + const a = 42;
-     */
-    // return shakeNode(node.declaration!, alive) as TNode;
-  }
-
   const keys = (getVisitorKeys(node) as unknown) as (keyof TNode)[];
   const changes: Partial<TNode> = {};
 
@@ -94,25 +85,7 @@ export default function shake(
     : nodes;
   const topLevelDeps = depsGraph.getLeafs(clonedNodes);
 
-  const alive = new Set<t.Node>();
-  let deps: t.Node[] = topLevelDeps;
-  while (deps.length > 0) {
-    // Mark all dependencies as alive
-    deps.forEach(d => alive.add(d));
-
-    // Collect new dependencies of dependencies
-    deps = depsGraph.getDependencies(deps).filter(d => !alive.has(d));
-  }
-  let exportDeps: t.Node[] = Array.from(depsGraph.exports);
-  while (exportDeps.length > 0) {
-    // Mark all dependencies as alive
-    exportDeps.forEach(d => alive.add(d));
-
-    // Collect new dependencies of dependencies
-    exportDeps = depsGraph
-      .getDependencies(exportDeps)
-      .filter(d => !alive.has(d));
-  }
+  const alive = depsGraph.getAlive(topLevelDeps);
 
   // Shake exports
   depsGraph.exports.forEach(exp => shakeNode(exp, alive));
