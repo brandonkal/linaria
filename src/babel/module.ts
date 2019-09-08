@@ -132,6 +132,11 @@ const sandbox = vm.createContext(
   }
 );
 
+/**
+ * matches: [1] filename [2] line number [3] column number
+ */
+const StackFrameRe = /([^ ():]+):(\d+)(?::(\d+))?/;
+
 function mtime(filename: string) {
   return +fs.statSync(filename).mtime;
 }
@@ -361,7 +366,13 @@ class Module {
     }
   }
 
-  private _prepareStack(e: Error) {
+  private _prepareStack(e: Error | { message: string; stack: string }) {
+    if (!(e instanceof Error)) {
+      const fauxError = Error(e.message);
+      fauxError.message = e.message;
+      fauxError.stack = e.stack;
+      e = fauxError;
+    }
     try {
       let split: string[] = e.stack!.split('\n').reverse();
       const idx = split.findIndex(v =>
@@ -372,10 +383,16 @@ class Module {
       }
       split = split.slice(idx, split.length).reverse();
       // Parse stack trace to produce a pretty code frame
-      const matches = split[split.length - 1].match(/:(\d+)(?::(\d+))?/);
+      let searchLineIdx = split.length - 1;
+      let matches = split[searchLineIdx].match(StackFrameRe);
       if (matches) {
-        const line = parseInt(matches[1]);
-        const column = parseInt(matches[2]);
+        let file = matches[1];
+        let firstIndex = split.findIndex(value => value.includes(file));
+        matches = split[firstIndex].match(StackFrameRe);
+      }
+      if (matches) {
+        const line = parseInt(matches[2]);
+        const column = parseInt(matches[3]);
         const firstTraceLineIdx = split.findIndex(v => v.startsWith('    at '));
         const result: string = codeFrameColumns(
           this.source!,
