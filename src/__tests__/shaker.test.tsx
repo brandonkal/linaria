@@ -34,7 +34,7 @@ it('removes all', () => {
     color.green = '#0f0';
   `;
 
-  expect(shaken).toBe('module.exports.__linariaPreval = [];');
+  expect(shaken).toBe('export const __linariaPreval = [];');
 });
 
 it('handles arrays', () => {
@@ -48,7 +48,7 @@ it('handles arrays', () => {
     export const another = [arr, two, 2 + 4 + five()];
   `;
 
-  expect(shaken).toBe('module.exports.__linariaPreval = [];');
+  expect(shaken).toMatchSnapshot();
 });
 
 it('handles function declaration', () => {
@@ -60,7 +60,7 @@ it('handles function declaration', () => {
     export const nine = 4 + five();
   `;
 
-  expect(shaken).toBe('module.exports.__linariaPreval = [];');
+  expect(shaken).toMatchSnapshot();
 });
 
 it('keeps only code which is related to `color`', () => {
