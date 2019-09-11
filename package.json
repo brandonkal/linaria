@@ -79,7 +79,6 @@
     "@types/react-is": "^16.7.1",
     "@types/schema-utils": "^1.0.0",
     "@types/source-map-support": "^0.5.0",
-    "@types/strip-ansi": "^5.2.1",
     "@types/webpack-sources": "^0.1.5",
     "@typescript-eslint/eslint-plugin": "^1.6.0",
     "@typescript-eslint/parser": "^1.13.0",
