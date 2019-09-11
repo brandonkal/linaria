@@ -1,11 +1,13 @@
-const { readFileSync, writeFileSync } = require('fs');
-const filePath = require.resolve('source-map-support');
-const original = readFileSync(filePath, 'utf-8');
-writeFileSync(
-  filePath,
-  original.replace(
-    'var retrieveMapHandlers = [];\n',
-    'var retrieveMapHandlers = []; if (global) global.retrieveMapHandlers = retrieveMapHandlers;'
-  ),
-  'utf-8'
-);
+/**
+ * This is required for source-map-support only for testing linaria.
+ * Jest doesn't like to share source-map-support which causes problems with stack trace lines, so we must patch it here.
+ */
+
+const fs = require('fs');
+
+const jestRunTest = require.resolve('jest-runner/build/runTest.js');
+let original = fs.readFileSync(jestRunTest, 'utf-8');
+if (original.includes('requireInternalModule')) {
+  let file = original.replace('requireInternalModule', 'requireModule');
+  fs.writeFileSync(jestRunTest, file, 'utf8');
+}
