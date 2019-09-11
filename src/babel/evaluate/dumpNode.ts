@@ -1,7 +1,7 @@
 /* istanbul ignore file */
 import { types } from '@babel/core';
 import debug from 'debug';
-const log = debug('linaria:shake');
+const log = debug('linaria:shaker');
 
 type Hooks = {
   [key: string]: (node: any) => string | number;
@@ -24,6 +24,9 @@ export default function dumpNode<T extends types.Node>(
   level = 0,
   idx: number | null = null
 ) {
+  if (!log.enabled) {
+    return;
+  }
   const prefix =
     level === 0
       ? ''
