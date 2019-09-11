@@ -27,6 +27,7 @@ export function defineHandler<T extends NodeType>(
   field: string,
   handler: Handler
 ) {
+  // @ts-ignore -- Shaker deprecated. -- ArrayExpression.
   const types = isAlias(typeOrAlias)
     ? t.FLIPPED_ALIAS_KEYS[typeOrAlias]
     : [typeOrAlias];
