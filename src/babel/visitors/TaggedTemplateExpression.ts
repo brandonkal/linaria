@@ -71,8 +71,8 @@ export default function TaggedTemplateExpression(
         component: NodePath<t.Expression> | { node: t.StringLiteral };
       }
     | undefined;
-  let css: boolean = false;
-  let isGlobal: boolean = false;
+  let css = false;
+  let isGlobal = false;
 
   if (
     t.isCallExpression(tag) &&
@@ -371,8 +371,7 @@ export default function TaggedTemplateExpression(
 
   // Save evaluated slug and displayName for future usage in templateProcessor
   path.addComment('leading', `linaria ${slug} ${displayName}`);
-
-  if (styled && 'name' in styled.component.node) {
+  if (options.evaluate && styled && 'name' in styled.component.node) {
     expressionValues.push({
       kind: ValueType.LAZY,
       ex: styled.component as NodePath<t.Expression>,
