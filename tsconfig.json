@@ -15,6 +15,7 @@
     "target": "esnext",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
     "noEmit": true,
     "declaration": true,
     "typeRoots": ["node_modules/@types", "typings"]
