@@ -1,8 +1,8 @@
 import path from 'path';
 import webpack from 'webpack';
 import memoryfs from 'memory-fs';
-const LinariaOptimize = require('../../plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+import LinariaOptimize from '../../plugin';
+import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 
 const loaderPath = require.resolve('../../loader');
 

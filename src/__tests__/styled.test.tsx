@@ -169,7 +169,7 @@ it('forwards as prop when wrapping another styled component', () => {
   expect(tree.toJSON()).toMatchSnapshot();
 });
 
-it('filters unknown html attributes for HTML tag', () => {
+it('filters $ suffix attributes for HTML tag', () => {
   const Test = styled('div')({
     name: 'TestComponent',
     class: 'abcdefg',

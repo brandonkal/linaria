@@ -22,20 +22,20 @@ exports[`does not filter attributes for components 1`] = `
 </div>
 `;
 
+exports[`filters $ suffix attributes for HTML tag 1`] = `
+<div
+  className="abcdefg"
+>
+  This is a test
+</div>
+`;
+
 exports[`filters attributes for custom elements 1`] = `
 <my-element
   className="abcdefg"
 >
   This is a test
 </my-element>
-`;
-
-exports[`filters unknown html attributes for HTML tag 1`] = `
-<div
-  className="abcdefg"
->
-  This is a test
-</div>
 `;
 
 exports[`forwards as prop when wrapping another styled component 1`] = `

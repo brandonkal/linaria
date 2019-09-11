@@ -67,10 +67,10 @@ CSS:
 .Input_i1xha7dm {}
 
 .Page_p1rsdnkv {
-color: #fff;
-.Input_i1xha7dm {
-  color: #241047;
-}
+  color: #fff;
+  .Input_i1xha7dm {
+    color: #241047;
+  }
 }
 
 Dependencies: ../react
@@ -167,10 +167,10 @@ exports[`does not transform identifiers to arrows that contain propsName 2`] = `
 CSS:
 
 .Page_p1xha7dm {
-color: #fff;
-&hello {
-  color: #241047;
-}
+  color: #fff;
+  &.hello {
+    color: #241047;
+  }
 }
 
 Dependencies: ../react
@@ -196,13 +196,13 @@ exports[`does not transform identifiers to arrows that contain propsName 2 2`] =
 CSS:
 
 .Page_p1xha7dm {
-color: #fff;
-&hello {
-  color: #241047;
-}
-&hello {
-  color: #241047;
-}
+  color: #fff;
+  &.hello {
+    color: #241047;
+  }
+  &.hello {
+    color: #241047;
+  }
 }
 
 Dependencies: ../react
@@ -798,7 +798,7 @@ Make sure you are not using a browser or Node specific API.
   7 | \`;"
 `;
 
-exports[`throws if couldn't determine a display name 1`] = `
+exports[`throws if unable to determine a display name 1`] = `
 "<<DIRNAME>>/.js: Couldn't determine a name for the component. Ensure that it's either:
 - Assigned to a variable
 - Is an object property

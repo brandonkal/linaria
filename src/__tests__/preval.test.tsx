@@ -513,7 +513,7 @@ it('derives display name from parent folder name', async () => {
   expect(metadata).toMatchSnapshot();
 });
 
-it("throws if couldn't determine a display name", async () => {
+it('throws if unable to determine a display name', async () => {
   expect.assertions(1);
 
   try {
@@ -544,10 +544,10 @@ it('does not make identifiers arrow functions', async () => {
       const Input = styled.input\`\`;
 
       export const Page = (p => styled.div\`
-      color: #fff;
-      ${'${Input}'} {
-        color: #241047;
-      }
+        color: #fff;
+        ${'${Input}'} {
+          color: #241047;
+        }
       \`)({})
       `
   );
@@ -562,10 +562,10 @@ it('does not transform identifiers to arrows that contain propsName', async () =
       const Classes = { p: 'hello' }
 
       export const Page = (p => styled.div\`
-      color: #fff;
-      &${'${Classes.p}'} {
-        color: #241047;
-      }
+        color: #fff;
+        &.${'${Classes.p}'} {
+          color: #241047;
+        }
       \`)({})
       `
   );
@@ -581,13 +581,13 @@ it('does not transform identifiers to arrows that contain propsName 2', async ()
       const ap = Classes
 
       export const Page = (p => styled.div\`
-      color: #fff;
-      &${'${Classes["p"]}'} {
-        color: #241047;
-      }
-      &${'${ap["p"]}'} {
-        color: #241047;
-      }
+        color: #fff;
+        &.${'${Classes["p"]}'} {
+          color: #241047;
+        }
+        &.${'${ap["p"]}'} {
+          color: #241047;
+        }
       \`)({})
       `
   );

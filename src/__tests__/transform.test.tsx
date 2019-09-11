@@ -141,7 +141,7 @@ it('respects passed babel options', async () => {
 });
 
 it('handles transpiled template literals', async () => {
-  expect.assertions(1);
+  expect.assertions(2);
 
   const result = await transform(
     dedent`
@@ -176,7 +176,8 @@ it('handles transpiled template literals', async () => {
     }
   );
 
-  await expect(result).toMatchSnapshot();
+  expect(result.code).toMatchSnapshot();
+  expect(result.cssText).toMatchSnapshot();
 });
 
 it("doesn't throw due to duplicate preset", async () => {

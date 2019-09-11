@@ -487,7 +487,7 @@ it('transpiles injectGlobal template literal', async () => {
   expect(metadata).toMatchSnapshot();
 });
 
-it('handles css template literal in object property', async () => {
+it('handles css template literal on object property', async () => {
   const { code, metadata } = await transpile(
     dedent`
     import { css } from '@brandonkal/linaria';
@@ -517,7 +517,7 @@ it('handles css template literal in JSX element', async () => {
   expect(metadata).toMatchSnapshot();
 });
 
-it('throws when contains dynamic expression without evaluate: true in css tag', async () => {
+it('throws when css tag contains a dynamic expression without evaluate: true', async () => {
   expect.assertions(1);
   try {
     await transpile(
@@ -587,7 +587,7 @@ it('throws if state selector is nested', async () => {
   }
 });
 
-it('thows if state selector not not wrapped in arrow function', async () => {
+it('thows if state selector is not wrapped in arrow function', async () => {
   expect.assertions(1);
   try {
     await transpile(
@@ -657,10 +657,10 @@ it('collapses only one arrow function parent', async () => {
       import { styled } from '@brandonkal/linaria/react';
 
       export const Page = (props, options) => (props => styled.div\`
-      color: #fff;
-      &${'${[props.primary]}'} {
-        color: #241047;
-      }
+        color: #fff;
+        &${'${[props.primary]}'} {
+          color: #241047;
+        }
       \`)({})
       `
   );
@@ -738,34 +738,8 @@ it('includes unreferenced injectGlobal styles', async () => {
       \`;
 
       const B = styled.div\`
-        .title) {
-          font-size: 14px;
-        }
-      \`;
-      `
-  );
-
-  expect(code).toMatchSnapshot();
-  expect(metadata).toMatchSnapshot();
-});
-
-it('excludes unreferenced styles for :global', async () => {
-  const { code, metadata } = await transpile(
-    dedent`
-      import { css } from '@brandonkal/linaria';
-      import { styled } from '@brandonkal/linaria/react';
-
-      const a = css\`
-        :global() {
-          .title {
-            font-size: 14px;
-          }
-        }
-      \`;
-
-      const B = styled.div\`
-        :global(.title) {
-          font-size: 14px;
+        .title {
+          font-size: 28px;
         }
       \`;
       `

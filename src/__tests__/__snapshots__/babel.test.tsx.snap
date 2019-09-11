@@ -46,10 +46,10 @@ exports[`collapses only one arrow function parent 2`] = `
 CSS:
 
 .Page_ph6xni0 {     
-color: #fff;
-&.ph6xni0__primary_0 {
-  color: #241047;
-}
+  color: #fff;
+  &.ph6xni0__primary_0 {
+    color: #241047;
+  }
 }
 
 Dependencies: NA
@@ -100,20 +100,6 @@ CSS:
 Dependencies: NA
 
 `;
-
-exports[`excludes unreferenced styles for :global 1`] = `
-"import { css } from '@brandonkal/linaria';
-import { styled } from '@brandonkal/linaria/react';
-const a = \\"a_ah6xni0\\";
-const B =
-/*#__PURE__*/
-styled(\\"div\\")({
-  name: \\"B\\",
-  class: \\"B_b1u0rrat\\"
-});"
-`;
-
-exports[`excludes unreferenced styles for :global 2`] = `Object {}`;
 
 exports[`handles alternative propNames 1`] = `
 "import { styled } from '@brandonkal/linaria/react';
@@ -171,14 +157,14 @@ Dependencies: NA
 
 `;
 
-exports[`handles css template literal in object property 1`] = `
+exports[`handles css template literal on object property 1`] = `
 "import { css } from '@brandonkal/linaria';
 const components = {
   title: \\"title_th6xni0\\"
 };"
 `;
 
-exports[`handles css template literal in object property 2`] = `
+exports[`handles css template literal on object property 2`] = `
 
 CSS:
 
@@ -599,7 +585,7 @@ exports[`thows if alternative propName is used and a modifier selector is not a 
   8 | \`)({})"
 `;
 
-exports[`thows if state selector not not wrapped in arrow function 1`] = `
+exports[`thows if state selector is not wrapped in arrow function 1`] = `
 "<<DIRNAME>>/app/index.js: You must wrap the styled tag in an arrow function or this condition must be a function.
   3 | const Page = styled.div\`
   4 |   color: #fff;
@@ -651,7 +637,7 @@ exports[`throws if wrapping arrow function is not called with empty object 1`] =
     |    ^"
 `;
 
-exports[`throws when contains dynamic expression without evaluate: true in css tag 1`] = `
+exports[`throws when css tag contains a dynamic expression without evaluate: true 1`] = `
 "<<DIRNAME>>/app/index.js: The CSS cannot contain JavaScript expressions when using the 'css' or 'injectGlobal' tag.
 To evaluate the expressions at build time, pass 'evaluate: true' to the babel plugin.
   2 | 

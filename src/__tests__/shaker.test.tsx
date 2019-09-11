@@ -37,7 +37,7 @@ it('removes all', () => {
   expect(shaken).toBe('export const __linariaPreval = [];');
 });
 
-it('handles arrays', () => {
+it('keeps arrays', () => {
   const [shaken] = _shake([])`
     const arr = [first, second];
     export const one = arr[0];
@@ -51,7 +51,7 @@ it('handles arrays', () => {
   expect(shaken).toMatchSnapshot();
 });
 
-it('handles function declaration', () => {
+it('keeps function declaration', () => {
   const [shaken] = _shake([])`
     let two = null;
     function five() {
@@ -109,7 +109,7 @@ it('shakes imports', () => {
   expect(shaken).toMatchSnapshot();
 });
 
-it('should keep member expression key', () => {
+it('keeps member expression key', () => {
   const [shaken] = _shake(['blue'])`
     const key = 'blue';
     const obj = { blue: '#00F' };
@@ -229,7 +229,7 @@ it('keeps undefined definitions', () => {
   const [shaken] = _shake(['fontSize'])`
   const { styled } = require('../react');
 
-  let fontSize;
+  let fontSize;u
 
   export const Title = styled.h1\`
     font-size: ${'${fontSize}'};

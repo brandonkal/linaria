@@ -49,7 +49,7 @@ export default function extract(
           log('traversing file');
 
           // We need our transforms to run before anything else
-          // So we traverse here instead of a in a visitor
+          // So we traverse here instead of in a visitor
           path.traverse({
             TaggedTemplateExpression: p =>
               TaggedTemplateExpression(p, state, options),

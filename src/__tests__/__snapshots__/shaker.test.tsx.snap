@@ -1,15 +1,33 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`handles arrays 1`] = `
+exports[`keeps arrays 1`] = `
 "const arr = [first, second];
 export const one = arr[0];
 export const another = [arr, two, 2 + 4 + five()];
 export const __linariaPreval = [];"
 `;
 
-exports[`handles function declaration 1`] = `
+exports[`keeps function declaration 1`] = `
 "export const nine = 4 + five();
 export const __linariaPreval = [];"
+`;
+
+exports[`keeps member expression key 1`] = `
+"const key = 'blue';
+const obj = {
+  blue: '#00F'
+};
+const blue = obj[key];
+
+const _linariaWrap = fn => {
+  try {
+    return fn();
+  } catch (e) {
+    return e;
+  }
+};
+
+export const __linariaPreval = [_linariaWrap(() => blue)];"
 `;
 
 exports[`keeps objects as is 1`] = `
@@ -211,24 +229,6 @@ const _linariaWrap = fn => {
 };
 
 export const __linariaPreval = [_linariaWrap(() => color2)];"
-`;
-
-exports[`should keep member expression key 1`] = `
-"const key = 'blue';
-const obj = {
-  blue: '#00F'
-};
-const blue = obj[key];
-
-const _linariaWrap = fn => {
-  try {
-    return fn();
-  } catch (e) {
-    return e;
-  }
-};
-
-export const __linariaPreval = [_linariaWrap(() => blue)];"
 `;
 
 exports[`should throw away any side effects 1`] = `
