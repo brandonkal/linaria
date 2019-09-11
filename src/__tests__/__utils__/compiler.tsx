@@ -104,6 +104,7 @@ export default ({
       noEmitOnErrors: false,
     },
     resolve: {
+      extensions: ['.tsx', '.ts', '.js', '.jsx', '.json'],
       alias: {
         '@brandonkal/linaria': path.resolve(__dirname, '../../../lib'),
         components: path.resolve(

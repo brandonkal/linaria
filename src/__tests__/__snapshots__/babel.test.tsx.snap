@@ -715,7 +715,7 @@ Dependencies: NA
 `;
 
 exports[`transpiles styled template literal with function and component 1`] = `
-"import { styled } from '@brandonkal/linaria/react';
+"import { styled } from '../../react';
 
 const Heading = () => null;
 

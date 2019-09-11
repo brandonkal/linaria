@@ -1,5 +1,17 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`handles arrays 1`] = `
+"const arr = [first, second];
+export const one = arr[0];
+export const another = [arr, two, 2 + 4 + five()];
+export const __linariaPreval = [];"
+`;
+
+exports[`handles function declaration 1`] = `
+"export const nine = 4 + five();
+export const __linariaPreval = [];"
+`;
+
 exports[`keeps objects as is 1`] = `
 "const fill1 = (top = 0, left = 0, right = 0, bottom = 0) => ({
   position: 'absolute',
@@ -19,7 +31,7 @@ const fill2 = (top = 0, left = 0, right = 0, bottom = 0) => {
   };
 };
 
-const wrap = fn => {
+const _linariaWrap = fn => {
   try {
     return fn();
   } catch (e) {
@@ -27,7 +39,7 @@ const wrap = fn => {
   }
 };
 
-module.exports.__linariaPreval = [wrap(() => fill1), wrap(() => fill2)];"
+export const __linariaPreval = [_linariaWrap(() => fill1), _linariaWrap(() => fill2)];"
 `;
 
 exports[`keeps only code which is related to \`a\` 1`] = `
@@ -39,7 +51,7 @@ exports[`keeps only code which is related to \`a\` 1`] = `
 const a = color || anotherColor;
 color.green = '#0f0';
 
-const wrap = fn => {
+const _linariaWrap = fn => {
   try {
     return fn();
   } catch (e) {
@@ -47,7 +59,7 @@ const wrap = fn => {
   }
 };
 
-module.exports.__linariaPreval = [wrap(() => a)];"
+export const __linariaPreval = [_linariaWrap(() => a)];"
 `;
 
 exports[`keeps only code which is related to \`anotherColor\` 1`] = `
@@ -55,7 +67,7 @@ exports[`keeps only code which is related to \`anotherColor\` 1`] = `
   anotherColor
 } = require('…');
 
-const wrap = fn => {
+const _linariaWrap = fn => {
   try {
     return fn();
   } catch (e) {
@@ -63,7 +75,7 @@ const wrap = fn => {
   }
 };
 
-module.exports.__linariaPreval = [wrap(() => anotherColor)];"
+export const __linariaPreval = [_linariaWrap(() => anotherColor)];"
 `;
 
 exports[`keeps only code which is related to \`color\` 1`] = `
@@ -73,7 +85,7 @@ exports[`keeps only code which is related to \`color\` 1`] = `
 
 color.green = '#0f0';
 
-const wrap_1 = fn => {
+const _linariaWrap = fn => {
   try {
     return fn();
   } catch (e) {
@@ -81,7 +93,7 @@ const wrap_1 = fn => {
   }
 };
 
-module.exports.__linariaPreval = [wrap_1(() => color)];"
+export const __linariaPreval = [_linariaWrap(() => color)];"
 `;
 
 exports[`keeps undefined definitions 1`] = `
@@ -94,7 +106,7 @@ export const Title = styled.h1\`
   font-size: \${fontSize};
 \`;
 
-const wrap = fn => {
+const _linariaWrap = fn => {
   try {
     return fn();
   } catch (e) {
@@ -102,7 +114,7 @@ const wrap = fn => {
   }
 };
 
-module.exports.__linariaPreval = [wrap(() => fontSize)];"
+export const __linariaPreval = [_linariaWrap(() => fontSize)];"
 `;
 
 exports[`shakes export assignments 1`] = `
@@ -114,7 +126,7 @@ let fontSize;
 export const Title = styled.h1\`
   font-size: \${fontSize};
 \`;
-module.exports.__linariaPreval = [];"
+export const __linariaPreval = [];"
 `;
 
 exports[`shakes export declaration 1`] = `
@@ -126,7 +138,7 @@ export function shakeMe(favorite) {
 
   return 'no favorite color';
 }
-module.exports.__linariaPreval = [];"
+export const __linariaPreval = [];"
 `;
 
 exports[`shakes export functions 1`] = `
@@ -142,7 +154,7 @@ export function shakeMe(favorite) {
   return 'no favorite color';
 }
 
-const wrap = fn => {
+const _linariaWrap = fn => {
   try {
     return fn();
   } catch (e) {
@@ -150,7 +162,7 @@ const wrap = fn => {
   }
 };
 
-module.exports.__linariaPreval = [wrap(() => a)];"
+export const __linariaPreval = [_linariaWrap(() => a)];"
 `;
 
 exports[`shakes exports 1`] = `
@@ -158,7 +170,7 @@ exports[`shakes exports 1`] = `
 export const a = color;
 export { anotherColor };
 
-const wrap = fn => {
+const _linariaWrap = fn => {
   try {
     return fn();
   } catch (e) {
@@ -166,7 +178,7 @@ const wrap = fn => {
   }
 };
 
-module.exports.__linariaPreval = [wrap(() => a)];"
+export const __linariaPreval = [_linariaWrap(() => a)];"
 `;
 
 exports[`shakes imports 1`] = `
@@ -174,7 +186,7 @@ exports[`shakes imports 1`] = `
 import defaultColor from '…';
 export default color;
 
-const wrap = fn => {
+const _linariaWrap = fn => {
   try {
     return fn();
   } catch (e) {
@@ -182,7 +194,7 @@ const wrap = fn => {
   }
 };
 
-module.exports.__linariaPreval = [wrap(() => color), wrap(() => defaultColor)];"
+export const __linariaPreval = [_linariaWrap(() => color), _linariaWrap(() => defaultColor)];"
 `;
 
 exports[`shakes sequence expression 1`] = `
@@ -190,7 +202,7 @@ exports[`shakes sequence expression 1`] = `
 let local = '';
 const color2 = (local = color1(), () => local);
 
-const wrap = fn => {
+const _linariaWrap = fn => {
   try {
     return fn();
   } catch (e) {
@@ -198,7 +210,7 @@ const wrap = fn => {
   }
 };
 
-module.exports.__linariaPreval = [wrap(() => color2)];"
+export const __linariaPreval = [_linariaWrap(() => color2)];"
 `;
 
 exports[`should keep member expression key 1`] = `
@@ -208,7 +220,7 @@ const obj = {
 };
 const blue = obj[key];
 
-const wrap = fn => {
+const _linariaWrap = fn => {
   try {
     return fn();
   } catch (e) {
@@ -216,7 +228,7 @@ const wrap = fn => {
   }
 };
 
-module.exports.__linariaPreval = [wrap(() => blue)];"
+export const __linariaPreval = [_linariaWrap(() => blue)];"
 `;
 
 exports[`should throw away any side effects 1`] = `
@@ -231,7 +243,7 @@ const foo = k => {
   return obj;
 };
 
-const wrap = fn => {
+const _linariaWrap = fn => {
   try {
     return fn();
   } catch (e) {
@@ -239,5 +251,5 @@ const wrap = fn => {
   }
 };
 
-module.exports.__linariaPreval = [wrap(() => foo)];"
+export const __linariaPreval = [_linariaWrap(() => foo)];"
 `;

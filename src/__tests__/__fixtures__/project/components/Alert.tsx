@@ -73,9 +73,6 @@ export function Alert({ onClose, showIcon$ = true, ...props }: AlertProps) {
     onClose && onClose();
   }
 
-  // Dead code that should be removed
-  console.log('dead');
-
   const Icon = getIconType(props.variant$, !props.content$);
 
   return (

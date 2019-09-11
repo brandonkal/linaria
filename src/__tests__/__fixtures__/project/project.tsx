@@ -15,7 +15,6 @@ const Container = styled.div`
 `;
 
 const toLog: typesOnly = 'hello';
-console.log(toLog);
 
 render.create(
   <Container>

@@ -1,8 +1,5 @@
 import 'core-js';
 import { styled } from '@brandonkal/linaria/react';
-import React from '';
-
-console.log('Dead code');
 
 export const T1 = styled.h1`
   background: #111;

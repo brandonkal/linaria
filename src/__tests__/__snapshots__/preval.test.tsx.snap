@@ -65,6 +65,7 @@ exports[`does not make identifiers arrow functions 2`] = `
 CSS:
 
 .Input_i1xha7dm {}
+
 .Page_p1rsdnkv {
 color: #fff;
 .Input_i1xha7dm {
@@ -230,7 +231,7 @@ CSS:
 .bareIconClass_b1xha7dm {}
 .XS_x1rsdnkv {&.bareIconClass_b1xha7dm { font-size: 16.5px; }}
 
-Dependencies: NA
+Dependencies: ../index.ts
 
 `;
 
@@ -451,15 +452,13 @@ Dependencies: ../react, ../utils/slugify
 
 exports[`evalutes dependencies with sequence expression 1`] = `
 "import { styled } from '@brandonkal/linaria/react';
-const color = (external, () => 'blue');
+import external from './__fixtures__/sample-script.js';
+const color = (external, 'blue');
 export const Title =
 /*#__PURE__*/
 styled(\\"h1\\")({
   name: \\"Title\\",
-  class: \\"Title_t1xha7dm\\",
-  vars: {
-    \\"t1xha7dm-0\\": [color]
-  }
+  class: \\"Title_t1xha7dm\\"
 });"
 `;
 
@@ -468,23 +467,21 @@ exports[`evalutes dependencies with sequence expression 2`] = `
 CSS:
 
 .Title_t1xha7dm {
-  color: var(--t1xha7dm-0);
+  color: blue;
 }
 
-Dependencies: ../react
+Dependencies: NA
 
 `;
 
 exports[`evalutes interpolations with sequence expression 1`] = `
 "import { styled } from '@brandonkal/linaria/react';
+let external;
 export const Title =
 /*#__PURE__*/
 styled(\\"h1\\")({
   name: \\"Title\\",
-  class: \\"Title_t1xha7dm\\",
-  vars: {
-    \\"t1xha7dm-0\\": [(external, () => \\"blue\\")]
-  }
+  class: \\"Title_t1xha7dm\\"
 });"
 `;
 
@@ -493,10 +490,10 @@ exports[`evalutes interpolations with sequence expression 2`] = `
 CSS:
 
 .Title_t1xha7dm {
-  color: var(--t1xha7dm-0);
+  color: blue;
 }
 
-Dependencies: NA
+Dependencies: ../react
 
 `;
 
@@ -543,10 +540,7 @@ Dependencies: ../../react
 `;
 
 exports[`handles complex component 1`] = `
-"import deadDep from 'unknown-dependency';
-import { styled } from '../../react';
-const deadValue = deadDep(); // Dead code in this file should be ignored
-
+"import { styled } from '../../react';
 const objects = {
   font: {
     fontSize: 12
@@ -819,7 +813,8 @@ exports[`throws if couldn't determine a display name 1`] = `
 `;
 
 exports[`throws when interpolation evaluates to NaN 1`] = `
-"<<DIRNAME>>/source.js: The expression evaluated to 'NaN', which is probably a mistake.
+"<<DIRNAME>>/source.js: 
+The expression evaluated to 'NaN', which is probably a mistake.
 If you want it to be inserted into CSS, explicitly cast or transform the value to a string, e.g. - 'String(height)'.
   4 | 
   5 | export const Title = styled.h1\`
@@ -829,7 +824,8 @@ If you want it to be inserted into CSS, explicitly cast or transform the value t
 `;
 
 exports[`throws when interpolation evaluates to null 1`] = `
-"<<DIRNAME>>/source.js: The expression evaluated to 'null', which is probably a mistake.
+"<<DIRNAME>>/source.js: 
+The expression evaluated to 'null', which is probably a mistake.
 If you want it to be inserted into CSS, explicitly cast or transform the value to a string, e.g. - 'String(color)'.
   4 | 
   5 | export const Title = styled.h1\`
@@ -839,7 +835,8 @@ If you want it to be inserted into CSS, explicitly cast or transform the value t
 `;
 
 exports[`throws when interpolation evaluates to undefined 1`] = `
-"<<DIRNAME>>/source.js: The expression evaluated to 'undefined', which is probably a mistake.
+"<<DIRNAME>>/source.js: 
+The expression evaluated to 'undefined', which is probably a mistake.
 If you want it to be inserted into CSS, explicitly cast or transform the value to a string, e.g. - 'String(fontSize)'.
   4 | 
   5 | export const Title = styled.h1\`

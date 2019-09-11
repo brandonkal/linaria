@@ -1,0 +1,128 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`webpack test project compiles -- optimizer 1`] = `
+"// JS after Babel plugin before optimization
+import React from 'react';
+import 'core-js'; //@ts-ignore
+
+import { styled } from '@brandonkal/linaria/react';
+import render from 'react-test-renderer'; // @ts-ignore -- uses webpack alias
+
+import { Alert } from 'components';
+var Container =
+/*#__PURE__*/
+styled(\\"div\\")({
+  name: \\"Container\\",
+  class: \\"LINARIA_c1ckeoc9_LINARIA\\"
+});
+var toLog = 'hello';
+render.create(React.createElement(Container, null, React.createElement(Alert, {
+  variant$: \\"error\\",
+  title$: \\"Error\\",
+  onClose: () => console.log('You closed the message')
+}), React.createElement(Alert, {
+  variant$: \\"error\\",
+  title$: \\"Error\\"
+})));
+
+require(\\"./.linaria-cache/project.dev.linaria.css\\");
+
+/* CSS after optimization */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.a {
+  top: 15px;
+  color: rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+}
+  .a:hover {
+    color: rgba(0, 0, 0, 0.75);
+  }
+.c {
+  font-size: 14px;
+}
+.d {
+  color: red;
+  font-weight: 700;
+}
+
+
+
+
+
+
+
+
+
+
+.e {
+  position: relative;
+  margin: 0;
+  padding: var(--e-0);
+  color: rgba(0, 0, 0, 0.65);
+  font-size: 14px;
+}
+
+
+
+
+
+
+
+
+
+
+.e.e-1 {
+    margin-bottom: 0;
+    border: 0;
+  }
+
+
+
+
+
+
+
+
+
+
+.e.e-2 {
+    background-color: #f6ffed;
+    border: 1px solid #b7eb8f;
+  }
+
+
+
+
+
+
+
+
+
+
+.b {
+  margin-bottom: 10px;
+}
+  .b e {
+    background: pink;
+    padding: 1rem;
+  }
+
+
+"
+`;

@@ -30,7 +30,6 @@ const transpile = async (input: string) => {
     filename: join(__dirname, 'source.js'),
   });
 
-  // The slug will be machine specific, so replace it with a consistent one
   return {
     metadata,
     code: replaced ? code.replace(SHORT, FULL) : code,
@@ -164,9 +163,10 @@ it('evalutes interpolations with sequence expression', async () => {
   const { code, metadata } = await transpile(
     dedent`
     import { styled } from '@brandonkal/linaria/react';
+    let external;
 
     export const Title = styled.h1\`
-      color: ${'${(external, () => "blue")}'};
+      color: ${'${(external, (() => "blue")())}'};
     \`;
     `
   );
@@ -179,8 +179,9 @@ it('evalutes dependencies with sequence expression', async () => {
   const { code, metadata } = await transpile(
     dedent`
     import { styled } from '@brandonkal/linaria/react';
+    import external from './__fixtures__/sample-script.js'
 
-    const color = (external, () => 'blue');
+    const color = (external, 'blue');
 
     export const Title = styled.h1\`
       color: ${'${color}'};
@@ -381,7 +382,7 @@ it('ignores inline vanilla function expressions', async () => {
   expect(metadata).toMatchSnapshot();
 });
 
-it('ignores external expressions', async () => {
+it.skip('ignores external expressions', async () => {
   const { code, metadata } = await transpile(
     dedent`
     import { styled } from '@brandonkal/linaria/react';

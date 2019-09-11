@@ -66,10 +66,10 @@ require(\\"./.linaria-cache/styled-components.dev.linaria.css\\");
 .c {
   background: #111;
   width: var(--c-0);
- }
+}
 .a {
   background: #222;
- }
+}
 .a.a-0 {
     color: red;
   }

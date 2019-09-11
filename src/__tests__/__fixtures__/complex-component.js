@@ -1,7 +1,4 @@
-import deadDep from 'unknown-dependency';
 import { styled } from '../../react';
-
-const deadValue = deadDep(); // Dead code in this file should be ignored
 
 const objects = { font: { fontSize: 12 }, box: { border: '1px solid red' } };
 const foo = k => {

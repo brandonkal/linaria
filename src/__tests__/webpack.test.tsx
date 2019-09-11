@@ -1,9 +1,12 @@
 import compiler from './__utils__/compiler';
 import rimraf from 'rimraf';
+import path from 'path';
+import Module from '../babel/module';
 
 describe('webpack test', () => {
   beforeEach(() => {
-    rimraf.sync('.linaria-cache');
+    rimraf.sync(path.join(__dirname, '__fixtures__/project/.linaria-cache'));
+    Module.invalidateAll();
   });
 
   test(
