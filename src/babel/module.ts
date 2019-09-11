@@ -14,10 +14,15 @@ import vm from 'vm';
 import fs from 'fs';
 import path from 'path';
 import * as sandboxProcess from './process';
-import { BabelFileResult, Node } from '@babel/core';
+import { BabelFileResult } from '@babel/core';
+import { GeneratorResult } from '@babel/generator';
 import debug from 'debug';
 import { codeFrameColumns } from '@babel/code-frame';
-import sourceMapSupport from 'source-map-support';
+import fixError from './utils/fixError';
+import {
+  clear as clearCompileCache,
+  get as getCompileCache,
+} from './compileCache';
 const log = debug('linaria:module');
 
 // Supported node builtins based on the modules polyfilled by webpack
@@ -60,35 +65,6 @@ const builtins = {
 
 // Separate cache for evaluated modules. Also available on require.cache
 let cache: { [id: string]: Module } = {};
-// Transformed module cache to persist on disk
-let compileCache: { [id: string]: any } = {};
-let maps: Record<string, any> = {};
-
-function retrieveSourceMap(filename: string) {
-  const map = maps && maps[filename];
-  if (map) {
-    return {
-      url: '',
-      map,
-    };
-  } else {
-    return null;
-  }
-}
-
-// @ts-ignore
-if (Error.prepareStackTrace && global.retrieveMapHandlers) {
-  // If source-map-support is already installed in use, add our handler.
-  //@ts-ignore
-  global.retrieveMapHandlers.unshift(retrieveSourceMap);
-} else {
-  // Register additional source map support for vm.
-  sourceMapSupport.install({
-    handleUncaughtExceptions: false,
-    environment: 'node',
-    retrieveSourceMap,
-  });
-}
 
 const NOOP = () => {};
 
@@ -96,10 +72,6 @@ const vmGlobal = {
   URL,
   URLSearchParams,
   process: sandboxProcess,
-  // required for babel-jest
-  enableSourceMapSupport: true,
-  // @ts-ignore
-  retrieveMapHandlers: global.retrieveMapHandlers,
   linariaVM: true,
   Buffer,
   console,
@@ -137,10 +109,6 @@ const sandbox = vm.createContext(
  */
 const StackFrameRe = /([^ ():]+):(\d+)(?::(\d+))?/;
 
-function mtime(filename: string) {
-  return +fs.statSync(filename).mtime;
-}
-
 interface NM extends NativeModule {
   _nodeModulePaths: (filename: string) => string[];
   _resolveFilename: (id: string, options: any) => string;
@@ -168,16 +136,17 @@ class Module {
    */
   static _resolveFilename = (
     id: string,
-    options: { id: string; filename: string; paths: string[] }
-  ) => ((NativeModule as any) as NM)._resolveFilename(id, options);
+    parent: { id: string; filename: string; paths: string[] }
+  ) => {
+    return ((NativeModule as any) as NM)._resolveFilename(id, parent);
+  };
 
   static _nodeModulePaths = (filename: string) =>
     ((NativeModule as any) as NM)._nodeModulePaths(filename);
 
-  static invalidate = () => {
+  static invalidateAll = () => {
     cache = {};
-    compileCache = {};
-    maps = {};
+    clearCompileCache();
   };
 
   id: string;
@@ -186,9 +155,14 @@ class Module {
   exports: any;
   extensions: string[];
   dependencies: string[];
-  transform: ((code: string, ast?: Node) => BabelFileResult) | null;
-  cacheKey?: string;
-  source?: string;
+  transform: ((codeAndMap: GeneratorResult) => BabelFileResult) | null;
+  /** A hash of the babel transform options */
+  _cacheKey?: string;
+  /** Represents the source as passed to evaluate. This may have already been transformed by the initial Linaria extraction. */
+  private _source?: string;
+  /* we store the code executed for when a source-map is unavailable. */
+  private _transformed?: string;
+  private _evaluated?: boolean;
 
   constructor(filename: string) {
     this.id = filename;
@@ -302,7 +276,7 @@ class Module {
           } else {
             // For JS/TS files, evaluate the module
             // The module will be transpiled using provided transform
-            m.evaluate(code);
+            m.evaluate({ code, map: null });
           }
         } else {
           // For non JS/JSON requires, just export the id
@@ -322,30 +296,33 @@ class Module {
   );
 
   /** For JavaScript files, we need to transpile it and to get the exports of the module */
-  private _transform(source: string, ast?: Node): string {
+  private _transform(codeAndMap: GeneratorResult): string {
+    if (typeof codeAndMap.code !== 'string') {
+      throw new Error('Expected a string to evaluate');
+    }
+    this._source = codeAndMap.code;
     const transformed = this.transform
-      ? this.transform(source, ast)
-      : { code: source };
-    // Save in cache
-    return this.cacheKey
-      ? ((maps[this.filename] = transformed.map!),
-        (compileCache[this.cacheKey] = '' + transformed.code))
-      : '' + transformed.code;
+      ? this.transform(codeAndMap)
+      : codeAndMap;
+    if (typeof transformed.code !== 'string') {
+      throw new Error('The compile function did not return a string.');
+    }
+    return (this._transformed = transformed.code);
   }
 
   /** compiles the string and executes it in the sandbox context. Stores exports on this module. */
-  evaluate(source: string, ast?: Node) {
-    if (typeof source !== 'string') {
-      throw new Error('Expected a string to evaluate');
-    }
+  evaluate(codeAndMap: GeneratorResult) {
     log(`evaluating ${this.filename}`);
-    this.source = source;
-    const code = this._transform(source, ast);
+    if (this._evaluated) {
+      return;
+    }
+
+    const compiled = this._transform(codeAndMap);
 
     log(`executing ${this.filename}`);
 
     const fn = vm.compileFunction(
-      code,
+      compiled,
       ['exports', 'require', 'module', '__filename', '__dirname'],
       {
         parsingContext: sandbox,
@@ -364,16 +341,12 @@ class Module {
       // Clean Stack Trace as the evaluator can recurse deeply.
       throw this._prepareStack(e);
     }
+    this._evaluated = true;
   }
 
   private _prepareStack(e: Error | { message: string; stack: string }) {
     try {
-      if (!(e instanceof Error)) {
-        const fauxError = Error(e.message);
-        fauxError.message = e.message;
-        fauxError.stack = e.stack;
-        e = fauxError;
-      }
+      e = fixError(e);
       let split: string[] = e.stack!.split('\n').reverse();
       const idx = split.findIndex(v =>
         v.includes(path.basename(this.filename))
@@ -394,20 +367,28 @@ class Module {
         const line = parseInt(matches[2]);
         const column = parseInt(matches[3]);
         const firstTraceLineIdx = split.findIndex(v => v.startsWith('    at '));
-        const result: string = codeFrameColumns(
-          this.source!,
-          {
-            start: { line: line, column: column },
-          },
-          {
-            highlightCode: true,
-            linesAbove: 2,
-            linesBelow: 2,
-            message: e.message,
-          }
-        );
+        const loc = {
+          start: { line: line, column: column },
+        };
+        const cfOpts = {
+          highlightCode: true,
+          linesAbove: 2,
+          linesBelow: 2,
+          message: e.message,
+        };
+        const cached = getCompileCache()[this.filename];
+        let sourceCode: string;
+        if (cached && cached.map && cached.map.sourcesContent) {
+          sourceCode = cached.map.sourcesContent[0] || this._source!;
+        } else {
+          sourceCode = this._source!;
+        }
+        const result: string =
+          (sourceCode && codeFrameColumns(sourceCode, loc, cfOpts)) ||
+          codeFrameColumns(this._transformed!, loc, cfOpts) ||
+          e.message;
         e.stack = [
-          'Linaria preval Error',
+          '\nLinaria Preval Error:',
           result,
           split.slice(firstTraceLineIdx).join('\n'),
         ].join('\n');

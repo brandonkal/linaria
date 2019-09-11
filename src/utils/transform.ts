@@ -3,14 +3,8 @@ import * as babel from '@babel/core';
 import { SourceMapGenerator } from 'source-map';
 import loadOptions, { PluginOptions } from './loadOptions';
 import debug from 'debug';
+import { Rules, Replacement, CSSIdentifiers } from '../babel/types';
 const log = debug('linaria:loader');
-import {
-  Rules,
-  Replacement,
-  LinariaMetadata,
-  CSSIdentifiers,
-} from '../babel/types';
-import buildCSS from '../babel/utils/buildCSS';
 
 type Result = {
   code: string;
@@ -78,27 +72,16 @@ export default function transform(code: string, options: Options): Result {
 
   log(`transform complete ${options.filename}`);
 
-  if (
-    !metadata ||
-    !(metadata as babel.BabelFileMetadata & { linaria: LinariaMetadata })
-      .linaria
-  ) {
+  if (!metadata || !metadata.linaria) {
     return {
       code,
       sourceMap: options.inputSourceMap,
     };
   }
 
-  const {
-    rules,
-    replacements,
-    dependencies,
-  } = (metadata as babel.BabelFileMetadata & {
-    linaria: LinariaMetadata;
-  }).linaria;
+  let { rules, replacements, dependencies, cssText } = metadata.linaria;
 
   // Construct a CSS-ish file from the unprocessed style rules
-  let cssText = buildCSS(rules);
 
   // When writing to a file, we need to adjust the relative paths inside url(..) expressions
   // It'll allow css-loader to resolve an imported asset properly

@@ -1,3 +1,4 @@
+/* eslint-disable no-ex-assign */
 import {
   transformSync,
   BabelFileResult,
@@ -7,15 +8,22 @@ import {
   createConfigItem,
   PartialConfig,
   ConfigItem,
-  transformFromAstSync,
-  Node,
+  NodePath,
 } from '@babel/core';
 import generator from '@babel/generator';
 
 import Module, { makeModule } from '../module';
+import fs from 'fs';
 import { StrictOptions } from '../types';
 import debug from 'debug';
 import slugify from '../../utils/slugify';
+import fixError from '../utils/fixError';
+import * as compileCache from '../compileCache';
+
+// Load compile cache here.
+compileCache.load();
+let cache = compileCache.get();
+
 const log = debug('linaria:evaluate');
 
 interface TOptions extends TransformOptions {
@@ -34,43 +42,97 @@ const babelPreset = require.resolve('../index');
 const topLevelBabelPreset = require.resolve('../../../babel');
 const dynamicImportNOOP = require.resolve('../dynamic-import-noop');
 
+function mtime(filename: string) {
+  try {
+    return +fs.statSync(filename).mtime;
+  } catch (e) {
+    return Date.now();
+  }
+}
+
 export default function evaluate(
-  codeOrNode: string | Node,
+  codeOrPath: string | NodePath,
   filename: string,
   options?: StrictOptions
 ) {
   const m = makeModule(filename);
   m.dependencies = [];
 
-  m.transform = function transform(this: Module, text, ast?: Node) {
-    if (options && options.ignore && options.ignore.test(this.filename)) {
+  m.transform = function transform(this: Module, { code, map }) {
+    if (
+      (options && options.ignore && options.ignore.test(this.filename)) ||
+      code.includes('__esModule') // assume it is already transformed
+    ) {
       log(`skipping transform for ${this.filename}. ignored.`);
-      return { code: text };
+      return { code, map };
     }
 
     // If we have already run linaria on this file,
     // there is no need to repeat the process on the shaken file.
-    const removeLinariaPreset = text.includes('__linariaPreval');
+    const removeLinariaPreset = code.includes('__linariaPreval');
 
-    const transformOptions = getOptions(options, this.filename);
-    this.cacheKey = slugify(JSON.stringify(transformOptions));
-    if (removeLinariaPreset) {
-      transformOptions.presets!.pop();
+    let transformOptions;
+    try {
+      transformOptions = getOptions(options, this.filename, map);
+      this._cacheKey = slugify(JSON.stringify(transformOptions));
+      if (removeLinariaPreset) {
+        transformOptions.presets!.pop();
+      }
+    } catch (e) {
+      e = fixError(e);
+      e.stack =
+        'Linaria Preval Config Error: Could not load Babel options. Check your Babel config file.\n' +
+        e.stack;
+      throw e;
     }
 
-    return ast
-      ? (transformFromAstSync(ast, text, transformOptions) as BabelFileResult)
-      : (transformSync(text, transformOptions) as BabelFileResult);
+    // compile cache
+    const lastModified = mtime(this.filename);
+    let cached = cache[this.filename];
+    if (
+      cached &&
+      cached.optsHash === this._cacheKey &&
+      cached.mtime === lastModified
+    ) {
+      return {
+        code: cached.code,
+        map: cache[this.filename].map,
+      };
+    }
+
+    try {
+      const compiled = transformSync(code, transformOptions) as BabelFileResult;
+      cache[this.filename] = {
+        code: compiled.code!,
+        map: compiled.map!,
+        optsHash: this._cacheKey,
+        mtime: lastModified,
+      };
+      return compiled;
+    } catch (e) {
+      e = fixError(e);
+      e.stack = `Linaria Preval Transform Error:\n${
+        !e.stack.includes(this.filename)
+          ? `Error encountered while processing ${this.filename}\n`
+          : ''
+      }${e.stack}`;
+      throw e;
+    }
   };
 
-  // generate code
-  let code: string;
-  if (typeof codeOrNode !== 'string') {
-    code = generator(codeOrNode).code;
-    m.evaluate(code, codeOrNode);
+  if (typeof codeOrPath !== 'string') {
+    const generated = generator(
+      codeOrPath.node,
+      {
+        filename,
+        sourceMaps: true,
+        sourceFileName: filename,
+      },
+      codeOrPath.getSource()
+    );
+    m.evaluate(generated);
   } else {
-    code = codeOrNode;
-    m.evaluate(code);
+    m.evaluate({ code: codeOrPath, map: null });
   }
 
   return {
@@ -79,13 +141,18 @@ export default function evaluate(
   };
 }
 
+function getPresetName(item: any): string {
+  return Array.isArray(item) ? item[0] : item;
+}
+
 function getOptions(
   pluginOptions: StrictOptions | undefined,
-  filename: string
-) {
-  const plugins: Array<string | object> = [
+  filename: string,
+  map: any
+): TransformOptions {
+  const plugins: (string | [string, any])[] = [
     // Include these plugins to avoid extra config when using { module: false } for webpack
-    '@babel/plugin-transform-modules-commonjs',
+    ['@babel/plugin-transform-modules-commonjs', { loose: true }],
     '@babel/plugin-proposal-export-namespace-from',
   ];
   const defaults: DefaultOptions = {
@@ -95,9 +162,9 @@ function getOptions(
     },
     filename: filename,
     sourceMaps: true, // Required for stack traces
-    presets: [[babelPreset, pluginOptions]],
+    presets: [[babelPreset, { ...pluginOptions, _isEvaluatePass: true }]],
     plugins: [
-      ...plugins.map(name => require.resolve(name as string)),
+      ...plugins.map(name => require.resolve(getPresetName(name))),
       // We don't support dynamic imports when evaluating, but don't want a syntax error
       // This will replace dynamic imports with an object that does nothing
       dynamicImportNOOP,
@@ -121,7 +188,7 @@ function getOptions(
           // If item is an array it's a preset/plugin with options ([preset, options])
           // Get the first item to get the preset.plugin name
           // Otherwise it's a plugin name (can be a function too)
-          const name = Array.isArray(item) ? item[0] : item;
+          const name = getPresetName(item);
           if (
             // In our case, a preset might also be referring to linaria/babel
             // We require the file from internal path which is not the same one that we export
@@ -130,14 +197,16 @@ function getOptions(
             name === '@brandonkal/linaria/babel' ||
             name === topLevelBabelPreset ||
             // Also add a check for the plugin names we include for bundler support
-            plugins.includes(name)
+            (typeof name === 'string' &&
+              plugins.map(p => getPresetName(p).includes(name)))
           ) {
             return false;
           }
           // Loop through the default presets/plugins to see if it already exists
-          return !defaults[field].some(it =>
-            // The default presets/plugins can also have nested arrays,
-            Array.isArray(it) ? it[0] === name : it === name
+          return !defaults[field].some(
+            it =>
+              // The default presets/plugins can also have nested arrays,
+              getPresetName(it) === name
           );
         })
       : [];
@@ -182,6 +251,9 @@ function getOptions(
       nextOptions,
     ]);
   }
+  options.inputSourceMap = map || undefined;
+  options.sourceMaps = true;
+  options.ast = false;
 
   return options;
 }

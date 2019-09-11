@@ -4,6 +4,9 @@ import * as babel from '@babel/core';
 import dedent from 'dedent';
 import { join, resolve } from 'path';
 import stripAnsi from 'strip-ansi';
+import Module from '../babel/module';
+
+beforeEach(() => Module.invalidateAll());
 
 import serializer from './__utils__/linaria-snapshot-serializer';
 

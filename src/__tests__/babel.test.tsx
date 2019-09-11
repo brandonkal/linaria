@@ -218,7 +218,7 @@ it('transpiles styled template literal with function and tag', async () => {
 it('transpiles styled template literal with function and component', async () => {
   const { code, metadata } = await transpile(
     dedent`
-    import { styled } from '@brandonkal/linaria/react';
+    import { styled } from '../../react';
     const Heading = () => null;
 
     export const Title = styled(Heading)\`

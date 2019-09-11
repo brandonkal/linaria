@@ -1,5 +1,4 @@
-import { dirname } from 'path';
-import Module from '../module';
+import { makeModule } from '../module';
 import memoize from 'memoize-one';
 
 function hasImport(
@@ -7,7 +6,7 @@ function hasImport(
   scope: any,
   filename: string,
   identifier: string,
-  source: string
+  canonicalSource: string
 ): boolean {
   const binding = scope.getAllBindings()[identifier];
 
@@ -17,29 +16,30 @@ function hasImport(
 
   const p = binding.path;
 
-  const resolveFromFile = (id: string) => {
-    try {
-      return Module._resolveFilename(id, {
-        id: filename,
-        filename,
-        paths: Module._nodeModulePaths(dirname(filename)),
-      });
-    } catch (e) {
-      return null;
-    }
-  };
-
-  const isImportingModule = (value: string) =>
+  function isImportingModule(value: string) {
     // If the value is an exact match, assume it imports the module
-    value === source ||
-    // Otherwise try to resolve both and check if they are the same file
-    resolveFromFile(value) ===
+    if (value === canonicalSource) {
+      return true;
+    }
+    // Otherwise, resolve both and check if the file path is the same.
+    const m = makeModule(filename);
+    const resolveFromFile = (id: string) => {
+      try {
+        return m.resolve(id);
+      } catch (e) {
+        return;
+      }
+    };
+    return (
+      resolveFromFile(value) ===
       // eslint-disable-next-line no-nested-ternary
-      (source === '@brandonkal/linaria'
+      (canonicalSource === '@brandonkal/linaria'
         ? require.resolve('../../index')
-        : source === '@brandonkal/linaria/react'
+        : canonicalSource === '@brandonkal/linaria/react'
         ? require.resolve('../../react/')
-        : resolveFromFile(source));
+        : resolveFromFile(canonicalSource))
+    );
+  }
 
   if (t.isImportSpecifier(p) && t.isImportDeclaration(p.parentPath)) {
     return isImportingModule(p.parentPath.node.source.value);

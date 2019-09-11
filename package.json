@@ -162,6 +162,9 @@
     "setupFiles": [
       "<rootDir>/jest/resolveTypescript.js"
     ],
+    "setupFilesAfterEnv": [
+      "<rootDir>/src/babel/sourceMapRegister.ts"
+    ],
     "collectCoverage": false,
     "collectCoverageFrom": [
       "src/**",

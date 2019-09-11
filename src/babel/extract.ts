@@ -1,12 +1,11 @@
 /* eslint-disable no-param-reassign */
 
-import { types as t } from '@babel/core';
+import { types as t, PluginObj } from '@babel/core';
 import { NodePath } from '@babel/traverse';
-import getTemplateProcessor from './evaluate/templateProcessor';
-import shake from './evaluate/shaker';
-import evaluate from './evaluate/evaluate';
 import debug from 'debug';
-import generator from '@babel/generator';
+import evaluate from './evaluate/evaluate';
+import addPrevalExport from './evaluate/addPrevalExport';
+import getTemplateProcessor from './evaluate/templateProcessor';
 const log = debug('linaria:babel');
 import {
   State,
@@ -26,13 +25,20 @@ function isLazyValue(v: ExpressionValue): v is LazyValue {
 }
 
 // NOTE: used and imported by index.ts
-export default function extract(_babel: any, options: StrictOptions) {
+export default function extract(
+  _babel: any,
+  options: StrictOptions
+): PluginObj<State> {
   const processTemplate = getTemplateProcessor(options);
 
   return {
+    name: 'linaria',
     visitor: {
       Program: {
-        enter(path: NodePath<t.Program>, state: State) {
+        enter(path, state) {
+          if (path.getSource().includes('__linariaPreval')) {
+            return;
+          }
           // Collect all the style rules from the styles we encounter
           state.queue = [];
           state.rules = {};
@@ -64,61 +70,48 @@ export default function extract(_babel: any, options: StrictOptions) {
           lazyDepsPaths.forEach((key, idx) => {
             valueStrings.set(key, `LINARIA_PREVAL_${idx}`);
             nodePathFromString.set(`LINARIA_PREVAL_${idx}`, key);
-            // a[idx] = key;
           });
 
           log(`found ${lazyDeps.length} lazy deps`);
-          let valueNode;
-          if (lazyDeps.length) {
-            // push all lazyDeps into the program. These are required for the shaker and evaluation.
-            // After evaluation, they are removed.
-            valueNode = t.variableDeclaration('const', [
-              t.variableDeclarator(
-                t.identifier('__linariaValues'),
-                t.arrayExpression(lazyDeps)
-              ),
-            ]);
-            path.node.body.push(valueNode);
-          }
+          // push all lazyDeps into the program. Required for all source files.
+          const nodesAdded = addPrevalExport(lazyDeps, path.node);
 
           log(
             `processing ${state.queue.length} items ${state.file.opts.filename}`
           );
+
           state.queue.forEach(item =>
             processTemplate(item, state, valueStrings)
           );
 
           let lazyValues: Value[] = [];
 
-          // TODO: always shake if evaluating
-          if (lazyDeps.length || options._isEvaluatePass) {
-            // TEMP: show code before shake
-            // eslint-disable-next-line
-            const { code: codeBeforeShake } = generator(path.node);
-            // TODO: don't generate seperate AST if preval pass?
-            const [shaken] = shake(path.node, lazyDeps);
-            log(`evaluating shaken ${state.file.opts.filename} for lazy deps`);
-            // TODO: don't evaluate here if evaluate pass, the module system handles that.
+          if (lazyDeps.length && !options._isEvaluatePass) {
+            log(`evaluating ${state.file.opts.filename} for lazy deps`);
             const evaluation = evaluate(
-              shaken,
+              path,
               state.file.opts.filename,
               options
             );
 
             state.dependencies.push(...evaluation.dependencies);
             lazyValues = evaluation.value.__linariaPreval;
-
-            // Remove the __linariaValues constant from the program.
-            if (path.node.body[path.node.body.length - 1] === valueNode) {
-              path.node.body.pop();
-            }
           }
 
           // TODO: save CSS for later visits. If CSS saved for filename, ignore in processTemplate.
-          const replacer = generateReplaceMap(lazyValues, nodePathFromString);
-          state.cssText = buildCSS(state.rules, replacer);
+          if (!options._isEvaluatePass) {
+            // Remove __linariaPreval constant from the program.
+            const body = path.get('body');
+            body.forEach(statement => {
+              if (nodesAdded.some(node => node === statement.node)) {
+                statement.remove();
+              }
+            });
+            const replacer = generateReplaceMap(lazyValues, nodePathFromString);
+            state.cssText = buildCSS(state.rules, replacer);
+          }
         },
-        exit(_: any, state: State) {
+        exit(_, state) {
           log(`exiting ${state.file.opts.filename}`);
           if (Object.keys(state.rules).length) {
             // Store the result as the file metadata

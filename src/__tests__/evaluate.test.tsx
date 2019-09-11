@@ -5,7 +5,7 @@ import evaluate from '../babel/evaluate/evaluate';
 
 const test = path.resolve(__dirname, './__fixtures__/test.js');
 
-beforeEach(() => Module.invalidate());
+beforeEach(() => Module.invalidateAll());
 
 it('evaluates exports', () => {
   const filename = '/foo/bar/test.js';

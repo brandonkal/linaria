@@ -25,7 +25,7 @@ export enum ValueType {
   VALUE,
 }
 
-export type Value = Function | Styled | string | number;
+export type Value = Function | Styled | string | number | Serializable;
 
 export type ValueStrings = Map<NodePath<t.Expression>, string>;
 
@@ -92,6 +92,7 @@ export type State = {
       cwd: string;
       root: string;
       filename: string;
+      code: string;
     };
     metadata: {
       linaria: LinariaMetadata;
@@ -148,5 +149,8 @@ declare module '@babel/core' {
     };
 
     function shallowEqual(actual: object, expected: object): boolean;
+  }
+  export interface BabelFileMetadata {
+    linaria: LinariaMetadata;
   }
 }
