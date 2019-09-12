@@ -1,6 +1,6 @@
 {
   "name": "@brandonkal/linaria",
-  "version": "3.0.0-0.beta.4",
+  "version": "3.0.0-0.beta.5",
   "versionUpstream": "1.4.0-alpha.1+1",
   "description": "Blazing fast zero-runtime CSS in JS library",
   "main": "lib/index.js",
@@ -38,10 +38,10 @@
   "scripts": {
     "lint": "eslint --ext .js,.ts,.tsx .",
     "typecheck": "tsc --noEmit",
-    "test": "jest",
+    "test": "yarn fixjest && jest",
     "add-contributor": "all-contributors add",
     "build": "bash scripts/build.sh",
-    "postinstall": "node scripts/postinstall.js",
+    "fixjest": "node scripts/postinstall.js",
     "dev": "bash scripts/build.sh -w",
     "build:declarations": "tsc --noEmit false --emitDeclarationOnly --outDir lib",
     "prepare": "yarn build && yarn build:declarations",

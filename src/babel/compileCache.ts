@@ -12,6 +12,7 @@ import os from 'os';
 import { sync as mkdirpSync } from 'mkdirp';
 import findCacheDir from 'find-cache-dir';
 
+// @ts-ignore -- Node can resolve JSON but TS --resolveJsonModule breaks .d.ts output
 import pkg from '../../package.json';
 import { GeneratorResult } from '@babel/generator';
 const VERSION = pkg.version;
