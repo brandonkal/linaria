@@ -79,7 +79,7 @@ export default function transform(code: string, options: Options): Result {
     };
   }
 
-  let { rules, replacements, dependencies, cssText } = metadata.linaria;
+  let { replacements, dependencies, cssText } = metadata.linaria;
 
   // Construct a CSS-ish file from the unprocessed style rules
 
@@ -104,7 +104,6 @@ export default function transform(code: string, options: Options): Result {
   return {
     code: transformedCode || '',
     cssText,
-    rules,
     replacements,
     dependencies,
     sourceMap: map,
