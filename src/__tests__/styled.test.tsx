@@ -1,5 +1,5 @@
-const React = require('react');
-const renderer = require('react-test-renderer');
+import React from 'react';
+import renderer from 'react-test-renderer';
 const styled = require('../react/styled').default;
 
 it('renders tag with display name and class name', () => {
@@ -46,6 +46,20 @@ it('applies CSS variables in style prop', () => {
   });
 
   const tree = renderer.create(<Test size={24}>This is a test</Test>);
+
+  expect(tree.toJSON()).toMatchSnapshot();
+});
+
+it('applies CSS modifiers in style prop', () => {
+  const Test = styled('div')({
+    name: 'TestComponent',
+    class: 'abcdefg',
+    mod: {
+      large: props => props.size$ > 20,
+    },
+  });
+
+  const tree = renderer.create(<Test size$={24}>This is a test</Test>);
 
   expect(tree.toJSON()).toMatchSnapshot();
 });

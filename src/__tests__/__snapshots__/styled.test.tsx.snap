@@ -1,5 +1,13 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`applies CSS modifiers in style prop 1`] = `
+<div
+  className="abcdefg large"
+>
+  This is a test
+</div>
+`;
+
 exports[`applies CSS variables in style prop 1`] = `
 <div
   className="abcdefg"
