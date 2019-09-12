@@ -27,7 +27,7 @@ export enum ValueType {
 
 export type Value = Function | Styled | string | number | Serializable;
 
-export type ValueStrings = Map<NodePath<t.Expression>, string>;
+export type ValueStrings = WeakMap<NodePath<t.Expression>, string>;
 
 export type LazyValue = {
   kind: ValueType.LAZY;
@@ -60,6 +60,22 @@ export type Replacement = {
   length: number;
 };
 
+export type Interpolation = {
+  /** the id getter is composed of idPrefix + index */
+  id: string;
+  idPrefix: string;
+  index: number;
+  node: t.Expression;
+  source: string;
+  unit: string;
+  inComment: boolean;
+  isLazy: boolean;
+  /* A string access key for lazy values */
+  prevalKey?: string;
+  /** set to true in buildCSS to signal that interpolation should be skipped. */
+  shouldSkip?: boolean;
+};
+
 export type Rules = {
   [selector: string]: {
     className: string;
@@ -67,6 +83,8 @@ export type Rules = {
     cssText: string;
     start?: Location;
     isGlobal: boolean;
+    props: t.ObjectProperty[];
+    interpolations: Interpolation[];
     /** keep track of strings that should be replaced. */
     prevalStrings: string[];
     /** set selectorWrap for wrapped styled components to evaluate a more specific selector. */
@@ -101,7 +119,6 @@ export type State = {
 };
 
 export type LinariaMetadata = {
-  rules: Rules;
   cssText: string;
   replacements: Replacement[];
   dependencies: string[];
@@ -114,8 +131,6 @@ export type StrictOptions = {
   prefix: string;
   optimize: boolean;
   babelOptions: TransformOptions;
-  /** ignore CSS content to speed up compilation when we only wish to extract classNames for evaluation */
-  _ignoreCSS: boolean;
   /** set to true when evaluating modules for preval. */
   _isEvaluatePass: boolean;
 };

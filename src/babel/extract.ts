@@ -55,7 +55,7 @@ export default function extract(
               TaggedTemplateExpression(p, state, options),
           });
 
-          const valueStrings: ValueStrings = new Map();
+          const valueStrings: ValueStrings = new WeakMap();
           const nodePathFromString = new Map<string, NodePath<t.Expression>>();
 
           const lazyDepsPaths = state.queue.reduce(
@@ -108,7 +108,7 @@ export default function extract(
               }
             });
             const replacer = generateReplaceMap(lazyValues, nodePathFromString);
-            state.cssText = buildCSS(state.rules, replacer);
+            state.cssText = buildCSS(state.rules, replacer, options.evaluate);
           }
         },
         exit(_, state) {
@@ -118,7 +118,6 @@ export default function extract(
             state.file.metadata = {
               linaria: {
                 cssText: state.cssText,
-                rules: state.rules,
                 replacements: state.replacements,
                 dependencies: state.dependencies,
               },

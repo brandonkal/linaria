@@ -17,9 +17,16 @@ function isValid(value: any) {
 /**
  * Throw if we can't handle the interpolated value.
  */
-function throwIfInvalid(value: any, ex: NodePath): void | never {
+function throwIfInvalid(
+  value: any,
+  ex: NodePath,
+  allowFn = false
+): void | never {
   if (isValid(value)) {
-    return value;
+    return;
+  }
+  if (allowFn && typeof value === 'function') {
+    return;
   }
 
   // We can't use instanceof here so let's use duck typing

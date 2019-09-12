@@ -524,7 +524,7 @@ it('throws when css tag contains a dynamic expression without evaluate: true', a
       dedent`
       import { css } from '@brandonkal/linaria';
 
-      const title = css\`
+      export const title = css\`
         font-size: ${'${size}'}px;
       \`;
       `
@@ -636,7 +636,7 @@ it('handles alternative propNames', async () => {
     dedent`
       import { styled } from '@brandonkal/linaria/react';
 
-      const Page = (state => styled.div\`
+      export const Page = (state => styled.div\`
         color: #fff;
         &${'${[state.primary]}'} {
           color: #241047;
@@ -741,6 +741,23 @@ it('includes unreferenced injectGlobal styles', async () => {
         .title {
           font-size: 28px;
         }
+      \`;
+      `
+  );
+
+  expect(code).toMatchSnapshot();
+  expect(metadata).toMatchSnapshot();
+});
+
+it('minimizes interpolation count', async () => {
+  const { code, metadata } = await transpile(
+    dedent`
+      import { styled } from '@brandonkal/linaria/react';
+
+      export const A = styled.div\`
+        color: ${'${() => "red"}'}
+        background: ${'${() => "red"}'}
+        border-color: ${'${() => "green"}'}
       \`;
       `
   );

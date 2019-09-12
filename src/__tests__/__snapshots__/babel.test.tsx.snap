@@ -59,13 +59,8 @@ Dependencies: NA
 exports[`does not include styles if not referenced anywhere 1`] = `
 "import { css } from '@brandonkal/linaria';
 import { styled } from '@brandonkal/linaria/react';
-const Title =
-/*#__PURE__*/
-styled(\\"h1\\")({
-  name: \\"Title\\",
-  class: \\"Title_th6xni0\\"
-});
-const title = \\"title_t1u0rrat\\";"
+const Title = \\"LinariaDeadCSS\\";
+const title = \\"LinariaDeadCSS\\";"
 `;
 
 exports[`does not include styles if not referenced anywhere 2`] = `Object {}`;
@@ -103,7 +98,7 @@ Dependencies: NA
 
 exports[`handles alternative propNames 1`] = `
 "import { styled } from '@brandonkal/linaria/react';
-const Page =
+export const Page =
 /*#__PURE__*/
 styled(\\"div\\")({
   name: \\"Page\\",
@@ -115,7 +110,23 @@ styled(\\"div\\")({
 });"
 `;
 
-exports[`handles alternative propNames 2`] = `Object {}`;
+exports[`handles alternative propNames 2`] = `
+
+CSS:
+
+.Page_ph6xni0 {
+  color: #fff;
+  &.ph6xni0__primary_0 {
+    color: #241047;
+  }
+  &.ph6xni0__dark_1 {
+    color: black;
+  }
+}
+
+Dependencies: NA
+
+`;
 
 exports[`handles basic properties 1`] = `
 "import { styled } from '@brandonkal/linaria/react';
@@ -196,7 +207,7 @@ styled(\\"h1\\")({
       }
     }, \\"px\\"],
     \\"th6xni0-5\\": [unit, \\"fr\\"],
-    \\"th6xni0-7\\": [function (props) {
+    \\"th6xni0-6\\": [function (props) {
       return 200;
     }, \\"px\\"]
   }
@@ -214,7 +225,7 @@ CSS:
   width: calc(2 * var(--th6xni0-3));
   height: var(--th6xni0-4);
   grid-template-columns: var(--th6xni0-5) 1fr 1fr var(--th6xni0-5);
-  border-radius: var(--th6xni0-7)
+  border-radius: var(--th6xni0-6)
 }
 
 Dependencies: NA
@@ -228,11 +239,11 @@ export const Button =
 styled(\\"button\\")({
   name: \\"Button\\",
   class: \\"Button_bh6xni0\\",
-  vars: {
-    \\"bh6xni0-0\\": [props => props.color]
-  },
   mod: {
     \\"bh6xni0__primary_3\\": props => props.primary
+  },
+  vars: {
+    \\"bh6xni0-0\\": [props => props.color]
   }
 });"
 `;
@@ -357,12 +368,7 @@ Dependencies: NA
 exports[`includes unreferenced injectGlobal styles 1`] = `
 "import { injectGlobal } from '@brandonkal/linaria';
 import { styled } from '@brandonkal/linaria/react';
-const B =
-/*#__PURE__*/
-styled(\\"div\\")({
-  name: \\"B\\",
-  class: \\"B_b1u0rrat\\"
-});"
+const B = \\"LinariaDeadCSS\\";"
 `;
 
 exports[`includes unreferenced injectGlobal styles 2`] = `
@@ -448,6 +454,34 @@ CSS:
 
 .Title_th6xni0 {
   position: absolute; top: 0; right: 0; bottom: 0; left: 0; opacity: 1; min-height: 420px; &.shouldNotBeChanged { border-color: #fff; } @media (min-width: 200px) { -webkit-opacity: 0.8; -moz-opacity: 0.8; -ms-opacity: 0.8; -o-opacity: 0.8; -webkit-border-radius: 2px; -moz-border-radius: 2px; -ms-border-radius: 2px; -o-border-radius: 2px; -webkit-transition: 400ms; -moz-transition: 400ms; -o-transition: 400ms; -ms-transition: 400ms; }
+}
+
+Dependencies: NA
+
+`;
+
+exports[`minimizes interpolation count 1`] = `
+"import { styled } from '@brandonkal/linaria/react';
+export const A =
+/*#__PURE__*/
+styled(\\"div\\")({
+  name: \\"A\\",
+  class: \\"A_ah6xni0\\",
+  vars: {
+    \\"ah6xni0-0\\": [() => \\"red\\"],
+    \\"ah6xni0-1\\": [() => \\"green\\"]
+  }
+});"
+`;
+
+exports[`minimizes interpolation count 2`] = `
+
+CSS:
+
+.A_ah6xni0 { 
+  color: var(--ah6xni0-0)
+  background: var(--ah6xni0-0)
+  border-color: var(--ah6xni0-1)
 }
 
 Dependencies: NA
@@ -641,7 +675,7 @@ exports[`throws when css tag contains a dynamic expression without evaluate: tru
 "<<DIRNAME>>/app/index.js: The CSS cannot contain JavaScript expressions when using the 'css' or 'injectGlobal' tag.
 To evaluate the expressions at build time, pass 'evaluate: true' to the babel plugin.
   2 | 
-  3 | const title = css\`
+  3 | export const title = css\`
 > 4 |   font-size: \${size}px;
     |                ^
   5 | \`;"

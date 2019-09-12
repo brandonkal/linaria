@@ -20,15 +20,14 @@ export default function generateReplaceMap(
   const valueFromString = (key: string) => {
     return lazyValues[parseInt(key.replace('LINARIA_PREVAL_', ''))];
   };
-  return (key: string, wrapCls?: string) => {
+  return (key: string, allowFn?: boolean, wrapCls?: string) => {
     // Fetch the node from the original Javascript for Code Frames.
     const node = nodeFromString.get(key);
     let value = valueFromString(key);
     if (node == null) {
-      throw new Error('Linaria CSS error: lazyValue is missing');
-    } else {
-      throwIfInvalid(value, node);
+      throw new Error('Linaria CSS Error: lazyValue is missing');
     }
+    throwIfInvalid(value, node, allowFn);
 
     let replacement: string;
 
@@ -50,11 +49,12 @@ export default function generateReplaceMap(
       replacement = `.${value.__linaria.className}`;
     } else if (value && (value as any).cls) {
       replacement = stripLines(dummyLoc, toCSS((value as any).cls));
+    } else if (typeof value === 'function') {
+      // No replacement is required because a CSS variable is already set.
+      // This is an interpolation not a Styled Component function.
+      replacement = key;
     } else {
-      replacement = stripLines(
-        dummyLoc,
-        toCSS(value as string /* function not possible here */)
-      );
+      replacement = stripLines(dummyLoc, toCSS(value));
     }
     return replacement;
   };

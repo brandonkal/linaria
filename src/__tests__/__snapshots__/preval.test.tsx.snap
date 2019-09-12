@@ -650,7 +650,7 @@ styled(\\"h1\\")({
   name: \\"Title\\",
   class: \\"Title_t1xha7dm\\",
   vars: {
-    \\"t1xha7dm-0\\": [generate]
+    \\"t1xha7dm-0\\": [generate, \\"px\\"]
   }
 });"
 `;
@@ -661,7 +661,7 @@ CSS:
 
 .Title_t1xha7dm {
   &:before {
-    content: "var(--t1xha7dm-0)"
+    content: "var(--t1xha7dm-0);"
   }
 }
 

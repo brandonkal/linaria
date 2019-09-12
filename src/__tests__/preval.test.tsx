@@ -382,7 +382,7 @@ it('ignores inline vanilla function expressions', async () => {
   expect(metadata).toMatchSnapshot();
 });
 
-it.skip('ignores external expressions', async () => {
+it('ignores external expressions', async () => {
   const { code, metadata } = await transpile(
     dedent`
     import { styled } from '@brandonkal/linaria/react';
@@ -391,7 +391,7 @@ it.skip('ignores external expressions', async () => {
 
     export const Title = styled.h1\`
       &:before {
-        content: "${'${generate}'}"
+        content: "${'${generate}'}px;"
       }
     \`;
     `

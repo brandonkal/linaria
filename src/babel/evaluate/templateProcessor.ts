@@ -11,6 +11,7 @@ import {
   StrictOptions,
   TemplateExpression,
   ValueStrings,
+  Interpolation,
 } from '../types';
 
 import throwIfInvalid from '../utils/throwIfInvalid';
@@ -21,14 +22,6 @@ import getLinariaComment from '../utils/getLinariaComment';
 
 // Match any valid CSS units followed by a separator such as ;, newline etc.
 const unitRegex = new RegExp(`^(${units.join('|')})(;|,|\n| |\\))`);
-
-type Interpolation = {
-  id: string;
-  node: t.Expression;
-  source: string;
-  unit: string;
-  inComment: boolean;
-};
 
 type Modifier = {
   id: string;
@@ -75,6 +68,12 @@ export default function getTemplateProcessor(options: StrictOptions) {
       }
     }
 
+    if (!isReferenced && !isGlobal) {
+      // Bundler DCE will remove this assignment.
+      path.replaceInline(t.stringLiteral('LinariaDeadCSS'));
+      return;
+    }
+
     const cls =
       options.displayName && !options.optimize
         ? `${toValidCSSIdentifier(displayName!)}_${slug}`
@@ -92,10 +91,9 @@ export default function getTemplateProcessor(options: StrictOptions) {
     const expMeta: ExpressionMeta[] =
       path.state && path.state.expMeta ? path.state.expMeta : [];
 
-    if (!options._ignoreCSS) {
-      quasi.quasis.forEach((el, i, self) => {
+    quasi.quasis.forEach((el, i, self) => {
+      if (!options._isEvaluatePass) {
         let appended = false;
-
         if (i !== 0 && el.value && el.value.cooked) {
           // Check if previous expression was a CSS variable that we replaced
           // If it has a unit after it, we need to move the unit into the interpolation
@@ -120,143 +118,163 @@ export default function getTemplateProcessor(options: StrictOptions) {
         if (!appended) {
           cssText += el.value.cooked;
         }
+      }
 
-        const ex = expressions[i];
+      const ex = expressions[i];
 
-        if (ex) {
-          const getLoc = () => {
-            const { end } = ex.node.loc!;
-            // The location will be end of the current string to start of next string
-            const next = self[i + 1];
-            return {
-              // +1 because the expressions location always shows 1 column before
-              start: { line: el.loc!.end.line, column: el.loc!.end.column + 1 },
-              end: next
-                ? { line: next.loc!.start.line, column: next.loc!.start.column }
-                : { line: end.line, column: end.column + 1 },
-            };
+      if (ex) {
+        const getLoc = (): t.SourceLocation => {
+          const { end } = ex.node.loc!;
+          // The location will be end of the current string to start of next string
+          const next = self[i + 1];
+          return {
+            // +1 because the expressions location always shows 1 column before
+            start: { line: el.loc!.end.line, column: el.loc!.end.column + 1 },
+            end: next
+              ? { line: next.loc!.start.line, column: next.loc!.start.column }
+              : { line: end.line, column: end.column + 1 },
           };
-          // Test if ex is inline array expression. This has already been validated.
-          if (t.isArrayExpression(ex)) {
-            if (styled) {
-              // Validate
-              // Track if prop should pass through
-              let elements = ex.get('elements') as NodePath<any>[];
+        };
+        // Test if ex is inline array expression. This has already been validated.
+        if (t.isArrayExpression(ex)) {
+          if (options._isEvaluatePass) {
+            // No need to evaluate modifiers here.
+            return;
+          }
+          if (styled) {
+            // Validate
+            // Track if prop should pass through
+            let elements = ex.get('elements') as NodePath<any>[];
 
-              // Generate BEM name from source
-              let modEl = elements[0] as NodePath<t.FunctionExpression>;
-              let param = modEl.node.params[0];
-              let paramText = 'props';
-              if ('name' in param) {
-                paramText = param.name;
-              }
-              const body = modEl.get('body');
-              let returns: string[] = [];
-              const returnVisitor = {
-                ReturnStatement(path: NodePath<t.ReturnStatement>) {
-                  let arg = path.get('argument');
-                  if (arg) {
-                    const src =
-                      arg.getSource() ||
-                      (arg.node && generator(arg.node).code) ||
-                      'unknown';
-                    returns.push(src);
-                  }
-                },
-              };
-              body.traverse(returnVisitor);
-              // If no explicit return statement is found, it is likely an arrow return.
-              let bodyText =
-                returns[0] === undefined ||
-                returns[0] === null ||
-                returns[0] === 'unknown'
-                  ? body.getSource() ||
-                    (body.node && generator(body.node).code) ||
-                    'unknown'
-                  : returns[0];
-              const modName = generateModifierName(paramText, bodyText);
-              // Push modifier to array -- NOTE: changing format requires updating optimizer
-              const id = `${wrapId(slug!)}${
-                options.optimize ? '-' : `__${modName}_`
-              }${i}`;
-
-              modifiers.push({
-                id,
-                node: modEl.node,
-                source: generator(modEl.node).code,
-                inComment: expMeta[i].inComment,
-              });
-
-              cssText += `.${id}`;
-            } else {
-              // CSS modifiers can't be used outside components
-              throw ex.buildCodeFrameError(
-                "The CSS cannot contain modifier expressions outside of the 'styled' tag."
-              );
+            // Generate BEM name from source
+            let modEl = elements[0] as NodePath<t.FunctionExpression>;
+            let param = modEl.node.params[0];
+            let paramText = 'props';
+            if ('name' in param) {
+              paramText = param.name;
             }
-          } else {
-            // Evaluate normal interpolation
-            const result = ex.evaluate();
-            const beforeLength = cssText.length;
-            const loc = getLoc();
-
-            if (result.confident) {
-              throwIfInvalid(result.value, ex);
-
-              cssText += stripLines(loc, toCSS(result.value));
-
-              state.replacements.push({
-                original: loc,
-                length: cssText.length - beforeLength,
-              });
-            } else {
-              // Try to fetch preval-ed value. If preval, return early.
-              if (
-                options.evaluate &&
-                !(t.isFunctionExpression(ex) || t.isArrowFunctionExpression(ex))
-              ) {
-                const value = valueStrings.get(ex);
-                throwIfInvalid(value, ex);
-
-                if (value) {
-                  prevalStrings.push(value);
-                  cssText += stripLines(loc, toCSS(value));
-
-                  state.replacements.push({
-                    original: loc,
-                    length: cssText.length - beforeLength,
-                  });
-                  return;
+            const body = modEl.get('body');
+            let returns: string[] = [];
+            const returnVisitor = {
+              ReturnStatement(path: NodePath<t.ReturnStatement>) {
+                let arg = path.get('argument');
+                if (arg) {
+                  const src =
+                    arg.getSource() ||
+                    (arg.node && generator(arg.node).code) ||
+                    'unknown';
+                  returns.push(src);
                 }
-              } else if (t.isObjectExpression(ex)) {
-                throw ex.buildCodeFrameError(
-                  'Unexpected object expression.\n' +
-                    "To evaluate the expressions at build time, pass 'evaluate: true' to the babel plugin."
-                );
-              } else if (styled) {
-                const id = `${wrapId(slug!)}-${i}`;
+              },
+            };
+            body.traverse(returnVisitor);
+            // If no explicit return statement is found, it is likely an arrow return.
+            let bodyText =
+              returns[0] === undefined ||
+              returns[0] === null ||
+              returns[0] === 'unknown'
+                ? body.getSource() ||
+                  (body.node && generator(body.node).code) ||
+                  'unknown'
+                : returns[0];
+            const modName = generateModifierName(paramText, bodyText);
+            // Push modifier to array -- NOTE: changing format requires updating optimizer
+            const id = `${wrapId(slug!)}${
+              options.optimize ? '-' : `__${modName}_`
+            }${i}`;
 
-                interpolations.push({
-                  id,
-                  node: ex.node,
-                  source: ex.getSource() || generator(ex.node).code,
-                  unit: '',
-                  inComment: expMeta[i].inComment,
+            modifiers.push({
+              id,
+              node: modEl.node,
+              source: generator(modEl.node).code,
+              inComment: expMeta[i].inComment,
+            });
+
+            cssText += `.${id}`;
+          } else {
+            // CSS modifiers can't be used outside components
+            throw ex.buildCodeFrameError(
+              "The CSS cannot contain modifier expressions outside of the 'styled' tag."
+            );
+          }
+        } else {
+          // Evaluate normal interpolation
+          const result = ex.evaluate();
+          const beforeLength = cssText.length;
+          const loc = getLoc();
+
+          if (result.confident) {
+            throwIfInvalid(result.value, ex);
+
+            cssText += stripLines(loc, toCSS(result.value));
+
+            state.replacements.push({
+              original: loc,
+              length: cssText.length - beforeLength,
+            });
+          } else {
+            // Try to fetch preval-ed value. If preval, return early to process the next expression.
+            if (
+              options.evaluate &&
+              !(
+                t.isFunctionExpression(ex) ||
+                t.isArrowFunctionExpression(ex) ||
+                // Identifiers are evaluated as if they were interpolations. They may reference a function.
+                // The interpolation will be removed if in the evaluate pass.
+                (styled && t.isIdentifier(ex))
+              )
+            ) {
+              const placholder = valueStrings.get(ex);
+              throwIfInvalid(placholder, ex);
+
+              if (placholder) {
+                prevalStrings.push(placholder);
+                cssText += stripLines(loc, toCSS(placholder));
+
+                state.replacements.push({
+                  original: loc,
+                  length: cssText.length - beforeLength,
                 });
-
-                cssText += `var(--${id})`;
-              } else {
-                // CSS custom properties can't be used outside components
-                throw ex.buildCodeFrameError(
-                  "The CSS cannot contain JavaScript expressions when using the 'css' or 'injectGlobal' tag.\n" +
-                    "To evaluate the expressions at build time, pass 'evaluate: true' to the babel plugin."
-                );
+                return;
               }
+            } else if (t.isObjectExpression(ex)) {
+              throw ex.buildCodeFrameError(
+                'Unexpected object expression.\n' +
+                  "To evaluate the expressions at build time, pass 'evaluate: true' to the babel plugin."
+              );
+            } else if (styled) {
+              const idPrefix = `${wrapId(slug!)}-`;
+              const prevalKey = valueStrings.get(ex);
+
+              interpolations.push({
+                get id() {
+                  return this.idPrefix + this.index;
+                },
+                idPrefix,
+                index: i,
+                node: ex.node,
+                source: ex.getSource() || generator(ex.node).code,
+                unit: '',
+                inComment: expMeta[i].inComment,
+                isLazy: t.isIdentifier(ex),
+                prevalKey,
+              });
+
+              cssText += `var(--${idPrefix}${i})`;
+            } else {
+              // CSS custom properties can't be used outside components
+              throw ex.buildCodeFrameError(
+                "The CSS cannot contain JavaScript expressions when using the 'css' or 'injectGlobal' tag.\n" +
+                  "To evaluate the expressions at build time, pass 'evaluate: true' to the babel plugin."
+              );
             }
           }
         }
-      });
-    }
+      }
+    });
+
+    // props object for styled call. We set it here so it can be modified in buildCSS.
+    const props: t.ObjectProperty[] = [];
 
     if (styled) {
       // If `styled` wraps another component and not a primitive,
@@ -267,8 +285,6 @@ export default function getTemplateProcessor(options: StrictOptions) {
         selectorWrap = valueStrings.get(styled.component as NodePath<t.Expression>);
       }
 
-      const props = [];
-
       props.push(
         t.objectProperty(t.identifier('name'), t.stringLiteral(displayName!))
       );
@@ -277,53 +293,12 @@ export default function getTemplateProcessor(options: StrictOptions) {
         t.objectProperty(t.identifier('class'), t.stringLiteral(className))
       );
 
-      // If we found any interpolations, also pass them so they can be applied
-      if (interpolations.length) {
-        // De-duplicate interpolations based on the source and unit
-        // If two interpolations have the same source code and same unit,
-        // we don't need to use 2 custom properties for them, we can use a single one
-        const result: { [key: string]: Interpolation } = {};
-
-        interpolations.forEach(it => {
-          const key = it.source + it.unit;
-
-          if (key in result) {
-            cssText = cssText.replace(
-              `var(--${it.id})`,
-              `var(--${result[key].id})`
-            );
-          } else if (!it.inComment) {
-            result[key] = it;
-          }
-        });
-
-        let keys = Object.keys(result);
-        if (keys.length > 0) {
-          // Save to compiled JS object
-          props.push(
-            t.objectProperty(
-              t.identifier('vars'),
-              t.objectExpression(
-                keys.map(key => {
-                  const { id, node, unit } = result[key];
-                  const items = [node];
-
-                  if (unit) {
-                    items.push(t.stringLiteral(unit));
-                  }
-
-                  return t.objectProperty(
-                    t.stringLiteral(id),
-                    t.arrayExpression(items)
-                  );
-                })
-              )
-            )
-          );
-        }
-      }
+      // If we found any interpolations, they will be processed in the buildCSS stage.
 
       // If any modifiers were found, also pass them so they can be applied.
+      // The length will be zero if options._isEvaluatePass
+      // Note that these can still exist in the compiled code for preval depending on the order of discovery.
+      // This is not an issue because modifiers and interpolations will not be evaluated.
       if (modifiers.length) {
         // De-duplicate modifiers based on the source
         // If two modifiers have the same source code,
@@ -369,10 +344,6 @@ export default function getTemplateProcessor(options: StrictOptions) {
       path.replaceWith(t.stringLiteral(className));
     }
 
-    if (!isReferenced && !isGlobal) {
-      return;
-    }
-
     state.rules[className] = {
       cssText,
       className,
@@ -380,6 +351,9 @@ export default function getTemplateProcessor(options: StrictOptions) {
       displayName: displayName!,
       start: path.parent && path.parent.loc ? path.parent.loc.start : undefined,
       isGlobal,
+      // We save these to the rule state to evaluate lazily
+      props,
+      interpolations,
       prevalStrings,
     };
   };
