@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import convert from 'convert-source-map';
 
 const re = /\/\*# sourceMappingURL=data:application\/json;base64,.*$/m;

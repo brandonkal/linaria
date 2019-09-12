@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import path from 'path';
 import normalize from 'normalize-path';
 import fs from 'fs';
