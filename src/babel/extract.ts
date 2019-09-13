@@ -98,7 +98,6 @@ export default function extract(
             lazyValues = evaluation.value.__linariaPreval;
           }
 
-          // TODO: save CSS for later visits. If CSS saved for filename, ignore in processTemplate.
           if (!options._isEvaluatePass) {
             // Remove __linariaPreval constant from the program.
             const body = path.get('body');
