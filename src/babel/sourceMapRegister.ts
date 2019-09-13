@@ -1,12 +1,20 @@
 import sourceMapSupport from 'source-map-support';
 import * as compileCache from './compileCache';
 
+let activated = false;
+
 // Register additional source map support for vm.
-sourceMapSupport.install({
-  handleUncaughtExceptions: false,
-  environment: 'node',
-  retrieveSourceMap: linariaRetrieveSourceMap,
-});
+activate();
+
+function activate() {
+  if (activated) return;
+  sourceMapSupport.install({
+    handleUncaughtExceptions: false,
+    environment: 'node',
+    retrieveSourceMap: linariaRetrieveSourceMap,
+  });
+  activated = true;
+}
 
 function linariaRetrieveSourceMap(filename: string) {
   const cached = compileCache.get()[filename];

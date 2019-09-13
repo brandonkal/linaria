@@ -7,7 +7,6 @@ import validateOptions from 'schema-utils';
 import enhancedResolve from 'enhanced-resolve';
 import Module from './babel/module';
 import transform from './utils/transform';
-import findCacheDir from 'find-cache-dir';
 
 const schema = {
   type: 'object',
@@ -41,17 +40,16 @@ export default function loader(
   const options = loaderUtils.getOptions(this) || {};
   validateOptions(schema, options, 'Linaria Loader');
   const { sourceMap, cacheDirectory: cacheConfig, ...pluginOptions } = options;
-  const cacheDirectory: string =
-    cacheConfig ||
-    findCacheDir({ name: '@brandonkal/linaria' }) ||
-    '.linaria-cache';
+  const cacheName: string = cacheConfig || '.linaria-cache';
 
   const filePrefix = process.env.NODE_ENV === 'production' ? 'prod' : 'dev';
 
+  const cacheDirectory = path.isAbsolute(cacheName)
+    ? cacheName
+    : path.join(this.rootContext, cacheName);
+
   const outputFilename = path.join(
-    path.isAbsolute(cacheDirectory)
-      ? cacheDirectory
-      : path.join(this.rootContext, cacheDirectory),
+    cacheDirectory,
     path.relative(
       this.rootContext,
       this.resourcePath.replace(/\.[^.]+$/, `.${filePrefix}.linaria.css`)
@@ -91,6 +89,7 @@ export default function loader(
       inputSourceMap: inputSourceMap != null ? inputSourceMap : undefined,
       outputFilename,
       pluginOptions,
+      cacheDirectory,
     });
   } finally {
     // Restore original behaviour

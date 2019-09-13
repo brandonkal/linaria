@@ -10,20 +10,14 @@ import path from 'path';
 import fs from 'fs';
 import os from 'os';
 import { sync as mkdirpSync } from 'mkdirp';
-import findCacheDir from 'find-cache-dir';
 
 // @ts-ignore -- Node can resolve JSON but TS --resolveJsonModule breaks .d.ts output
 import pkg from '../../package.json';
 import { GeneratorResult } from '@babel/generator';
 const VERSION = pkg.version;
 
-const DEFAULT_CACHE_DIR =
-  findCacheDir({ name: '@brandonkal/linaria' }) || os.homedir() || os.tmpdir();
-const DEFAULT_FILENAME = path.join(
-  DEFAULT_CACHE_DIR,
-  `.linariaCompileCache.json`
-);
-const FILENAME: string = process.env.LINARIA_CACHE_PATH || DEFAULT_FILENAME;
+let FILENAME: string;
+
 let cache: {
   version: string;
   data: Record<string, CachedCompilation>;
@@ -62,8 +56,12 @@ export function save() {
 /**
  * Load cache from disk and parse.
  */
-export function load() {
+export function load(cacheDirectory?: string) {
   if (process.env.LINARIA_DISABLE_CACHE) return;
+
+  if (!FILENAME) {
+    FILENAME = _getFilename(cacheDirectory);
+  }
 
   process.on('exit', save);
   process.nextTick(save);
@@ -78,6 +76,16 @@ export function load() {
   } catch (err) {
     return;
   }
+}
+
+function _getFilename(cacheDirectory?: string) {
+  return path.join(
+    cacheDirectory ||
+      process.env.LINARIA_CACHE_PATH ||
+      os.homedir() ||
+      os.tmpdir(),
+    `.linariaCompileCache.json`
+  );
 }
 
 /**

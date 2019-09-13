@@ -1,6 +1,6 @@
 {
   "name": "@brandonkal/linaria",
-  "version": "3.0.0-0.beta.5",
+  "version": "3.0.0-beta.6",
   "versionUpstream": "1.4.0-alpha.1+1",
   "description": "Blazing fast zero-runtime CSS in JS library",
   "main": "lib/index.js",
@@ -125,7 +125,6 @@
     "debug": "^4.1.1",
     "dedent": "^0.7.0",
     "enhanced-resolve": "^4.1.0",
-    "find-cache-dir": "^3.0.0",
     "glob": "^7.1.3",
     "incstr": "^1.2.3",
     "loader-utils": "^1.2.3",

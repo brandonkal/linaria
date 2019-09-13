@@ -19,11 +19,9 @@ import { GeneratorResult } from '@babel/generator';
 import debug from 'debug';
 import { codeFrameColumns } from '@babel/code-frame';
 import fixError from './utils/fixError';
-import {
-  clear as clearCompileCache,
-  get as getCompileCache,
-} from './compileCache';
+import * as compileCache from './compileCache';
 const log = debug('linaria:module');
+import './sourceMapRegister';
 
 // Supported node builtins based on the modules polyfilled by webpack
 // `true` means module is polyfilled, `false` means module is empty
@@ -97,10 +95,6 @@ const sandbox = vm.createContext(
   },
   {
     name: 'Linaria Preval',
-    codeGeneration: {
-      strings: false,
-      wasm: false,
-    },
   }
 );
 
@@ -146,7 +140,7 @@ class Module {
 
   static invalidateAll = () => {
     cache = {};
-    clearCompileCache();
+    compileCache.clear();
   };
 
   id: string;
@@ -376,7 +370,7 @@ class Module {
           linesBelow: 2,
           message: e.message,
         };
-        const cached = getCompileCache()[this.filename];
+        const cached = compileCache.get()[this.filename];
         let sourceCode: string;
         if (cached && cached.map && cached.map.sourcesContent) {
           sourceCode = cached.map.sourcesContent[0] || this._source!;

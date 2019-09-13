@@ -4,6 +4,7 @@ import { SourceMapGenerator } from 'source-map';
 import loadOptions, { PluginOptions } from './loadOptions';
 import debug from 'debug';
 import { Rules, Replacement, CSSIdentifiers } from '../babel/types';
+import * as compileCache from '../babel/compileCache';
 const log = debug('linaria:loader');
 
 type Result = {
@@ -21,10 +22,14 @@ type Options = {
   filename: string;
   outputFilename?: string;
   inputSourceMap?: Object;
+  /** Where the transform cache is stored */
+  cacheDirectory?: string;
   pluginOptions?: Partial<PluginOptions>;
 };
 
 const babelPreset = require.resolve('../babel');
+
+let COMPILE_CACHE_LOADED = false;
 
 export default function transform(code: string, options: Options): Result {
   // Check if the file contains `css`, `styled`, or injectGlobal words first
@@ -40,6 +45,12 @@ export default function transform(code: string, options: Options): Result {
       code,
       sourceMap: options.inputSourceMap,
     };
+  }
+
+  // Warm the compileCache
+  if (!COMPILE_CACHE_LOADED) {
+    compileCache.load(options.cacheDirectory);
+    COMPILE_CACHE_LOADED = true;
   }
 
   const pluginOptions = loadOptions(options.pluginOptions);
