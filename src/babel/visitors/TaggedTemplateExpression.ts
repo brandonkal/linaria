@@ -6,7 +6,6 @@ import { NodePath } from '@babel/traverse';
 import throwIfInvalid from '../utils/throwIfInvalid';
 import hasImport from '../utils/hasImport';
 import { State, StrictOptions, ValueType, ExpressionValue } from '../types';
-import { ExpressionMeta } from '../utils/calcExpressionStats';
 
 import toValidCSSIdentifier from '../utils/toValidCSSIdentifier';
 import slugify from '../../utils/slugify';
@@ -202,12 +201,11 @@ export default function TaggedTemplateExpression(
   }
 
   let expressionValues: ExpressionValue[] = [];
-  let expMeta: ExpressionMeta[] = [];
   log('collecting expressions');
   const expressions = path.get('quasi').get('expressions');
   const quasis = path.get('quasi').get('quasis');
   // Evaluate CSS comment location and nesting depth
-  expMeta = calcExpressionStats(quasis, expressions);
+  let expMeta = calcExpressionStats(quasis, expressions);
   // Validate and transform all expressions
   expressions.forEach((ex, i) => {
     if (t.isStringLiteral(ex)) {

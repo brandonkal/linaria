@@ -5,14 +5,15 @@ import { Location } from '../types';
 // This should be safe because strings cannot contain newline: https://www.w3.org/TR/CSS2/syndata.html#strings
 export default function stripLines(
   loc: { start: Location; end: Location },
-  text: string | number
+  text: string | number,
+  skipAppend = false
 ) {
   let result = String(text)
     .replace(/[\r\n]+/g, ' ')
     .trim();
 
   // If the start and end line numbers aren't same, add new lines to span the text across multiple lines
-  if (loc.start.line !== loc.end.line) {
+  if (!skipAppend && loc.start.line !== loc.end.line) {
     result += '\n'.repeat(loc.end.line - loc.start.line);
 
     // Add extra spaces to offset the column

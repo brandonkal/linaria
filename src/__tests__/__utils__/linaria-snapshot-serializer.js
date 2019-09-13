@@ -1,9 +1,13 @@
 module.exports = {
   test: value => value && typeof value.linaria === 'object',
-  print: ({ linaria }) => `
+  print: ({ linaria, keepEmptyLines }) => `
 CSS:
 
-${linaria.cssText.replace(/^\n\n/gm, '').replace(/^\n/, '')}
+${
+  keepEmptyLines
+    ? linaria.cssText
+    : linaria.cssText.replace(/^\n\n/gm, '').replace(/^\n/, '')
+}
 
 Dependencies: ${
     linaria.dependencies.length ? linaria.dependencies.join(', ') : 'NA'

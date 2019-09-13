@@ -12,6 +12,10 @@ export type ExpressionMeta = {
   array: boolean;
   /* Whether an array is valid. If nestLevel <= 0 and attribute only appears as a selector */
   valid: boolean;
+  /** Track if expression is in a position where it can be a declaration value. (not a selector or declaration) */
+  isDeclarationValue: boolean;
+  /** record lines for the expression */
+  lines?: number;
 };
 
 interface StrPath {
@@ -65,15 +69,17 @@ export default function(quasis: any, expressions: any[]) {
   // Generate mapping for expression existance
   let expressionMeta: ExpressionMeta[] = [];
   placeholders.forEach((placeholder, i) => {
+    const isValueRegex = new RegExp(`:.*?${placeholder.name}.*?;`);
     let index = dummyCSS.indexOf(placeholder.name);
     expressionMeta[i] = {
       // A placeholder not found after removing comments is in a comment.
       inComment: index === -1,
       nestLevel: 0,
-      index: index,
+      index,
       placeholder: placeholder.name,
       array: placeholder.array,
       valid: false,
+      isDeclarationValue: isValueRegex.test(dummyCSS),
     };
   });
 

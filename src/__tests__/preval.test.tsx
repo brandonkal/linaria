@@ -31,7 +31,7 @@ const transpile = async (input: string) => {
   });
 
   return {
-    metadata,
+    metadata: metadata as typeof metadata & { keepEmptyLines?: boolean },
     code: replaced ? code.replace(SHORT, FULL) : code,
   };
 };
@@ -570,6 +570,34 @@ it('does not transform identifiers to arrows that contain propsName', async () =
       `
   );
   expect(code).toMatchSnapshot();
+  expect(metadata).toMatchSnapshot();
+});
+
+function lineOf(search: string, text: string) {
+  const lines = text.split('\n');
+  return lines.findIndex(line => line.includes(search)) + 1;
+}
+
+it('creates valid CSS with multiline interpolation', async () => {
+  const source = dedent`
+  import { styled } from '../react';
+
+  function getNumber() {
+    return 10
+  }
+
+  export const Page = (p => styled.div\`
+    font-size: ${'${getNumber() +\n\
+      2}'}px;
+    background: black;
+  \`)({})
+  `;
+  const { code, metadata } = await transpile(source);
+  expect(code).toMatchSnapshot();
+  expect(lineOf('background:', (metadata as any).linaria.cssText)).toBe(
+    lineOf('background:', source)
+  );
+  metadata.keepEmptyLines = true;
   expect(metadata).toMatchSnapshot();
 });
 

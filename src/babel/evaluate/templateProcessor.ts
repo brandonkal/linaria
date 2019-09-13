@@ -102,6 +102,7 @@ export default function getTemplateProcessor(options: StrictOptions) {
           // Another approach would be `calc(var(--size) * 1px), but some browsers don't support all units
           // https://bugzilla.mozilla.org/show_bug.cgi?id=956573
           const matches = el.value.cooked.match(unitRegex);
+          let shouldTestForDecl = false;
 
           if (matches) {
             const last = interpolations[interpolations.length - 1];
@@ -110,6 +111,28 @@ export default function getTemplateProcessor(options: StrictOptions) {
             if (last && cssText.endsWith(`var(--${last.id})`)) {
               last.unit = unit;
               cssText += el.value.cooked.replace(unitRegex, '$2');
+              appended = true;
+            } else {
+              shouldTestForDecl = true;
+            }
+          } else {
+            shouldTestForDecl = true;
+          }
+          // We support multi-line evaluated expressions.
+          // We need to move the rest of that value into the last CSS expression
+          // and insert new lines so appended CSS lines are correct after the last expression was collapsed.
+          if (shouldTestForDecl && expMeta[i - 1].isDeclarationValue) {
+            const first = el.value.cooked.match(/^.*?;/);
+            if (first && first[0]) {
+              const lastCSS = el.value.cooked.slice(first[0].length);
+              cssText += first[0];
+              const lastExpMetaLines = expMeta[i - 1].lines;
+              let line = 0;
+              while (lastExpMetaLines && line < lastExpMetaLines) {
+                cssText += '\n';
+                line++;
+              }
+              cssText += lastCSS;
               appended = true;
             }
           }
@@ -205,8 +228,11 @@ export default function getTemplateProcessor(options: StrictOptions) {
 
           if (result.confident) {
             throwIfInvalid(result.value, ex);
+            const skipLines = expMeta[i].isDeclarationValue;
 
-            cssText += stripLines(loc, toCSS(result.value));
+            cssText += stripLines(loc, toCSS(result.value), skipLines);
+            // Record lines for next visit
+            expMeta[i].lines = loc.end.line - loc.start.line;
 
             state.replacements.push({
               original: loc,
@@ -224,12 +250,15 @@ export default function getTemplateProcessor(options: StrictOptions) {
                 (styled && t.isIdentifier(ex))
               )
             ) {
-              const placholder = valueStrings.get(ex);
-              throwIfInvalid(placholder, ex);
+              const placeholder = valueStrings.get(ex);
+              throwIfInvalid(placeholder, ex);
 
-              if (placholder) {
-                prevalStrings.push(placholder);
-                cssText += stripLines(loc, toCSS(placholder));
+              if (placeholder) {
+                prevalStrings.push(placeholder);
+                const skipLines = expMeta[i].isDeclarationValue;
+                cssText += stripLines(loc, toCSS(placeholder), skipLines);
+                // Record lines for next visit
+                expMeta[i].lines = loc.end.line - loc.start.line;
 
                 state.replacements.push({
                   original: loc,
