@@ -77,7 +77,7 @@ export default function evaluate(
       transformOptions = getOptions(options, this.filename, map);
       this._cacheKey = slugify(JSON.stringify(transformOptions));
       if (removeLinariaPreset) {
-        transformOptions.presets!.pop();
+        transformOptions.plugins!.pop();
       }
     } catch (e) {
       e = fixError(e);
@@ -242,6 +242,11 @@ function getOptions(
       // Plugin order is first to last, so add the extra plugins to end
       // This makes sure that the plugins we specify always run first
       ...babelOptions.plugins!,
+    ],
+    overrides: [
+      {
+        presets: ['env', { targets: { node: 'current' } }],
+      },
     ],
   };
   const { options } = loadPartialConfig(transformOptions) as Readonly<

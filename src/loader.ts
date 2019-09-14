@@ -7,6 +7,7 @@ import validateOptions from 'schema-utils';
 import enhancedResolve from 'enhanced-resolve';
 import Module from './babel/module';
 import transform from './utils/transform';
+import fixError from './babel/utils/fixError';
 
 const schema = {
   type: 'object',
@@ -91,6 +92,8 @@ export default function loader(
       pluginOptions,
       cacheDirectory,
     });
+  } catch (e) {
+    throw fixError(e);
   } finally {
     // Restore original behaviour
     Module._resolveFilename = originalResolveFilename;
