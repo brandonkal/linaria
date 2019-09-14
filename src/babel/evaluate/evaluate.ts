@@ -1,6 +1,5 @@
 /* eslint-disable no-ex-assign */
 import {
-  transformSync,
   BabelFileResult,
   PluginItem,
   TransformOptions,
@@ -9,6 +8,8 @@ import {
   PartialConfig,
   ConfigItem,
   NodePath,
+  parseSync,
+  transformFromAstSync,
 } from '@babel/core';
 import generator from '@babel/generator';
 
@@ -21,7 +22,6 @@ import fixError from '../utils/fixError';
 import * as compileCache from '../compileCache';
 
 // Load compile cache here.
-compileCache.load();
 let cache = compileCache.get();
 
 const log = debug('linaria:evaluate');
@@ -39,6 +39,7 @@ type DefaultOptions = Partial<TOptions> & {
 };
 
 const babelPreset = require.resolve('../index');
+const babelPlugin = require.resolve('../extract');
 const topLevelBabelPreset = require.resolve('../../../babel');
 const dynamicImportNOOP = require.resolve('../dynamic-import-noop');
 
@@ -101,7 +102,12 @@ export default function evaluate(
     }
 
     try {
-      const compiled = transformSync(code, transformOptions) as BabelFileResult;
+      const ast = parseSync(code, transformOptions);
+      const compiled = transformFromAstSync(
+        ast!,
+        code,
+        transformOptions
+      ) as BabelFileResult;
       cache[this.filename] = {
         code: compiled.code!,
         map: compiled.map!,
@@ -145,6 +151,12 @@ function getPresetName(item: any): string {
   return Array.isArray(item) ? item[0] : item;
 }
 
+/**
+ * builds Babel config for file.
+ * 1. Plugins run before Presets.
+ * 2. Plugins run first to last.
+ * 3. Presets run last to first.
+ */
 function getOptions(
   pluginOptions: StrictOptions | undefined,
   filename: string,
@@ -162,12 +174,14 @@ function getOptions(
     },
     filename: filename,
     sourceMaps: true, // Required for stack traces
-    presets: [[babelPreset, { ...pluginOptions, _isEvaluatePass: true }]],
+    presets: [],
     plugins: [
       ...plugins.map(name => require.resolve(getPresetName(name))),
       // We don't support dynamic imports when evaluating, but don't want a syntax error
       // This will replace dynamic imports with an object that does nothing
       dynamicImportNOOP,
+      // Plugins come before presets. We use our plugin here to ensure it always runs first.
+      [babelPlugin, { ...pluginOptions, _isEvaluatePass: true }],
     ],
   };
   const babelOptions =
@@ -196,6 +210,7 @@ function getOptions(
             // So we add an extra check for top level linaria/babel
             name === '@brandonkal/linaria/babel' ||
             name === topLevelBabelPreset ||
+            name === babelPreset ||
             // Also add a check for the plugin names we include for bundler support
             (typeof name === 'string' &&
               plugins.map(p => getPresetName(p).includes(name)))
@@ -224,7 +239,7 @@ function getOptions(
     ],
     plugins: [
       ...defaults.plugins,
-      // Plugin order is first to last, so add the extra presets to end
+      // Plugin order is first to last, so add the extra plugins to end
       // This makes sure that the plugins we specify always run first
       ...babelOptions.plugins!,
     ],

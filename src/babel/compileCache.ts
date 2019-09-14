@@ -16,7 +16,8 @@ import pkg from '../../package.json';
 import { GeneratorResult } from '@babel/generator';
 const VERSION = pkg.version;
 
-let FILENAME: string;
+let FILENAME: string = _getFilename();
+let loaded = false;
 
 let cache: {
   version: string;
@@ -59,8 +60,9 @@ export function save() {
 export function load(cacheDirectory?: string) {
   if (process.env.LINARIA_DISABLE_CACHE) return;
 
-  if (!FILENAME) {
+  if (!loaded) {
     FILENAME = _getFilename(cacheDirectory);
+    loaded = true;
   }
 
   process.on('exit', save);
@@ -79,13 +81,12 @@ export function load(cacheDirectory?: string) {
 }
 
 function _getFilename(cacheDirectory?: string) {
-  return path.join(
+  const dir =
     cacheDirectory ||
-      process.env.LINARIA_CACHE_PATH ||
-      os.homedir() ||
-      os.tmpdir(),
-    `.linariaCompileCache.json`
-  );
+    process.env.LINARIA_CACHE_PATH ||
+    os.homedir() ||
+    os.tmpdir();
+  return path.join(dir, `.linariaCompileCache.json`);
 }
 
 /**
@@ -100,5 +101,6 @@ export function get() {
  */
 export function clear() {
   cache = { version: VERSION, data: {} };
+  loaded = false;
   process.nextTick(save);
 }

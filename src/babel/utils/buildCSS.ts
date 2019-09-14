@@ -27,7 +27,7 @@ export default function buildCSS(
       let selector = `.${rule.className}`;
       if (rule.selectorWrap) {
         // note: only possible when options.evaluate == true
-        selector = replacer(rule.selectorWrap, false, selector);
+        selector = replacer(rule.selectorWrap, true, selector);
       }
       cssText += `${selector} {`;
     }
