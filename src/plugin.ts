@@ -11,6 +11,7 @@ const COMMENT_REGEX = /LINARIA_.*?_LINARIA/g;
 interface LinariaPluginOptions {
   exclude?: RegExp;
   prefix?: string;
+  optimize?: boolean;
 }
 
 function uniq(arr: any[]) {
