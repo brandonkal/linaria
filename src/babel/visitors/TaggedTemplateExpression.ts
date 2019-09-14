@@ -106,6 +106,8 @@ export default function TaggedTemplateExpression(
       component: { node: t.stringLiteral(tag.property.name) },
     };
   } else if (
+    t.isIdentifier(tag) &&
+    tag.name === 'css' &&
     hasImport(
       t,
       path.scope,
@@ -114,8 +116,10 @@ export default function TaggedTemplateExpression(
       '@brandonkal/linaria'
     )
   ) {
-    css = t.isIdentifier(tag) && tag.name === 'css';
+    css = true;
   } else if (
+    t.isIdentifier(tag) &&
+    tag.name === 'injectGlobal' &&
     hasImport(
       t,
       path.scope,
@@ -124,11 +128,11 @@ export default function TaggedTemplateExpression(
       '@brandonkal/linaria'
     )
   ) {
-    isGlobal = t.isIdentifier(tag) && tag.name === 'injectGlobal';
+    isGlobal = true;
   }
 
   if (!styled && !css && !isGlobal) {
-    log('no linaria import found. Skipping traverse.');
+    log('tagged template is not a linaria function. Skipping traverse.');
     return;
   }
 
