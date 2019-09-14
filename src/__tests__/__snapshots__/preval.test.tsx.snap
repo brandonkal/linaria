@@ -396,6 +396,30 @@ Dependencies: ../react
 
 `;
 
+exports[`evaluates identifier in scope - css 1`] = `
+"import { css } from '@brandonkal/linaria';
+
+const height = (() => \\"0.77078125em\\")();
+
+const topOffset = (() => \\"0.140625em\\")();
+
+export const realSize = \\"realSize_r1xha7dm\\";"
+`;
+
+exports[`evaluates identifier in scope - css 2`] = `
+
+CSS:
+
+.realSize_r1xha7dm {
+  position: relative;
+  top: 0.140625em;
+  height: 0.77078125em;
+}
+
+Dependencies: ..
+
+`;
+
 exports[`evaluates identifier in scope 1`] = `
 "import { styled } from '@brandonkal/linaria/react';
 const answer = 42;

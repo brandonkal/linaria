@@ -19,8 +19,8 @@ const babelrc = {
   ],
 };
 
-const FULL = '@brandonkal/linaria/react';
-const SHORT = '../react';
+const FULL = `from '@brandonkal/linaria`;
+const SHORT = `from '..`;
 
 const transpile = async (input: string) => {
   const replaced = input.includes(FULL);
@@ -50,6 +50,25 @@ it('evaluates identifier in scope', async () => {
         content: "${'${days}'}"
       }
     \`;
+    `
+  );
+
+  expect(code).toMatchSnapshot();
+  expect(metadata).toMatchSnapshot();
+});
+
+it('evaluates identifier in scope - css', async () => {
+  const { code, metadata } = await transpile(
+    dedent`
+    import { css } from '@brandonkal/linaria'
+    const height = (() => "0.77078125em")();
+    const topOffset = (() => "0.140625em")();
+
+    export const realSize = css\`
+      position: relative;
+      top: ${'${topOffset}'};
+      height: ${'${height}'};
+    \`
     `
   );
 
