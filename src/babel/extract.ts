@@ -96,6 +96,11 @@ export default function extract(
 
             state.dependencies.push(...evaluation.dependencies);
             lazyValues = evaluation.value.__linariaPreval;
+            if (lazyDeps.length !== lazyValues.length) {
+              throw new Error(
+                'Linaria Internal Error: lazy evaluation count is incorrect. This is likely caused by using different babel transforms in evaluation and main compilation.'
+              );
+            }
           }
 
           if (!options._isEvaluatePass) {
@@ -112,7 +117,10 @@ export default function extract(
         },
         exit(_, state) {
           log(`exiting ${state.file.opts.filename}`);
-          if (Object.keys(state.rules).length) {
+          if (
+            typeof state.rules === 'object' &&
+            Object.keys(state.rules).length
+          ) {
             // Store the result as the file metadata
             state.file.metadata = {
               linaria: {
