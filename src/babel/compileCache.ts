@@ -30,6 +30,7 @@ let cache: {
 interface CachedCompilation extends GeneratorResult {
   optsHash: string;
   mtime: number;
+  meta: any;
 }
 
 /**

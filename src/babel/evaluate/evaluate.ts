@@ -39,7 +39,6 @@ type DefaultOptions = Partial<TOptions> & {
 };
 
 const babelPreset = require.resolve('../index');
-const babelPlugin = require.resolve('../extract');
 const topLevelBabelPreset = require.resolve('../../../babel');
 const dynamicImportNOOP = require.resolve('../dynamic-import-noop');
 
@@ -70,15 +69,12 @@ export default function evaluate(
 
     // If we have already run linaria on this file,
     // there is no need to repeat the process on the shaken file.
-    const removeLinariaPreset = code.includes('__linariaPreval');
+    const includeLinariaPass = !code.includes('__linariaPreval');
 
     let transformOptions;
     try {
       transformOptions = getOptions(options, this.filename, map);
       this._cacheKey = slugify(JSON.stringify(transformOptions));
-      if (removeLinariaPreset) {
-        transformOptions.plugins!.pop();
-      }
     } catch (e) {
       e = fixError(e);
       e.stack =
@@ -102,9 +98,32 @@ export default function evaluate(
     }
 
     try {
-      const ast = parseSync(code, transformOptions);
+      let ast = parseSync(code, transformOptions)!;
+      if (includeLinariaPass) {
+        log(`transform step 1: linaria pass for ${this.filename}`);
+        /**
+         * We need to perform this transform first. This two-pass approach ensures that
+         * path.evaluate() will not return different results from different Babel configs.
+         */
+        const { map: map2, ast: ast2 } = transformFromAstSync(ast!, code, {
+          filename: this.filename,
+          presets: [[babelPreset, { ...options, _isEvaluatePass: true }]],
+          babelrc: false,
+          configFile: false,
+          sourceMaps: true,
+          sourceFileName: this.filename,
+          inputSourceMap: map == null ? undefined : map,
+          code: false,
+          ast: true,
+        })!;
+        ast = ast2!;
+        map = map2 == undefined ? null : map2;
+      } else {
+        log(`transform step 1: linaria skipped pass for ${this.filename}`);
+      }
+      log(`transform step 2: babel pass for ${this.filename}`);
       const compiled = transformFromAstSync(
-        ast!,
+        ast,
         code,
         transformOptions
       ) as BabelFileResult;
@@ -113,6 +132,9 @@ export default function evaluate(
         map: compiled.map!,
         optsHash: this._cacheKey,
         mtime: lastModified,
+        meta: {
+          linariaPass: includeLinariaPass,
+        },
       };
       return compiled;
     } catch (e) {
@@ -162,6 +184,48 @@ function getOptions(
   filename: string,
   map: any
 ): TransformOptions {
+  const transformOptions = getProgramaticOptions(pluginOptions);
+  transformOptions.filename = filename;
+  const { options } = loadPartialConfig(transformOptions) as Readonly<
+    PartialConfig
+  >;
+  // We override the preset-env if it was specified to target Node only.
+  const presetEnvIndex = options.presets!.findIndex(item => {
+    return (
+      (item as ConfigItem).file &&
+      (item as ConfigItem).file!.request === '@babel/preset-env'
+    );
+  });
+  if (presetEnvIndex !== -1) {
+    // @ts-ignore
+    const presetEnv = options!.presets![presetEnvIndex] as ConfigItem;
+    const nextOptions = {
+      ...presetEnv.options,
+      targets: { node: 'current' },
+    } as any;
+    options.presets![presetEnvIndex] = createConfigItem([
+      presetEnv.value,
+      nextOptions,
+    ]);
+  }
+  options.inputSourceMap = map == null ? undefined : map;
+  options.sourceMaps = true;
+  options.ast = false;
+
+  return options;
+}
+
+let programaticOptionsCached: TransformOptions;
+
+/**
+ * Build the programatic Babel options. These do not change file-to-file so we can cache this work.
+ */
+function getProgramaticOptions(
+  pluginOptions: StrictOptions | undefined
+): TransformOptions {
+  if (programaticOptionsCached) {
+    return programaticOptionsCached;
+  }
   const plugins: (string | [string, any])[] = [
     // Include these plugins to avoid extra config when using { module: false } for webpack
     ['@babel/plugin-transform-modules-commonjs', { loose: true }],
@@ -172,16 +236,13 @@ function getOptions(
       name: '@brandonkal/linaria',
       evaluate: true,
     },
-    filename: filename,
-    sourceMaps: true, // Required for stack traces
+    sourceMaps: true,
     presets: [],
     plugins: [
       ...plugins.map(name => require.resolve(getPresetName(name))),
       // We don't support dynamic imports when evaluating, but don't want a syntax error
       // This will replace dynamic imports with an object that does nothing
       dynamicImportNOOP,
-      // Plugins come before presets. We use our plugin here to ensure it always runs first.
-      [babelPlugin, { ...pluginOptions, _isEvaluatePass: true }],
     ],
   };
   const babelOptions =
@@ -243,37 +304,7 @@ function getOptions(
       // This makes sure that the plugins we specify always run first
       ...babelOptions.plugins!,
     ],
-    overrides: [
-      {
-        presets: ['env', { targets: { node: 'current' } }],
-      },
-    ],
   };
-  const { options } = loadPartialConfig(transformOptions) as Readonly<
-    PartialConfig
-  >;
-  // We override the preset-env if it was specified to target Node only.
-  const presetEnvIndex = options.presets!.findIndex(item => {
-    return (
-      (item as ConfigItem).file &&
-      (item as ConfigItem).file!.request === '@babel/preset-env'
-    );
-  });
-  if (presetEnvIndex !== -1) {
-    // @ts-ignore
-    const presetEnv = options!.presets![presetEnvIndex] as ConfigItem;
-    const nextOptions = {
-      ...presetEnv.options,
-      targets: { node: 'current' },
-    } as any;
-    options.presets![presetEnvIndex] = createConfigItem([
-      presetEnv.value,
-      nextOptions,
-    ]);
-  }
-  options.inputSourceMap = map || undefined;
-  options.sourceMaps = true;
-  options.ast = false;
-
-  return options;
+  programaticOptionsCached = transformOptions;
+  return programaticOptionsCached;
 }
