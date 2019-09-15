@@ -20,7 +20,8 @@ function isValid(value: any) {
 function throwIfInvalid(
   value: any,
   ex: NodePath,
-  allowFn = false
+  allowFn = false,
+  circularHint = false
 ): void | never {
   if (isValid(value)) {
     return;
@@ -45,6 +46,9 @@ function throwIfInvalid(
 
   const errMsg =
     `\nThe expression evaluated to '${stringified}', which is probably a mistake.\n` +
+    (circularHint && typeof value === 'undefined'
+      ? 'This is likely the result of using a circular import.\n'
+      : '') +
     `If you want it to be inserted into CSS, explicitly cast or transform the value to a string, e.g. - 'String(${
       generator(ex.node).code
     })'.`;
