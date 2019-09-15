@@ -66,7 +66,6 @@ export default function transform(code: string, options: Options): Result {
   });
 
   log(`transforming ${options.filename}`);
-
   const { metadata, code: transformedCode, map } = babel.transformFromAstSync(
     ast!,
     code,
