@@ -31,7 +31,7 @@ CSS:
   background: black;
 }
 
-Dependencies: ../react
+Dependencies: <<DIRNAME>>/src/react/index.ts
 
 `;
 
@@ -108,7 +108,7 @@ CSS:
   }
 }
 
-Dependencies: ../react
+Dependencies: <<DIRNAME>>/src/react/index.ts
 
 `;
 
@@ -208,7 +208,7 @@ CSS:
   }
 }
 
-Dependencies: ../react
+Dependencies: <<DIRNAME>>/src/react/index.ts
 
 `;
 
@@ -240,7 +240,7 @@ CSS:
   }
 }
 
-Dependencies: ../react
+Dependencies: <<DIRNAME>>/src/react/index.ts
 
 `;
 
@@ -266,7 +266,7 @@ CSS:
 .bareIconClass_b1xha7dm {}
 .XS_x1rsdnkv {&.bareIconClass_b1xha7dm { font-size: 16.5px; }}
 
-Dependencies: ../index.ts
+Dependencies: <<DIRNAME>>/src/index.ts
 
 `;
 
@@ -303,7 +303,7 @@ CSS:
   }
 }
 
-Dependencies: ../react
+Dependencies: <<DIRNAME>>/src/react/index.ts
 
 `;
 
@@ -328,7 +328,7 @@ CSS:
   }
 }
 
-Dependencies: @babel/runtime/helpers/interopRequireDefault, ../react, ../utils/slugify
+Dependencies: <<DIRNAME>>/node_modules/@babel/runtime/helpers/interopRequireDefault.js, <<DIRNAME>>/src/react/index.ts, <<DIRNAME>>/src/utils/slugify.ts
 
 `;
 
@@ -359,7 +359,7 @@ CSS:
   }
 }
 
-Dependencies: ../react, ../utils/slugify
+Dependencies: <<DIRNAME>>/src/react/index.ts, <<DIRNAME>>/src/utils/slugify.ts
 
 `;
 
@@ -392,7 +392,7 @@ CSS:
   font-size: 12px;
 }
 
-Dependencies: ../react
+Dependencies: <<DIRNAME>>/src/react/index.ts
 
 `;
 
@@ -416,7 +416,7 @@ CSS:
   height: 0.77078125em;
 }
 
-Dependencies: ..
+Dependencies: <<DIRNAME>>/src/index.ts
 
 `;
 
@@ -445,7 +445,7 @@ CSS:
   }
 }
 
-Dependencies: ../react
+Dependencies: <<DIRNAME>>/src/react/index.ts
 
 `;
 
@@ -473,7 +473,7 @@ CSS:
   }
 }
 
-Dependencies: ../react
+Dependencies: <<DIRNAME>>/src/react/index.ts
 
 `;
 
@@ -505,7 +505,7 @@ CSS:
   }
 }
 
-Dependencies: ../react, ../utils/slugify
+Dependencies: <<DIRNAME>>/src/react/index.ts, <<DIRNAME>>/src/utils/slugify.ts
 
 `;
 
@@ -552,7 +552,7 @@ CSS:
   color: blue;
 }
 
-Dependencies: ../react
+Dependencies: <<DIRNAME>>/src/react/index.ts
 
 `;
 
@@ -594,7 +594,7 @@ CSS:
   }
 }
 
-Dependencies: ../../react
+Dependencies: <<DIRNAME>>/src/react/index.ts
 
 `;
 
@@ -635,7 +635,7 @@ CSS:
   border: 1px solid red;
 }
 
-Dependencies: ../../react
+Dependencies: <<DIRNAME>>/src/react/index.ts
 
 `;
 
@@ -658,7 +658,7 @@ CSS:
   a { content: "\\u000A"; } b { content: "\\u000A"; };
 }
 
-Dependencies: ../../react
+Dependencies: <<DIRNAME>>/src/react/index.ts
 
 `;
 
@@ -694,7 +694,7 @@ CSS:
   color: blue;
 }
 
-Dependencies: ../react
+Dependencies: <<DIRNAME>>/src/react/index.ts
 
 `;
 
@@ -724,7 +724,7 @@ CSS:
   }
 }
 
-Dependencies: ../react
+Dependencies: <<DIRNAME>>/src/react/index.ts
 
 `;
 
@@ -812,7 +812,7 @@ CSS:
   position: absolute; top: 0; right: 0; bottom: 0; left: 0;
 }
 
-Dependencies: ../react
+Dependencies: <<DIRNAME>>/src/react/index.ts
 
 `;
 
@@ -843,7 +843,7 @@ CSS:
   position: absolute; top: 0; right: 0; bottom: 0; left: 0;
 }
 
-Dependencies: ../react
+Dependencies: <<DIRNAME>>/src/react/index.ts
 
 `;
 

@@ -10,7 +10,11 @@ ${
 }
 
 Dependencies: ${
-    linaria.dependencies.length ? linaria.dependencies.join(', ') : 'NA'
+    linaria.dependencies.length
+      ? linaria.dependencies
+          .map(dep => dep.replace(process.cwd(), '<<DIRNAME>>'))
+          .join(', ')
+      : 'NA'
   }
 `,
 };

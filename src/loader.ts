@@ -107,9 +107,7 @@ export default function loader(
     if (result.dependencies && result.dependencies.length) {
       result.dependencies.forEach(dep => {
         try {
-          const f = resolveSync(path.dirname(this.resourcePath), dep);
-
-          this.addDependency(f);
+          this.addDependency(dep);
         } catch (e) {
           // eslint-disable-next-line no-console
           console.warn(`[linaria] failed to add dependency for: ${dep}`, e);

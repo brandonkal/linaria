@@ -248,7 +248,7 @@ class Module {
         throw e;
       }
 
-      this.dependencies.push(id);
+      this.dependencies.push(filename);
 
       let m = cache[filename];
 
