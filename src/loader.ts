@@ -170,17 +170,21 @@ export default function loader(
       if (currentCssTrimmed !== cssTextTrimmed) {
         update = true;
         if (sourceMap) {
-          cssText += `/*# sourceMappingURL=data:application/json;base64,${Buffer.from(
-            cssSourceMapText || ''
-          ).toString('base64')}*/`;
+          cssText +=
+            `/*# sourceMappingURL` +
+            `=data:application/json;base64,${Buffer.from(
+              cssSourceMapText || ''
+            ).toString('base64')}*/`;
         }
       }
     } else {
       // Production
       if (sourceMap) {
-        cssText += `/*# sourceMappingURL=data:application/json;base64,${Buffer.from(
-          cssSourceMapText || ''
-        ).toString('base64')}*/`;
+        cssText +=
+          `/*# sourceMappingURL` +
+          `=data:application/json;base64,${Buffer.from(
+            cssSourceMapText || ''
+          ).toString('base64')}*/`;
       }
       if (currentCssText !== cssText) {
         update = true;

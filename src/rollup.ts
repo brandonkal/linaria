@@ -44,7 +44,8 @@ export default function linaria({
 
       if (sourceMap && result.cssSourceMapText) {
         const map = Buffer.from(result.cssSourceMapText).toString('base64');
-        cssText += `/*# sourceMappingURL=data:application/json;base64,${map}*/`;
+        cssText +=
+          `/*# sourceMappingURL` + `=data:application/json;base64,${map}*/`;
       }
 
       cssLookup[filename] = cssText;
