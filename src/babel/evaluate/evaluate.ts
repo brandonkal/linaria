@@ -197,7 +197,6 @@ function getOptions(
     );
   });
   if (presetEnvIndex !== -1) {
-    // @ts-ignore
     const presetEnv = options!.presets![presetEnvIndex] as ConfigItem;
     const nextOptions = {
       ...presetEnv.options,

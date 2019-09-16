@@ -162,6 +162,7 @@ declare module '@babel/core' {
     const FLIPPED_ALIAS_KEYS: {
       [T in keyof t.Aliases]: t.Aliases[T]['type'][];
     };
+    const NODE_FIELDS: any;
 
     function shallowEqual(actual: object, expected: object): boolean;
   }

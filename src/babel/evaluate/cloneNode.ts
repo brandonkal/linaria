@@ -3,7 +3,6 @@
  * This enables us to perform tree shaking on a seperate AST.
  */
 import { types as t } from '@babel/core';
-// @ts-ignore -- exported but not in type defs
 const NODE_FIELDS = t.NODE_FIELDS;
 
 export const findCloned = new WeakMap();

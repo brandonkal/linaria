@@ -848,13 +848,8 @@ Dependencies: ../react
 `;
 
 exports[`throws codeframe error when evaluation fails 1`] = `
-"<<DIRNAME>>/source.js: An error occurred when evaluating the expression: This will fail.
-Make sure you are not using a browser or Node specific API.
-  4 | 
-  5 | export const Title = styled.h1\`
-> 6 |   font-size: \${foo()}px;
-    |                ^
-  7 | \`;"
+"Linaria: An error occurred when evaluating the expression: This will fail.
+Make sure you are not using a browser or Node specific API."
 `;
 
 exports[`throws if unable to determine a display name 1`] = `
@@ -873,7 +868,7 @@ exports[`throws if unable to determine a display name 1`] = `
 
 exports[`throws when interpolation evaluates to NaN 1`] = `
 "<<DIRNAME>>/source.js: 
-The expression evaluated to 'NaN', which is probably a mistake.
+Linaria: The expression evaluated to 'NaN', which is probably a mistake.
 If you want it to be inserted into CSS, explicitly cast or transform the value to a string, e.g. - 'String(height)'.
   4 | 
   5 | export const Title = styled.h1\`
@@ -884,7 +879,7 @@ If you want it to be inserted into CSS, explicitly cast or transform the value t
 
 exports[`throws when interpolation evaluates to null 1`] = `
 "<<DIRNAME>>/source.js: 
-The expression evaluated to 'null', which is probably a mistake.
+Linaria: The expression evaluated to 'null', which is probably a mistake.
 If you want it to be inserted into CSS, explicitly cast or transform the value to a string, e.g. - 'String(color)'.
   4 | 
   5 | export const Title = styled.h1\`
@@ -895,7 +890,8 @@ If you want it to be inserted into CSS, explicitly cast or transform the value t
 
 exports[`throws when interpolation evaluates to undefined 1`] = `
 "<<DIRNAME>>/source.js: 
-The expression evaluated to 'undefined', which is probably a mistake.
+Linaria: The expression evaluated to 'undefined', which is probably a mistake.
+This is likely the result of using a circular import.
 If you want it to be inserted into CSS, explicitly cast or transform the value to a string, e.g. - 'String(fontSize)'.
   4 | 
   5 | export const Title = styled.h1\`

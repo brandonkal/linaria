@@ -1,3 +1,4 @@
+/* eslint-disable no-ex-assign */
 /**
  * This is a custom implementation for the module system for evaluating code.
  *
@@ -20,6 +21,7 @@ import debug from 'debug';
 import { codeFrameColumns } from '@babel/code-frame';
 import fixError from './utils/fixError';
 import * as compileCache from './compileCache';
+import * as errorQueue from './utils/errorQueue';
 const log = debug('linaria:module');
 import './sourceMapRegister';
 
@@ -206,6 +208,9 @@ class Module {
       });
 
       return Module._resolveFilename(id, this);
+    } catch (e) {
+      e.code = 'RESOLVE';
+      throw e;
     } finally {
       // Cleanup the extensions we added to restore previous behaviour
       added.forEach(ext => delete extensions[ext]);
@@ -229,19 +234,18 @@ class Module {
 
         return null;
       }
-      if (id.includes('core-js')) {
-        // Polyfills don't need to be evaluated. This can happen if a dependency includes it.
-        return null;
-      }
 
       // Resolve module id (and filename) relatively to parent module
       const filename = this.resolve(id);
 
       if (filename === id && !path.isAbsolute(id)) {
         // The module is a builtin node modules, but not in the allowed list
-        throw new Error(
+        let e = new Error(
           `Unable to import "${id}". Importing Node builtins is not supported in the sandbox.`
         );
+        // @ts-ignore
+        e.code = 'REQUIRE';
+        throw e;
       }
 
       this.dependencies.push(id);
@@ -291,39 +295,46 @@ class Module {
 
   /** For JavaScript files, we need to transpile it and to get the exports of the module */
   private _transform(codeAndMap: GeneratorResult): string {
-    if (typeof codeAndMap.code !== 'string') {
-      throw new Error('Expected a string to evaluate');
+    try {
+      if (typeof codeAndMap.code !== 'string') {
+        throw new Error('Linaria: Expected a string to evaluate');
+      }
+      this._source = codeAndMap.code;
+      const transformed = this.transform
+        ? this.transform(codeAndMap)
+        : codeAndMap;
+      if (typeof transformed.code !== 'string') {
+        throw new Error(
+          'Linaria: The compile function did not return a string.'
+        );
+      }
+      return (this._transformed = transformed.code);
+    } catch (e) {
+      e.code = 'TRANSFORM';
+      throw e;
     }
-    this._source = codeAndMap.code;
-    const transformed = this.transform
-      ? this.transform(codeAndMap)
-      : codeAndMap;
-    if (typeof transformed.code !== 'string') {
-      throw new Error('The compile function did not return a string.');
-    }
-    return (this._transformed = transformed.code);
   }
 
   /** compiles the string and executes it in the sandbox context. Stores exports on this module. */
-  evaluate(codeAndMap: GeneratorResult) {
+  evaluate(codeAndMap: GeneratorResult, alwaysThrow?: boolean) {
     log(`evaluating ${this.filename}`);
     if (this._evaluated) {
       return;
     }
 
-    const compiled = this._transform(codeAndMap);
-
-    log(`executing ${this.filename}`);
-
-    const fn = vm.compileFunction(
-      compiled,
-      ['exports', 'require', 'module', '__filename', '__dirname'],
-      {
-        parsingContext: sandbox,
-        filename: this.filename,
-      }
-    );
     try {
+      const compiled = this._transform(codeAndMap);
+
+      log(`executing ${this.filename}`);
+
+      const fn = vm.compileFunction(
+        compiled,
+        ['exports', 'require', 'module', '__filename', '__dirname'],
+        {
+          parsingContext: sandbox,
+          filename: this.filename,
+        }
+      );
       fn(
         this.exports,
         this.require,
@@ -333,9 +344,24 @@ class Module {
       );
     } catch (e) {
       // Clean Stack Trace as the evaluator can recurse deeply.
-      throw this._prepareStack(e);
+      e = this._prepareStack(e);
+      if (
+        alwaysThrow ||
+        e.code === 'REQUIRE' ||
+        e.code === 'RESOLVE' ||
+        e.code === 'TRANSFORM'
+      ) {
+        throw e;
+      } else {
+        // These errors will not be printed until an evaluation fails.
+        // In this way, modules that only contain side effects that access a browser-only global
+        // will be ignored unless an actual preval error occurred.
+        // errorQueue is flushed by throwIfInvalid
+        errorQueue.push(e);
+      }
+    } finally {
+      this._evaluated = true;
     }
-    this._evaluated = true;
   }
 
   private _prepareStack(e: Error | { message: string; stack: string }) {
