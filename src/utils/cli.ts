@@ -70,10 +70,10 @@ function processFiles(files: string[], options: Options) {
     [] as string[]
   );
 
-  resolvedFiles.forEach(filename => {
+  resolvedFiles.forEach(async filename => {
     const outputFilename = resolveOutputFilename(filename, options.outDir);
 
-    const { cssText, sourceMap, cssSourceMapText } = transform(
+    const { cssText, sourceMap, cssSourceMapText } = await transform(
       fs.readFileSync(filename).toString(),
       {
         filename,
