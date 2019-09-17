@@ -1,26 +1,30 @@
 {
   "presets": [
-    [
-      "@babel/preset-env",
-      {
-        "useBuiltIns": false,
-        "loose": true
-      }
-    ],
-    "@babel/preset-typescript",
-    "@babel/preset-react"
+    ["@babel/preset-env", { "targets": { "node": 10 }, "loose": true }],
+    "@babel/preset-typescript"
   ],
-  "plugins": [
-    "@babel/plugin-proposal-class-properties",
-    ["@babel/plugin-transform-runtime", { "useESModules": false }]
+  "plugins": ["@babel/plugin-proposal-class-properties"],
+  "overrides": [
+    {
+      "test": "**/styled.test.tsx",
+      "presets": [["@babel/preset-react", { "useBuiltIns": true }]]
+    }
   ],
   "env": {
-    "node": {
+    "browser": {
       "presets": [
-        ["@babel/preset-env", { "targets": { "node": 10 }, "loose": true }],
-        "@babel/preset-typescript"
+        [
+          "@babel/preset-env",
+          {
+            "useBuiltIns": false,
+            "loose": true,
+            "targets": {}
+          }
+        ]
       ],
-      "plugins": ["@babel/plugin-proposal-class-properties"]
+      "plugins": [
+        ["@babel/plugin-transform-runtime", { "useESModules": false }]
+      ]
     },
     "esm": {
       "presets": [
@@ -31,13 +35,9 @@
             "loose": true,
             "modules": false
           }
-        ],
-        "@babel/preset-typescript"
+        ]
       ],
-      "plugins": [
-        "@babel/plugin-proposal-class-properties",
-        ["@babel/plugin-transform-runtime", { "useESModules": true }]
-      ]
+      "plugins": [["@babel/plugin-transform-runtime", { "useESModules": true }]]
     }
   }
 }

@@ -14,7 +14,7 @@
       "name": "vscode-jest-tests",
       "request": "launch",
       "program": "${workspaceFolder}/node_modules/jest/bin/jest",
-      "args": ["--runInBand", "--resetModules", "--useStderr"],
+      "args": ["--runInBand"],
       "env": {
         "DEBUG_HIDE_DATE": "true",
         "DEBUG": "linaria:*"
