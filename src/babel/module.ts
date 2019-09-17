@@ -132,7 +132,7 @@ class Module {
    */
   static _resolveFilename = (
     id: string,
-    parent: { id: string; filename: string; paths: string[] }
+    parent: { id?: string; filename: string; paths?: string[] }
   ) => {
     return ((NativeModule as any) as NM)._resolveFilename(id, parent);
   };
@@ -158,7 +158,7 @@ class Module {
   private _source?: string;
   /* we store the code executed for when a source-map is unavailable. */
   private _transformed?: string;
-  private _evaluated?: boolean;
+  private loaded?: boolean;
 
   constructor(filename: string) {
     this.id = filename;
@@ -275,6 +275,7 @@ class Module {
             // For JS/TS files, evaluate the module
             // The module will be transpiled using provided transform
             m.evaluate({ code, map: null });
+            1 + 2;
           }
         } else {
           // For non JS/JSON requires, just export the id
@@ -318,7 +319,7 @@ class Module {
   /** compiles the string and executes it in the sandbox context. Stores exports on this module. */
   evaluate(codeAndMap: GeneratorResult, alwaysThrow?: boolean) {
     log(`evaluating ${this.filename}`);
-    if (this._evaluated) {
+    if (this.loaded) {
       return;
     }
 
@@ -345,27 +346,16 @@ class Module {
     } catch (e) {
       // Clean Stack Trace as the evaluator can recurse deeply.
       e = this._prepareStack(e);
-      if (
-        alwaysThrow ||
-        e.code === 'REQUIRE' ||
-        e.code === 'RESOLVE' ||
-        e.code === 'TRANSFORM'
-      ) {
-        throw e;
-      } else {
-        // These errors will not be printed until an evaluation fails.
-        // In this way, modules that only contain side effects that access a browser-only global
-        // will be ignored unless an actual preval error occurred.
-        // errorQueue is flushed by throwIfInvalid
-        errorQueue.push(e);
-      }
+      throwOrQueue(e, alwaysThrow);
     } finally {
-      this._evaluated = true;
+      log(`Finished loading ${this.filename}`);
+      this.loaded = true;
     }
   }
 
   private _prepareStack(e: Error | { message: string; stack: string }) {
     try {
+      const ATprefix = '    at ';
       e = fixError(e);
       let split: string[] = e.stack!.split('\n').reverse();
       const idx = split.findIndex(v =>
@@ -373,6 +363,9 @@ class Module {
       );
       if (idx === -1 || !split.length) {
         return e;
+      }
+      if (!split[idx].startsWith(ATprefix)) {
+        split[idx] = ATprefix + split[idx];
       }
       split = split.slice(idx, split.length).reverse();
       // Parse stack trace to produce a pretty code frame
@@ -386,7 +379,7 @@ class Module {
       if (matches) {
         const line = parseInt(matches[2]);
         const column = parseInt(matches[3]);
-        const firstTraceLineIdx = split.findIndex(v => v.startsWith('    at '));
+        const firstTraceLineIdx = split.findIndex(v => /^\s+at /.test(v));
         const loc = {
           start: { line: line, column: column },
         };
@@ -410,6 +403,7 @@ class Module {
         e.stack = [
           '\nLinaria Preval Error:',
           result,
+          '',
           split.slice(firstTraceLineIdx).join('\n'),
         ].join('\n');
       }
@@ -421,3 +415,20 @@ class Module {
 }
 
 export default Module;
+
+function throwOrQueue(e: any, alwaysThrow?: boolean) {
+  if (
+    alwaysThrow ||
+    e.code === 'REQUIRE' ||
+    e.code === 'RESOLVE' ||
+    e.code === 'TRANSFORM'
+  ) {
+    throw e;
+  } else {
+    // These errors will not be printed until an evaluation fails.
+    // In this way, modules that only contain side effects that access a browser-only global
+    // will be ignored unless an actual preval error occurred.
+    // errorQueue is flushed by throwIfInvalid
+    errorQueue.push(e);
+  }
+}

@@ -1,4 +1,3 @@
-import 'core-js';
 import { styled } from '@brandonkal/linaria/react';
 
 export const T1 = styled.h1`

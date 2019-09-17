@@ -1,5 +1,4 @@
 import React from 'react';
-import 'core-js';
 //@ts-ignore
 import { styled } from '@brandonkal/linaria/react';
 import render from 'react-test-renderer';

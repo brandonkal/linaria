@@ -31,6 +31,7 @@ function throwIfInvalid(
     return;
   }
 
+  let thisError = buildError();
   function buildError() {
     // We can't use instanceof here so let's use duck typing
     if (value && value.stack && value.message) {
@@ -38,7 +39,7 @@ function throwIfInvalid(
         `Linaria: An error occurred when evaluating the expression: ${value.message}.\n` +
         'Make sure you are not using a browser or Node specific API.';
       if (ex.buildCodeFrameError) {
-        thisError = ex.buildCodeFrameError(errMsg);
+        return ex.buildCodeFrameError(errMsg);
       }
       return new Error(errMsg);
     }
@@ -61,7 +62,6 @@ function throwIfInvalid(
     return new Error(errMsg);
   }
 
-  let thisError = buildError();
   thisError.stack += errorQueue.print();
   throw thisError;
 }

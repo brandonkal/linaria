@@ -8,6 +8,8 @@ import enhancedResolve from 'enhanced-resolve';
 import Module from './babel/module';
 import transform from './utils/transform';
 import fixError from './babel/utils/fixError';
+import debug from 'debug';
+const log = debug('linaria:loader');
 
 const schema = {
   type: 'object',
@@ -33,11 +35,17 @@ const schema = {
   },
 };
 
-export default function loader(
+const supportedExtensions = ['.js', '.jsx', '.ts', '.tsx', '.json'];
+
+let resolver: (id: string, parent: any) => string;
+
+export default async function loader(
   this: any,
   content: string,
   inputSourceMap: Object | null
 ) {
+  log(`Executing loader for ${this.resourcePath}`);
+  const callback = this.async();
   const options = loaderUtils.getOptions(this) || {};
   validateOptions(schema, options, 'Linaria Loader');
   const { sourceMap, cacheDirectory: cacheConfig, ...pluginOptions } = options;
@@ -57,24 +65,7 @@ export default function loader(
     )
   );
 
-  const resolveOptions = {
-    extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
-  };
-
-  const resolveSync = enhancedResolve.create.sync(
-    // this._compilation is a deprecated API
-    // However there seems to be no other way to access webpack's resolver
-    // There is this.resolve, but it's asynchronous
-    // Another option is to read the webpack.config.js, but it won't work for programmatic usage
-    // This API is used by many loaders/plugins, so hope we're safe for a while
-    this._compilation && this._compilation.options.resolve
-      ? {
-          ...resolveOptions,
-          alias: this._compilation.options.resolve.alias,
-          modules: this._compilation.options.resolve.modules,
-        }
-      : resolveOptions
-  );
+  createResolver.call(this);
 
   let result;
 
@@ -82,10 +73,9 @@ export default function loader(
 
   try {
     // Use webpack's resolution when evaluating modules
-    Module._resolveFilename = (id, { filename }) =>
-      resolveSync(path.dirname(filename), id);
+    Module._resolveFilename = resolver;
 
-    result = transform(content, {
+    result = await transform(content, {
       filename: this.resourcePath,
       inputSourceMap: inputSourceMap != null ? inputSourceMap : undefined,
       outputFilename,
@@ -105,7 +95,10 @@ export default function loader(
     cssText += '\n';
 
     if (result.dependencies && result.dependencies.length) {
-      result.dependencies.forEach(dep => {
+      const deps = result.dependencies.filter(
+        dep => !dep.includes('node_modules')
+      );
+      deps.forEach(dep => {
         try {
           this.addDependency(dep);
         } catch (e) {
@@ -139,7 +132,7 @@ export default function loader(
       fs.writeFileSync(outputFilename, cssOutput);
     }
 
-    this.callback(
+    callback(
       null,
       `${result.code}\n\nrequire(${loaderUtils.stringifyRequest(
         this,
@@ -150,7 +143,7 @@ export default function loader(
     return;
   }
 
-  this.callback(null, result.code, result.sourceMap);
+  callback(null, result.code, result.sourceMap);
 
   function appendSourceMap(
     currentCssText: string | undefined,
@@ -191,5 +184,36 @@ export default function loader(
       }
     }
     return { cssOutput: cssText, update };
+  }
+}
+
+let lastCompilation: any;
+/**
+ * Generates a resolver if required
+ */
+function createResolver(this: any) {
+  if (typeof resolver !== 'function' || lastCompilation !== this._compilation) {
+    const resolveSync = enhancedResolve.create.sync(
+      // this._compilation is a deprecated API
+      // However there seems to be no other way to access webpack's resolver
+      // There is this.resolve, but it's asynchronous
+      // Another option is to read the webpack.config.js, but it won't work for programmatic usage
+      // This API is used by many loaders/plugins, so hope we're safe for a while
+      this._compilation && this._compilation.options.resolve
+        ? {
+            alias: this._compilation.options.resolve.alias,
+            modules: this._compilation.options.resolve.modules,
+            extensions: this._compilation.options.resolve.extensions
+              ? this._compilation.options.resolve.extensions.filter(
+                  (ext: string) => supportedExtensions.includes(ext)
+                )
+              : supportedExtensions,
+          }
+        : {
+            extensions: supportedExtensions,
+          }
+    );
+    resolver = (id: string, { filename }) =>
+      resolveSync(path.dirname(filename), id);
   }
 }

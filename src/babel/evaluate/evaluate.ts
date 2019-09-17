@@ -169,61 +169,18 @@ export default function evaluate(
   };
 }
 
-function getPresetName(item: any): string {
-  return Array.isArray(item) ? item[0] : item;
-}
+///////////// OPTION LOADING //////////////////
+
+let programmaticOptionsCached: TransformOptions;
 
 /**
- * builds Babel config for file.
- * 1. Plugins run before Presets.
- * 2. Plugins run first to last.
- * 3. Presets run last to first.
+ * Build the programmatic Babel options. These do not change file-to-file so we can cache this work.
  */
-function getOptions(
-  pluginOptions: StrictOptions | undefined,
-  filename: string,
-  map: any
-): TransformOptions {
-  const transformOptions = getProgramaticOptions(pluginOptions);
-  transformOptions.filename = filename;
-  const { options } = loadPartialConfig(transformOptions) as Readonly<
-    PartialConfig
-  >;
-  // We override the preset-env if it was specified to target Node only.
-  const presetEnvIndex = options.presets!.findIndex(item => {
-    return (
-      (item as ConfigItem).file &&
-      (item as ConfigItem).file!.request === '@babel/preset-env'
-    );
-  });
-  if (presetEnvIndex !== -1) {
-    const presetEnv = options!.presets![presetEnvIndex] as ConfigItem;
-    const nextOptions = {
-      ...presetEnv.options,
-      targets: { node: 'current' },
-    } as any;
-    options.presets![presetEnvIndex] = createConfigItem([
-      presetEnv.value,
-      nextOptions,
-    ]);
-  }
-  options.inputSourceMap = map == null ? undefined : map;
-  options.sourceMaps = true;
-  options.ast = false;
-
-  return options;
-}
-
-let programaticOptionsCached: TransformOptions;
-
-/**
- * Build the programatic Babel options. These do not change file-to-file so we can cache this work.
- */
-function getProgramaticOptions(
+function getProgrammaticOptions(
   pluginOptions: StrictOptions | undefined
 ): TransformOptions {
-  if (programaticOptionsCached) {
-    return programaticOptionsCached;
+  if (programmaticOptionsCached) {
+    return programmaticOptionsCached;
   }
   const plugins: (string | [string, any])[] = [
     // Include these plugins to avoid extra config when using { module: false } for webpack
@@ -249,7 +206,7 @@ function getProgramaticOptions(
     pluginOptions && pluginOptions.babelOptions
       ? { ...pluginOptions.babelOptions }
       : {};
-  // If we programatically pass babel options while there is a .babelrc, babel might throw
+  // If we programmatically pass babel options while there is a .babelrc, babel might throw
   // We need to filter out duplicate presets and plugins so that this doesn't happen
   // This workaround isn't foolproof, but it's still better than nothing
   const keys: Array<keyof TransformOptions & ('presets' | 'plugins')> = [
@@ -272,8 +229,7 @@ function getProgramaticOptions(
             name === topLevelBabelPreset ||
             name === babelPreset ||
             // Also add a check for the plugin names we include for bundler support
-            (typeof name === 'string' &&
-              plugins.map(p => getPresetName(p).includes(name)))
+            plugins.map(p => getPresetName(p)).includes(name)
           ) {
             return false;
           }
@@ -291,12 +247,7 @@ function getProgramaticOptions(
     // Linaria's plugins rely on these (such as filename to generate consistent hash)
     ...babelOptions,
     ...defaults,
-    presets: [
-      // Preset order is last to first, so add the extra presets to start
-      // This makes sure that our preset is always run first
-      ...babelOptions.presets!,
-      ...defaults.presets,
-    ],
+    presets: [...babelOptions.presets!],
     plugins: [
       ...defaults.plugins,
       // Plugin order is first to last, so add the extra plugins to end
@@ -304,6 +255,71 @@ function getProgramaticOptions(
       ...babelOptions.plugins!,
     ],
   };
-  programaticOptionsCached = transformOptions;
-  return programaticOptionsCached;
+  return (programmaticOptionsCached = transformOptions);
+}
+
+function getPresetName(item: any): string {
+  return Array.isArray(item) ? item[0] : item;
+}
+
+/**
+ * builds Babel config for the current file.
+ * Combines programmatic options with user config.
+ * babel-preset-env target is overridden to current Node version.
+ * babel-plugin-transform-runtime is overridden to useESModules=false
+ * 1. Plugins run before Presets.
+ * 2. Plugins run first to last.
+ * 3. Presets run last to first.
+ */
+function getOptions(
+  pluginOptions: StrictOptions | undefined,
+  filename: string,
+  map: any
+): TransformOptions {
+  const transformOptions = getProgrammaticOptions(pluginOptions);
+  transformOptions.filename = filename;
+  const { options } = loadPartialConfig(transformOptions) as Readonly<
+    PartialConfig
+  >;
+  // We override the preset-env if it was specified to target Node only.
+  const presetEnvIndex = options.presets!.findIndex(item => {
+    return (
+      (item as ConfigItem).file &&
+      (item as ConfigItem).file!.request === '@babel/preset-env'
+    );
+  });
+  if (presetEnvIndex !== -1) {
+    const presetEnv = options!.presets![presetEnvIndex] as ConfigItem;
+    const nextOptions = {
+      ...presetEnv.options,
+      targets: { node: 'current' },
+    } as any;
+    options.presets![presetEnvIndex] = createConfigItem([
+      presetEnv.value,
+      nextOptions,
+    ]);
+  }
+  // We override the preset-env if it was specified to target Node only.
+  const runtimeIndex = options.plugins!.findIndex(item => {
+    return (
+      (item as ConfigItem).file &&
+      (item as ConfigItem).file!.request === '@babel/plugin-transform-runtime'
+    );
+  });
+  if (runtimeIndex !== -1) {
+    const pluginRuntime = options!.plugins![runtimeIndex] as ConfigItem;
+    const nextOptions = {
+      ...pluginRuntime.options,
+      useESModules: false,
+    } as any;
+    options.plugins![runtimeIndex] = createConfigItem([
+      pluginRuntime.value,
+      nextOptions,
+    ]);
+  }
+  options.inputSourceMap = map == null ? undefined : map;
+  options.sourceMaps = true;
+  options.ast = false;
+
+  return options;
 }

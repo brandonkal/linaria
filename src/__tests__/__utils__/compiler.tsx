@@ -25,7 +25,17 @@ const simpleRules = [
   },
 ];
 
-export default ({
+const babelConfig = {
+  configFile: false,
+  presets: [
+    ['@babel/preset-env', { useBuiltIns: false, loose: true }],
+    '@babel/preset-react',
+    '@babel/preset-typescript',
+  ],
+  plugins: [['@babel/plugin-transform-runtime', { useESModules: true }]],
+};
+
+const compiler = ({
   fixture,
   folder = '',
   production = false,
@@ -38,13 +48,14 @@ export default ({
       test: /\.(js|jsx|ts|tsx)$/,
       exclude: /node_modules/,
       use: [
-        { loader: 'babel-loader' },
+        { loader: 'babel-loader', options: babelConfig },
         {
           loader: loaderPath,
           options: {
             sourceMap: true,
             optimize: optimize,
             cacheDirectory: './.linaria-cache',
+            babelOptions: babelConfig,
           },
         },
       ],
@@ -131,3 +142,5 @@ export default ({
     });
   });
 };
+
+export default compiler;

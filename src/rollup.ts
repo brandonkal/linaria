@@ -27,10 +27,10 @@ export default function linaria({
     resolveId(importee: string) {
       if (importee in cssLookup) return importee;
     },
-    transform(code: string, id: string) {
+    async transform(code: string, id: string) {
       if (!filter(id)) return;
 
-      const result = transform(code, {
+      const result = await transform(code, {
         filename: id,
         pluginOptions: rest,
       });

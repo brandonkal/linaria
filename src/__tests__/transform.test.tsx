@@ -90,9 +90,8 @@ it("doesn't rewrite an absolute path in url() declarations", async () => {
 
 it('respects passed babel options', async () => {
   expect.assertions(2);
-
-  expect(() =>
-    transform(
+  try {
+    await transform(
       dedent`
       import { css } from '@brandonkal/linaria';
 
@@ -109,10 +108,12 @@ it('respects passed babel options', async () => {
           },
         },
       }
-    )
-  ).toThrow('Unexpected token');
+    );
+  } catch (e) {
+    expect(e.message.includes('Unexpected token')).toBe(true);
+  }
 
-  expect(() =>
+  await expect(
     transform(
       dedent`
       import { css } from '@brandonkal/linaria';
@@ -137,7 +138,7 @@ it('respects passed babel options', async () => {
         },
       }
     )
-  ).not.toThrow('Unexpected token');
+  ).resolves.not.toThrow('Unexpected token');
 });
 
 it('handles transpiled template literals', async () => {
@@ -183,10 +184,10 @@ it('handles transpiled template literals', async () => {
 it("doesn't throw due to duplicate preset", async () => {
   expect.assertions(1);
 
-  expect(() =>
+  await expect(
     transform(
       dedent`
-      import { styled } from '@brandonkal/linaria/react';
+      import { styled } from '../react';
 
       const Title = styled.h1\` color: blue; \`;
 
@@ -211,5 +212,5 @@ it("doesn't throw due to duplicate preset", async () => {
         },
       }
     )
-  ).not.toThrow('Duplicate plugin/preset detected');
+  ).resolves.not.toThrow('Duplicate plugin/preset detected');
 });

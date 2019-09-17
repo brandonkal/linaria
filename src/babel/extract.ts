@@ -19,6 +19,7 @@ import {
 import TaggedTemplateExpression from './visitors/TaggedTemplateExpression';
 import generateReplaceMap from './evaluate/generateReplaceMap';
 import buildCSS from './utils/buildCSS';
+import { merge } from './utils/errorQueue';
 
 function isLazyValue(v: ExpressionValue): v is LazyValue {
   return v.kind === ValueType.LAZY;
@@ -96,9 +97,11 @@ export default function extract(
 
             state.dependencies.push(...evaluation.dependencies);
             lazyValues = evaluation.value.__linariaPreval;
-            if (lazyDeps.length !== lazyValues.length) {
-              throw new Error(
-                'Linaria Internal Error: lazy evaluation count is incorrect. This is likely caused by using different babel transforms in evaluation and main compilation.'
+            if (lazyValues == null || lazyDeps.length !== lazyValues.length) {
+              throw merge(
+                new Error(
+                  'Linaria Internal Error: lazy evaluation count is incorrect.\nIf no other errors were thrown, this is likely caused by using different babel transforms in evaluation and main compilation.'
+                )
               );
             }
           }

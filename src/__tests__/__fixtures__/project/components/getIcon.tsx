@@ -1,5 +1,4 @@
-// @ts-ignore
-import { Icon } from 'components';
+import Icon from './Icon';
 
 type variant = string;
 

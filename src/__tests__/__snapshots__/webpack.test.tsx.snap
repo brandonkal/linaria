@@ -2,8 +2,7 @@
 
 exports[`webpack test project compiles -- optimizer 1`] = `
 "// JS after Babel plugin before optimization
-import React from 'react';
-import 'core-js'; //@ts-ignore
+import React from 'react'; //@ts-ignore
 
 import { styled } from '@brandonkal/linaria/react';
 import render from 'react-test-renderer'; // @ts-ignore -- uses webpack alias
@@ -105,7 +104,6 @@ require(\\"./.linaria-cache/project.dev.linaria.css\\");
     background-color: #f6ffed;
     border: 1px solid #b7eb8f;
   }
-
 
 
 
