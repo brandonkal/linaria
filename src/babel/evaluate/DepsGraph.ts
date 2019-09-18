@@ -1,11 +1,11 @@
 import { types as t } from '@babel/core';
 import ScopeManager from './scope';
 
-export type ExternalDep = {
+export interface ExternalDep {
   source: string;
   local: t.Identifier;
   imported: t.Identifier | null;
-};
+}
 
 export default class DepsGraph {
   public readonly externalDeps: ExternalDep[] = [];

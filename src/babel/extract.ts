@@ -42,7 +42,7 @@ export default function extract(
           }
           // Collect all the style rules from the styles we encounter
           state.queue = [];
-          state.rules = {};
+          state.rules = [];
           state.index = -1;
           state.dependencies = [];
           state.replacements = [];

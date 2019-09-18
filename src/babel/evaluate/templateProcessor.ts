@@ -23,12 +23,12 @@ import getLinariaComment from '../utils/getLinariaComment';
 // Match any valid CSS units followed by a separator such as ;, newline etc.
 const unitRegex = new RegExp(`^(${units.join('|')})(;|,|\n| |\\))`);
 
-type Modifier = {
+interface Modifier {
   id: string;
   node: t.Expression;
   source: string;
   inComment: boolean;
-};
+}
 
 export default function getTemplateProcessor(options: StrictOptions) {
   const wrapId = (id: string) =>

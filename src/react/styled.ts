@@ -2,7 +2,7 @@ import React from 'react'; // eslint-disable-line import/no-extraneous-dependenc
 import { cx } from '../index';
 import { CSSProperties } from '../index';
 
-type Options = {
+interface Options {
   name: string;
   class: string;
   vars?: {
@@ -14,7 +14,7 @@ type Options = {
   mod?: {
     [key: string]: (props: unknown) => string | number | boolean;
   };
-};
+}
 
 const warnIfInvalid = (value: any, componentName: string) => {
   if (

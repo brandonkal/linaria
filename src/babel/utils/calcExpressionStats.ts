@@ -2,7 +2,7 @@ import { types as t } from '@babel/core';
 
 const cssCommentRegex = /\/\*[^*]*\*+([^/*][^*]*\*+)*\//gm;
 
-export type ExpressionMeta = {
+export interface ExpressionMeta {
   /* If the replacement is found within a CSS comment block */
   inComment: boolean;
   nestLevel: number;
@@ -16,7 +16,7 @@ export type ExpressionMeta = {
   isDeclarationValue: boolean;
   /** record lines for the expression */
   lines?: number;
-};
+}
 
 interface StrPath {
   node: {
@@ -26,10 +26,10 @@ interface StrPath {
   };
 }
 
-type Place = {
+interface Place {
   name: string;
   array: boolean;
-};
+}
 
 /**
  * Build out a temporary template. We replace interpolations with placeholders.

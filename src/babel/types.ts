@@ -29,38 +29,38 @@ export type Value = Function | Styled | string | number | Serializable;
 
 export type ValueStrings = WeakMap<NodePath<t.Expression>, string>;
 
-export type LazyValue = {
+export interface LazyValue {
   kind: ValueType.LAZY;
   ex: NodePath<t.Expression>;
-};
+}
 
-export type RuntimeValue = {
+export interface RuntimeValue {
   kind: ValueType.RUNTIME;
   ex: any;
-};
+}
 
-export type EvaluatedValue = {
+export interface EvaluatedValue {
   kind: ValueType.VALUE;
   value: Value;
-};
+}
 
 export type ExpressionValue = LazyValue | RuntimeValue | EvaluatedValue;
 
-export type TemplateExpression = {
+export interface TemplateExpression {
   styled?: {
     component: NodePath<t.Expression> | { node: t.StringLiteral };
   };
   path: NodePath<t.TaggedTemplateExpression>;
   expressionValues: ExpressionValue[];
   isGlobal: boolean;
-};
+}
 
-export type Replacement = {
+export interface Replacement {
   original: { start: Location; end: Location };
   length: number;
-};
+}
 
-export type Interpolation = {
+export interface Interpolation {
   /** the id getter is composed of idPrefix + index */
   id: string;
   idPrefix: string;
@@ -74,33 +74,34 @@ export type Interpolation = {
   prevalKey?: string;
   /** set to true in buildCSS to signal that interpolation should be skipped. */
   shouldSkip?: boolean;
-};
+}
 
-export type Rules = {
-  [selector: string]: {
-    className: string;
-    displayName: string;
-    cssText: string;
-    start?: Location;
-    isGlobal: boolean;
-    props: t.ObjectProperty[];
-    interpolations: Interpolation[];
-    /** keep track of strings that should be replaced. */
-    prevalStrings: string[];
-    /** set selectorWrap for wrapped styled components to evaluate a more specific selector. */
-    selectorWrap?: string;
-  };
-};
+export interface RuleBase {
+  className: string;
+  cssText: string;
+  start?: Location;
+  isGlobal: boolean;
+  /** keep track of strings that should be replaced. */
+  prevalStrings: string[];
+  /** set selectorWrap for wrapped styled components to evaluate a more specific selector. */
+  selectorWrap?: string;
+}
 
-export type CSSIdentifiers = {
+export interface Rule extends RuleBase {
+  displayName: string;
+  props: t.ObjectProperty[];
+  interpolations: Interpolation[];
+}
+
+export interface CSSIdentifiers {
   classNames: string[];
   cssVars: string[];
   modifiers: string[];
-};
+}
 
-export type State = {
+export interface State {
   queue: TemplateExpression[];
-  rules: Rules;
+  rules: Rule[];
   cssText: string;
   replacements: Replacement[];
   index: number;
@@ -116,15 +117,15 @@ export type State = {
       linaria: LinariaMetadata;
     };
   };
-};
+}
 
-export type LinariaMetadata = {
+export interface LinariaMetadata {
   cssText: string;
   replacements: Replacement[];
   dependencies: string[];
-};
+}
 
-export type StrictOptions = {
+export interface StrictOptions {
   displayName: boolean;
   evaluate: boolean;
   ignore: RegExp;
@@ -133,12 +134,12 @@ export type StrictOptions = {
   babelOptions: TransformOptions;
   /** set to true when evaluating modules for preval. */
   _isEvaluatePass: boolean;
-};
+}
 
-export type Location = {
+export interface Location {
   line: number;
   column: number;
-};
+}
 
 type AllNodes = { [T in t.Node['type']]: Extract<t.Node, { type: T }> };
 

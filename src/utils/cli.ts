@@ -54,13 +54,13 @@ processFiles(argv._, {
   configFile: argv.config,
 });
 
-type Options = {
+interface Options {
   outDir: string;
   sourceMaps?: boolean;
   sourceRoot?: string;
   insertCssRequires?: string;
   configFile?: string;
-};
+}
 
 function processFiles(files: string[], options: Options) {
   let count = 0;

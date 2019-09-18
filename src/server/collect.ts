@@ -1,9 +1,9 @@
 import postcss, { AtRule, ChildNode } from 'postcss';
 
-type CollectResult = {
+interface CollectResult {
   critical: string;
   other: string;
-};
+}
 
 export default function collect(html: string, css: string): CollectResult {
   const animations = new Set();

@@ -3,11 +3,11 @@ import transform from './utils/transform';
 import slugify from './utils/slugify';
 import { PluginOptions } from './utils/loadOptions';
 
-type RollupPluginOptions = {
+interface RollupPluginOptions extends Partial<PluginOptions> {
   include?: string | string[];
   exclude?: string | string[];
   sourceMap?: boolean;
-} & Partial<PluginOptions>;
+}
 
 export default function linaria({
   include,

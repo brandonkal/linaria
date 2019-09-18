@@ -3,9 +3,9 @@ import { types } from '@babel/core';
 import debug from 'debug';
 const log = debug('linaria:shaker');
 
-type Hooks = {
+interface Hooks {
   [key: string]: (node: any) => string | number;
-};
+}
 
 const hooks: Hooks = {
   Identifier: (node: types.Identifier) => node.name,

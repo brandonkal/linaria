@@ -2,30 +2,31 @@ import path from 'path';
 import * as babel from '@babel/core';
 import { SourceMapGenerator } from 'source-map';
 import loadOptions, { PluginOptions } from './loadOptions';
-import { Rules, Replacement, CSSIdentifiers } from '../babel/types';
+import { Rule, Replacement, CSSIdentifiers } from '../babel/types';
 import * as compileCache from '../babel/compileCache';
 import debug from 'debug';
 const log = debug('linaria:transform');
 
-type Result = {
+interface Result {
   code: string;
-  sourceMap: Object | null | undefined;
+  /** The sourceMap. Type is RawSourceMap from source-map module. */
+  sourceMap?: any;
   cssText?: string;
   cssSourceMapText?: string;
   dependencies?: string[];
-  rules?: Rules;
+  rules?: Rule[];
   replacements?: Replacement[];
   identifiers?: CSSIdentifiers;
-};
+}
 
-type Options = {
+interface Options {
   filename: string;
   outputFilename?: string;
   inputSourceMap?: Object;
   /** Where the transform cache is stored */
   cacheDirectory?: string;
   pluginOptions?: Partial<PluginOptions>;
-};
+}
 
 const babelPreset = require.resolve('../babel');
 
@@ -120,7 +121,7 @@ export default async function transform(
       cssText,
       replacements,
       dependencies,
-      sourceMap: map,
+      sourceMap: map != null ? map : undefined,
 
       get cssSourceMapText() {
         const generator = new SourceMapGenerator({
