@@ -1,22 +1,17 @@
-import { Rules, Interpolation } from '../types';
+import { Rule, Interpolation } from '../types';
 import { types as t } from '@babel/core';
 
+type Replacer = (key: string, allowFn?: boolean, wrapCls?: string) => string;
+
 /**
- * Constructs a CSS text for a set of rules and attaches interpolations object to the styled call.
- * This allows us to evaluate identifiers during the build.
- * If the identifier references a function, it will be handled as a runtime interpolation.
  * buildCSS accepts a replacer function that maps a placeholder to an evaluated string.
  */
-export default function buildCSS(
-  rules: Rules,
-  replacer: (key: string, allowFn?: boolean, wrapCls?: string) => string,
-  optsEvaluate: boolean
-) {
+export default function buildCSS(rules: Rule[], replacer: Replacer) {
   let cssText = '';
   if (!rules) {
     return cssText;
   }
-  Object.values(rules).forEach(rule => {
+  rules.forEach(rule => {
     // Append new lines until we get to the start line number
     let line = cssText.split('\n').length;
     while (rule.start && line < rule.start.line) {
@@ -39,32 +34,10 @@ export default function buildCSS(
       column++;
     }
     // Handle preval replacement
-    let inside = rule.cssText;
     rule.prevalStrings.forEach(placeholder => {
-      inside = inside.replace(placeholder, replacer(placeholder));
+      rule.cssText = rule.cssText.replace(placeholder, replacer(placeholder));
     });
-    // Evaluate interpolations that may contain preval-ed values
-    if (optsEvaluate) {
-      rule.interpolations
-        .filter(it => it.isLazy)
-        .forEach(it => {
-          const cssVar = `var(--${it.id})`;
-          const replacement = replacer(it.prevalKey!, true);
-          if (replacement === it.prevalKey) {
-            // This could not be preval-ed and is a runtime interpolation.
-          } else {
-            inside = inside.replace(cssVar, `${replacement}${it.unit}`);
-            it.shouldSkip = true;
-          }
-        });
-    }
-    // Filter interpolations and attach to CSS
-    inside = attachInterpolations(
-      rule.interpolations.filter(it => !it.shouldSkip),
-      inside,
-      rule.props
-    );
-    cssText += inside;
+    cssText += rule.cssText;
     if (!rule.isGlobal) {
       cssText += '}';
     }
@@ -73,27 +46,67 @@ export default function buildCSS(
 }
 
 /**
+ * Evaluates rules for interpolations that may contain preval-ed values.
+ * Updates all rule.cssText properties and attaches interpolations object to the styled call.
+ * This allows us to evaluate identifiers during the build.
+ * If the identifier references a function, it will be handled as a runtime interpolation.
+ * This is done during JavasScript evaluation.
+ * The result is cssText where build-time evaluations in must still be replaced by calling `buildCSS`.
+ * This allows us to update CSS files independently.
+ */
+export function processRules(
+  rules: Rule[],
+  replacer: Replacer,
+  optsEvaluate: boolean
+) {
+  function processRule(rule: Rule) {
+    if (optsEvaluate) {
+      rule.interpolations
+        .filter(it => it.isLazy)
+        .forEach(it => {
+          const cssVar = `var(--${it.id})`;
+          const replacement = replacer(it.prevalKey!, true);
+          if (replacement === it.prevalKey) {
+            // This could not be preval-ed and is a runtime interpolation.
+            it.shouldSkip = false;
+          } else {
+            rule.cssText = rule.cssText.replace(
+              cssVar,
+              `${replacement}${it.unit}`
+            );
+            it.shouldSkip = true;
+          }
+        });
+    }
+    // Filter interpolations and attach to CSS
+    attachInterpolations(rule);
+  }
+  rules.forEach(processRule);
+}
+
+/**
  * For a given set of interpolations, attachInterpolations will:
  * 1. Modify the CSS text to deduplicate custom property names.
  * 2. Push the generated vars object property to the provided props array.
  */
-export function attachInterpolations(
-  interpolations: Interpolation[],
-  cssText: string,
-  props: t.ObjectProperty[]
-) {
+export function attachInterpolations(rule: Rule) {
   // De-duplicate interpolations based on the source and unit
   // If two interpolations have the same source code and same unit,
   // we don't need to use 2 custom properties for them, we can use a single one
   const result: { [key: string]: Interpolation } = {};
-  interpolations.forEach(it => {
-    const key = it.source + it.unit;
-    if (key in result) {
-      cssText = cssText.replace(`var(--${it.id})`, `var(--${result[key].id})`);
-    } else if (!it.inComment) {
-      result[key] = it;
-    }
-  });
+  rule.interpolations
+    .filter(it => !it.shouldSkip)
+    .forEach(it => {
+      const key = it.source + it.unit;
+      if (key in result) {
+        rule.cssText = rule.cssText.replace(
+          `var(--${it.id})`,
+          `var(--${result[key].id})`
+        );
+      } else if (!it.inComment) {
+        result[key] = it;
+      }
+    });
   const keys = Object.keys(result);
   // Minimize interpolation number for improved gzip.
   keys.forEach((key, i) => {
@@ -101,11 +114,11 @@ export function attachInterpolations(
     if (i === it.index) return;
     const oldId = it.id;
     it.index = i;
-    cssText = cssText.replace(`var(--${oldId})`, `var(--${it.id})`);
+    rule.cssText = rule.cssText.replace(`var(--${oldId})`, `var(--${it.id})`);
   });
   if (keys.length > 0) {
     // Save to compiled JS object
-    props.push(
+    rule.props.push(
       t.objectProperty(
         t.identifier('vars'),
         t.objectExpression(
@@ -124,5 +137,4 @@ export function attachInterpolations(
       )
     );
   }
-  return cssText;
 }

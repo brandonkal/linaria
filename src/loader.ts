@@ -5,10 +5,13 @@ import normalize from 'normalize-path';
 import loaderUtils from 'loader-utils';
 import validateOptions from 'schema-utils';
 import enhancedResolve from 'enhanced-resolve';
-import Module from './babel/module';
+import Module, { clearModules } from './babel/module';
 import transform from './utils/transform';
 import fixError from './babel/utils/fixError';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { loader } from 'webpack'; // type only import
 import debug from 'debug';
+import { RawSourceMap } from 'source-map';
 const log = debug('linaria:loader');
 
 const schema = {
@@ -37,15 +40,31 @@ const schema = {
 
 const supportedExtensions = ['.js', '.jsx', '.ts', '.tsx', '.json'];
 
+// Keep track of requested files. We only clear dependents on rebuilds.
+const requested = new Set<string>();
+
+export function pitch(this: loader.LoaderContext) {
+  if (!requested.has(this.resourcePath)) {
+    requested.add(this.resourcePath);
+  } else {
+    log(`pitch for ${this.resourcePath}. Clearing dependent modules.`);
+    // We clear on hot rebuilds.
+    // If we could be sure that modules don't execute code in module scope
+    // (only export functions) this step could be omitted.
+    clearModules(this.resourcePath);
+  }
+}
+
 let resolver: (id: string, parent: any) => string;
 
-export default async function loader(
-  this: any,
+export default async function linariaLoader(
+  this: loader.LoaderContext,
   content: string,
-  inputSourceMap: Object | null
+  inputSourceMap?: RawSourceMap
 ) {
   log(`Executing loader for ${this.resourcePath}`);
-  const callback = this.async();
+  const callback = this.async()!;
+  this.cacheable();
   const options = loaderUtils.getOptions(this) || {};
   validateOptions(schema, options, 'Linaria Loader');
   const { sourceMap, cacheDirectory: cacheConfig, ...pluginOptions } = options;
@@ -100,6 +119,7 @@ export default async function loader(
       );
       deps.forEach(dep => {
         try {
+          // TODO: Remove this and handle deps in CSS logic.
           this.addDependency(dep);
         } catch (e) {
           // eslint-disable-next-line no-console
@@ -191,7 +211,7 @@ let lastCompilation: any;
 /**
  * Generates a resolver if required
  */
-function createResolver(this: any) {
+function createResolver(this: loader.LoaderContext) {
   if (typeof resolver !== 'function' || lastCompilation !== this._compilation) {
     const resolveSync = enhancedResolve.create.sync(
       // this._compilation is a deprecated API

@@ -64,7 +64,7 @@ const builtins = {
 };
 
 // Separate cache for evaluated modules. Also available on require.cache
-let cache: { [id: string]: Module } = {};
+let cache: { [filename: string]: Module } = {};
 
 const NOOP = () => {};
 
@@ -124,6 +124,39 @@ export function makeModule(filename: string) {
   return m;
 }
 
+/**
+ * clearModules gets the module if it already is cached and
+ * clears all its dependents recursively.
+ */
+export function clearModules(filename: string) {
+  const alive = new Set<string>();
+  let deps: string[] = [filename];
+  while (deps.length > 0) {
+    // Mark all dependencies as alive
+    deps.forEach(d => alive.add(d));
+    // Collect new dependencies of dependencies
+    deps = getDependents(deps).filter(d => !alive.has(d));
+  }
+
+  alive.forEach(mod => {
+    log(`Clearing module: ${mod}`);
+    delete cache[mod];
+  });
+
+  return true;
+
+  function getDependents(filenames: string[]) {
+    let res: string[] = [];
+    filenames.forEach(file => {
+      let m = cache[file];
+      if (m && m.dependents) {
+        res.push(...m.dependents);
+      }
+    });
+    return res;
+  }
+}
+
 class Module {
   /**
    * Alias to resolve the module using node's resolve algorithm
@@ -151,6 +184,8 @@ class Module {
   exports: any;
   extensions: string[];
   dependencies: string[];
+  /** Keep track of dependents for cache invalidation. Set to false if non JS/JSON asset. */
+  dependents: string[] | false;
   transform: ((codeAndMap: GeneratorResult) => BabelFileResult) | null;
   /** A hash of the babel transform options */
   _cacheKey?: string;
@@ -165,6 +200,7 @@ class Module {
     this.filename = filename;
     this.paths = [];
     this.dependencies = [];
+    this.dependents = [];
     this.transform = null;
 
     Object.defineProperties(this, {
@@ -275,16 +311,16 @@ class Module {
             // For JS/TS files, evaluate the module
             // The module will be transpiled using provided transform
             m.evaluate({ code, map: null });
-            1 + 2;
           }
         } else {
           // For non JS/JSON requires, just export the id
           // This is to support importing assets in webpack
           // The module will be resolved by css-loader
           m.exports = id;
+          m.dependents = false;
         }
       }
-
+      m.dependents && m.dependents.push(this.filename);
       return m.exports;
     },
     {

@@ -373,7 +373,7 @@ export default function getTemplateProcessor(options: StrictOptions) {
       path.replaceWith(t.stringLiteral(className));
     }
 
-    state.rules[className] = {
+    state.rules.push({
       cssText,
       className,
       selectorWrap,
@@ -384,6 +384,6 @@ export default function getTemplateProcessor(options: StrictOptions) {
       props,
       interpolations,
       prevalStrings,
-    };
+    });
   };
 }

@@ -18,7 +18,7 @@ import {
 } from './types';
 import TaggedTemplateExpression from './visitors/TaggedTemplateExpression';
 import generateReplaceMap from './evaluate/generateReplaceMap';
-import buildCSS from './utils/buildCSS';
+import buildCSS, { processRules } from './utils/buildCSS';
 import { merge } from './utils/errorQueue';
 
 function isLazyValue(v: ExpressionValue): v is LazyValue {
@@ -115,7 +115,8 @@ export default function extract(
               }
             });
             const replacer = generateReplaceMap(lazyValues, nodePathFromString);
-            state.cssText = buildCSS(state.rules, replacer, options.evaluate);
+            processRules(state.rules, replacer, options.evaluate);
+            state.cssText = buildCSS(state.rules, replacer);
           }
         },
         exit(_, state) {

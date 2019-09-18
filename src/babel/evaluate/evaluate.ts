@@ -56,7 +56,6 @@ export default function evaluate(
   options?: StrictOptions
 ) {
   const m = makeModule(filename);
-  m.dependencies = [];
 
   m.transform = function transform(this: Module, { code, map }) {
     if (
