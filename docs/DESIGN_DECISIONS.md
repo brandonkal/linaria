@@ -132,3 +132,30 @@ This logic handles building a CSS-like-string from the extracted rules. This is 
 The call to this function was moved into the babel plugin process as the intent is to eventually remove the requirement for a special webpack loader or cli.
 
 In the future, it should be possible to avoid writing the intermediate CSS file to disk by writing a generic buffer-loader for all of the bundlers that will handle a base-encoded require string and process it as if it was a file on disk.
+
+#### Limitations
+
+Certain limitations exist to ensure performant development.
+
+Preval Evaluation: If `options.evaluate == true`, any identifiers as a CSS expression will be evaluated to determine if it is a runtime function or a value (i.e. string). During development, Linaria rebuild CSS without rebuilding the Javascript for performance.
+For instance:
+
+```js
+// A.js
+export const fontSize = 16;
+export const A = css`
+  color: blue;
+`;
+```
+
+```js
+// Tag.js
+import { fontSize } from './A';
+const Tag = styled.span`
+  font-size: ${fontSize}px;
+`;
+```
+
+Changing A.js will cause `linaria-loader` to rebuild `A.js`, `A.js.linaria.css`, and `Tag.js.linaria.css`
+Note that `Tag.js` does not need to be rebuilt in this case.
+This works great as long as you don't change `fontSize` from a primitive into a function. If you do this, simply change Tag.js (i.e. with a cahe-busting comment) to force webpack to rebuild the dependent file and output updated JavaScript.
