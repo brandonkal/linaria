@@ -25,7 +25,7 @@ export default function generateReplaceMap(
     const node = nodeFromString.get(key);
     let value = valueFromString(key);
     if (node == null) {
-      throw new Error('Linaria CSS Error: lazyValue is missing');
+      throw new Error('Linaria Internal CSS Error: lazyValue is missing');
     }
     throwIfInvalid(value, node, allowFn, /* circular hint */ true);
 
