@@ -1,10 +1,11 @@
 import compiler from './__utils__/compiler';
 import rimraf from 'rimraf';
 import Module from '../babel/module';
+import path from 'path';
 
 describe('webpack loader', () => {
   beforeEach(() => {
-    rimraf.sync('.linaria-cache');
+    rimraf.sync(path.join(__dirname, './__fixtures__/.linaria-cache'));
     Module.invalidateAll();
   });
   test('loader requires generated CSS file - css', async () => {

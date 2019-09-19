@@ -3,6 +3,8 @@ import webpack from 'webpack';
 import memoryfs from 'memory-fs';
 import LinariaOptimize from '../../plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
+// import attachSourceMap from '../../attachSourceMap';
+// import fixSourceMap from '../../fixSourceMap';
 
 const loaderPath = require.resolve('../../loader');
 
@@ -76,14 +78,14 @@ const compiler = ({
           options: { sourceMap: true },
         },
         {
-          loader: require.resolve('../../../fixSourceMap.js'),
+          loader: require.resolve('../../fixSourceMap.ts'),
         },
         {
           loader: require.resolve('postcss-loader'),
           options: { sourceMap: true },
         },
         {
-          loader: require.resolve('../../../attachSourceMap.js'),
+          loader: require.resolve('../../attachSourceMap.ts'),
         },
       ],
     },
@@ -130,7 +132,6 @@ const compiler = ({
     },
   });
 
-  // @ts-ignore
   task.outputFileSystem = new memoryfs();
 
   return new Promise<webpack.Stats>((resolve, reject) => {

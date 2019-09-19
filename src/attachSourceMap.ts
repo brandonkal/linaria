@@ -7,7 +7,7 @@ const re = /\/\*# sourceMappingURL=data:application\/json;base64,.*$/m;
  * **Linaria attachSourceMap Loader**
  *
  * Takes generated CSS file from Linaria and reads and removes the source map comment.
- * In instance of convert-source-map is attached as metadata to the file.
+ * An instance of convert-source-map is attached as metadata to the file.
  * After processing the css with PostCSS,
  * this should be followed by the **fixSourceMap loader**,
  * which will replace the source file name and source contents in the generated source map.

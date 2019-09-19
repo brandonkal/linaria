@@ -156,6 +156,6 @@ const Tag = styled.span`
 `;
 ```
 
-Changing A.js will cause `linaria-loader` to rebuild `A.js`, `A.js.linaria.css`, and `Tag.js.linaria.css`
+Changing A.js will cause `linaria-loader` to rebuild `A.js`, `A.dev.linaria.css`, and `Tag.dev.linaria.css`
 Note that `Tag.js` does not need to be rebuilt in this case.
 This works great as long as you don't change `fontSize` from a primitive into a function. If you do this, simply change Tag.js (i.e. with a cahe-busting comment) to force webpack to rebuild the dependent file and output updated JavaScript.

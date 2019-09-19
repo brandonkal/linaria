@@ -7,12 +7,12 @@ import * as compileCache from '../babel/compileCache';
 import debug from 'debug';
 const log = debug('linaria:transform');
 
-interface Result {
+export interface Result {
   code: string;
   /** The sourceMap. Type is RawSourceMap from source-map module. */
   sourceMap?: any;
   cssText?: string;
-  cssSourceMapText?: string;
+  cssSourceMap?: string;
   dependencies?: string[];
   rules?: Rule[];
   replacements?: Replacement[];
@@ -123,7 +123,7 @@ export default async function transform(
       dependencies,
       sourceMap: map != null ? map : undefined,
 
-      get cssSourceMapText() {
+      get cssSourceMap() {
         const generator = new SourceMapGenerator({
           file: options.filename,
         });
@@ -139,7 +139,7 @@ export default async function transform(
           source: options.filename,
         });
         generator.setSourceContent(options.filename, code);
-        return generator.toString();
+        return generator.toJSON();
       },
     };
   } catch (e) {

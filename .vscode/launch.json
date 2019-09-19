@@ -17,7 +17,7 @@
       "args": ["--runInBand"],
       "env": {
         "DEBUG_HIDE_DATE": "true",
-        "DEBUG": "linaria:*"
+        "DEBUG": "linaria:loader"
       },
       "cwd": "${workspaceFolder}",
       "internalConsoleOptions": "neverOpen",

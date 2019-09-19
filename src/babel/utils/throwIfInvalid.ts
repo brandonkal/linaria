@@ -15,6 +15,21 @@ function isValid(value: any) {
   );
 }
 
+/** builds an alternative to node that allows us to serialize and cache to disk. */
+// function buildNodeProxy(ex: NodePath, filename: string) {
+//   const loc = ex.node.loc;
+//   const code = '';
+//   // const filename = ex.
+//   const opts = {
+//     start: {
+//       line: loc.start.line,
+//       column: loc.start.column + 1,
+//     },
+//   };
+//   ex.getSource();
+//   const stringified = generator(ex.node).code;
+// }
+
 /**
  * Throw if we can't handle the interpolated value.
  */
