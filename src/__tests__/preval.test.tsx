@@ -9,6 +9,7 @@ import Module from '../babel/module';
 beforeEach(() => Module.invalidateAll());
 
 import serializer from './__utils__/linaria-snapshot-serializer';
+import buildCSS from '../utils/buildCSS';
 
 expect.addSnapshotSerializer(serializer);
 
@@ -30,9 +31,12 @@ const transpile = async (input: string) => {
     filename: join(__dirname, 'source.js'),
   });
 
+  const cssText = buildCSS(metadata.linaria.rules, metadata.linaria.replacer);
+
   return {
     metadata: metadata as typeof metadata & { keepEmptyLines?: boolean },
     code: replaced ? code.replace(SHORT, FULL) : code,
+    cssText,
   };
 };
 
@@ -611,11 +615,9 @@ it('creates valid CSS with multiline interpolation', async () => {
     background: black;
   \`)({})
   `;
-  const { code, metadata } = await transpile(source);
+  const { code, metadata, cssText } = await transpile(source);
   expect(code).toMatchSnapshot();
-  expect(lineOf('background:', (metadata as any).linaria.cssText)).toBe(
-    lineOf('background:', source)
-  );
+  expect(lineOf('background:', cssText)).toBe(lineOf('background:', source));
   metadata.keepEmptyLines = true;
   expect(metadata).toMatchSnapshot();
 });

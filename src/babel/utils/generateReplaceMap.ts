@@ -1,11 +1,11 @@
-import { types as t } from '@babel/core';
-import { NodePath } from '@babel/traverse';
-import throwIfInvalid from '../utils/throwIfInvalid';
-import stripLines from '../utils/stripLines';
-import toCSS from '../utils/toCSS';
-import isStyled from '../utils/isStyled';
+import throwIfInvalid from './throwIfInvalid';
+import stripLines from './stripLines';
+import toCSS from './toCSS';
+import isStyled from './isStyled';
 import { Value } from '../types';
 import { isValidElementType } from 'react-is';
+import { NodePath } from '@babel/core';
+import SimpleNode from './SimpleNode';
 
 // Dummy location as lines have already been stripped.
 const dummyLoc = {
@@ -15,7 +15,7 @@ const dummyLoc = {
 
 export default function generateReplaceMap(
   lazyValues: Value[],
-  nodeFromString: Map<string, NodePath<t.Expression>>
+  nodeFromString: Map<string, NodePath | SimpleNode>
 ) {
   const valueFromString = (key: string) => {
     return lazyValues[parseInt(key.replace('LINARIA_PREVAL_', ''))];

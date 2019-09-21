@@ -1,12 +1,15 @@
-module.exports = {
+import buildCSS from '../../utils/buildCSS';
+export default {
   test: value => value && typeof value.linaria === 'object',
   print: ({ linaria, keepEmptyLines }) => `
 CSS:
 
 ${
   keepEmptyLines
-    ? linaria.cssText
-    : linaria.cssText.replace(/^\n\n/gm, '').replace(/^\n/, '')
+    ? buildCSS(linaria.rules, linaria.replacer)
+    : buildCSS(linaria.rules, linaria.replacer)
+        .replace(/^\n\n/gm, '')
+        .replace(/^\n/, '')
 }
 
 Dependencies: ${

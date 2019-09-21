@@ -25,6 +25,12 @@ export enum ValueType {
   VALUE,
 }
 
+export type Replacer = (
+  key: string,
+  allowFn?: boolean,
+  wrapCls?: string
+) => string;
+
 export type Value = Function | Styled | string | number | Serializable;
 
 export type ValueStrings = WeakMap<NodePath<t.Expression>, string>;
@@ -93,12 +99,6 @@ export interface Rule extends RuleBase {
   interpolations: Interpolation[];
 }
 
-export interface CSSIdentifiers {
-  classNames: string[];
-  cssVars: string[];
-  modifiers: string[];
-}
-
 export interface State {
   queue: TemplateExpression[];
   rules: Rule[];
@@ -106,6 +106,7 @@ export interface State {
   replacements: Replacement[];
   index: number;
   dependencies: string[];
+  replacer?: Replacer;
   file: {
     opts: {
       cwd: string;
@@ -120,7 +121,8 @@ export interface State {
 }
 
 export interface LinariaMetadata {
-  cssText: string;
+  rules: RuleBase[];
+  replacer?: Replacer;
   replacements: Replacement[];
   dependencies: string[];
 }
@@ -139,6 +141,13 @@ export interface StrictOptions {
 export interface Location {
   line: number;
   column: number;
+}
+
+export interface NodePathLike {
+  buildCodeFrameError<TError extends Error>(
+    msg: string,
+    Error?: new (msg: string) => TError
+  ): TError;
 }
 
 type AllNodes = { [T in t.Node['type']]: Extract<t.Node, { type: T }> };

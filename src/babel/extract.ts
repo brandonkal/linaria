@@ -17,9 +17,10 @@ import {
   Value,
 } from './types';
 import TaggedTemplateExpression from './visitors/TaggedTemplateExpression';
-import generateReplaceMap from './evaluate/generateReplaceMap';
-import buildCSS, { processRules } from './utils/buildCSS';
+import generateReplaceMap from './utils/generateReplaceMap';
+import { processInterpolations } from './utils/processInterpolations';
 import { merge } from './utils/errorQueue';
+import SimpleNode from './utils/SimpleNode';
 
 function isLazyValue(v: ExpressionValue): v is LazyValue {
   return v.kind === ValueType.LAZY;
@@ -37,7 +38,8 @@ export default function extract(
     visitor: {
       Program: {
         enter(path, state) {
-          if (path.getSource().includes('__linariaPreval')) {
+          const src = path.getSource();
+          if (src.includes('__linariaPreval')) {
             return;
           }
           // Collect all the style rules from the styles we encounter
@@ -57,7 +59,7 @@ export default function extract(
           });
 
           const valueStrings: ValueStrings = new WeakMap();
-          const nodePathFromString = new Map<string, NodePath<t.Expression>>();
+          const nodePathFromString = new Map<string, SimpleNode>();
 
           const lazyDepsPaths = state.queue.reduce(
             (acc, { expressionValues: values }) => {
@@ -68,9 +70,12 @@ export default function extract(
           );
           const lazyDeps = lazyDepsPaths.map(v => v.node);
 
-          lazyDepsPaths.forEach((key, idx) => {
-            valueStrings.set(key, `LINARIA_PREVAL_${idx}`);
-            nodePathFromString.set(`LINARIA_PREVAL_${idx}`, key);
+          lazyDepsPaths.forEach((nodePath, idx) => {
+            valueStrings.set(nodePath, `LINARIA_PREVAL_${idx}`);
+            nodePathFromString.set(
+              `LINARIA_PREVAL_${idx}`,
+              new SimpleNode(nodePath, state.file.opts.filename, src)
+            );
           });
 
           log(`found ${lazyDeps.length} lazy deps`);
@@ -95,7 +100,7 @@ export default function extract(
               options
             );
 
-            state.dependencies.push(...evaluation.dependencies);
+            state.dependencies = [...evaluation.dependencies];
             lazyValues = evaluation.value.__linariaPreval;
             if (lazyValues == null || lazyDeps.length !== lazyValues.length) {
               throw merge(
@@ -106,6 +111,7 @@ export default function extract(
             }
           }
 
+          let replacer;
           if (!options._isEvaluatePass) {
             // Remove __linariaPreval constant from the program.
             const body = path.get('body');
@@ -114,10 +120,10 @@ export default function extract(
                 statement.remove();
               }
             });
-            const replacer = generateReplaceMap(lazyValues, nodePathFromString);
-            processRules(state.rules, replacer, options.evaluate);
-            state.cssText = buildCSS(state.rules, replacer);
+            replacer = generateReplaceMap(lazyValues, nodePathFromString);
+            processInterpolations(state.rules, replacer, options.evaluate);
           }
+          state.replacer = replacer;
         },
         exit(_, state) {
           log(`exiting ${state.file.opts.filename}`);
@@ -128,7 +134,13 @@ export default function extract(
             // Store the result as the file metadata
             state.file.metadata = {
               linaria: {
-                cssText: state.cssText,
+                rules: state.rules.map(rule => {
+                  delete rule.props;
+                  delete rule.displayName;
+                  delete rule.interpolations;
+                  return rule;
+                }),
+                replacer: state.replacer,
                 replacements: state.replacements,
                 dependencies: state.dependencies,
               },

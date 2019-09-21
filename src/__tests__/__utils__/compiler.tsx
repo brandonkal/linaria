@@ -1,10 +1,8 @@
 import path from 'path';
 import webpack from 'webpack';
 import memoryfs from 'memory-fs';
-import LinariaOptimize from '../../plugin';
+import Linaria from '../../plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
-// import attachSourceMap from '../../attachSourceMap';
-// import fixSourceMap from '../../fixSourceMap';
 
 const loaderPath = require.resolve('../../loader');
 
@@ -37,7 +35,7 @@ const babelConfig = {
   plugins: [['@babel/plugin-transform-runtime', { useESModules: true }]],
 };
 
-const compiler = ({
+const pack = ({
   fixture,
   folder = '',
   production = false,
@@ -96,12 +94,10 @@ const compiler = ({
       'process.env': { NODE_ENV: mode },
     }),
     new MiniCssExtractPlugin({ filename: 'styles.css' }),
+    new Linaria({ optimize: !!complex }),
   ];
-  if (complex) {
-    plugins.push(new LinariaOptimize({ optimize: optimize }));
-  }
 
-  const task = webpack({
+  const compiler = webpack({
     mode: mode,
     context: path.resolve(path.join(__dirname, '../__fixtures__', folder)),
     entry: `./${fixture}`,
@@ -132,10 +128,10 @@ const compiler = ({
     },
   });
 
-  task.outputFileSystem = new memoryfs();
+  compiler.outputFileSystem = new memoryfs();
 
   return new Promise<webpack.Stats>((resolve, reject) => {
-    task.run((err, stats) => {
+    compiler.run((err, stats) => {
       if (err) reject(err);
       if (stats.hasErrors()) reject(new Error(stats.toJson().errors.join(' ')));
 
@@ -144,4 +140,4 @@ const compiler = ({
   });
 };
 
-export default compiler;
+export default pack;

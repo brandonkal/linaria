@@ -25,7 +25,7 @@ export var T3 =
 styled(\\"h3\\")({
   name: \\"T3\\",
   class: \\"T3_t1y4fq36\\"
-});
+}); // Injected by Linaria Loader for Webpack Compilation (virtual)
 
 require(\\"./.linaria-cache/styled-components.dev.linaria.css\\");"
 `;
@@ -56,7 +56,7 @@ export var T3 =
 styled(\\"h3\\")({
   name: \\"T3\\",
   class: \\"LINARIA_t1y4fq36_LINARIA\\"
-});
+}); // Injected by Linaria Loader for Webpack Compilation (virtual)
 
 require(\\"./.linaria-cache/styled-components.dev.linaria.css\\");
 
@@ -77,7 +77,6 @@ require(\\"./.linaria-cache/styled-components.dev.linaria.css\\");
     background: #333;
   }
 
-
 "
 `;
 
@@ -86,6 +85,7 @@ exports[`webpack loader loader requires generated CSS file - css 1`] = `
 const Container = \\"Container_c1j2k3d2\\";
 export default Container;
 
+// Injected by Linaria Loader for Webpack Compilation (virtual)
 require(\\"./.linaria-cache/css-classname.dev.linaria.css\\");"
 `;
 
@@ -116,5 +116,6 @@ styled(\\"h3\\")({
   class: \\"T3_t1y4fq36\\"
 });
 
+// Injected by Linaria Loader for Webpack Compilation (virtual)
 require(\\"./.linaria-cache/styled-components.dev.linaria.css\\");"
 `;

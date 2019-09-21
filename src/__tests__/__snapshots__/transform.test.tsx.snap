@@ -5,8 +5,7 @@ exports[`doesn't rewrite an absolute path in url() declarations 1`] = `
 
 .title_tpyglzj {
   background-image: url(/assets/test.jpg);
-}
-"
+}"
 `;
 
 exports[`handles transpiled template literals 1`] = `
@@ -21,8 +20,7 @@ exports[`handles transpiled template literals 2`] = `
 
 .title_tpyglzj {
   background-image: url(/assets/test.jpg);
-}
-"
+}"
 `;
 
 exports[`injects global rules to the global scope 1`] = `
@@ -40,7 +38,6 @@ exports[`injects global rules to the global scope 1`] = `
     color: black;
   }
 
-
 "
 `;
 
@@ -49,8 +46,7 @@ exports[`rewrites a relative path in url() declarations 1`] = `
 
 .title_tpyglzj {
   background-image: url(../linaria/assets/test.jpg);
-}
-"
+}"
 `;
 
 exports[`rewrites multiple relative paths in url() declarations 1`] = `
@@ -61,6 +57,5 @@ exports[`rewrites multiple relative paths in url() declarations 1`] = `
     font-family: Test;
     src: url(../linaria/assets/font.woff2) format(\\"woff2\\"), url(../linaria/assets/font.woff) format(\\"woff\\");
   }
-}
-"
+}"
 `;

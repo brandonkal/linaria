@@ -24,6 +24,7 @@ import * as compileCache from './compileCache';
 import * as errorQueue from './utils/errorQueue';
 const log = debug('linaria:module');
 import './sourceMapRegister';
+import mtime from './utils/mtime';
 
 // Supported node builtins based on the modules polyfilled by webpack
 // `true` means module is polyfilled, `false` means module is empty
@@ -128,7 +129,15 @@ export function makeModule(filename: string) {
  * clearModules gets the module if it already is cached and
  * clears all its dependents recursively.
  */
-export function clearModules(filename: string) {
+export function resetModules(filenames: Set<string> | string[]) {
+  filenames.forEach((mod: string) => {
+    log(`Clearing module: ${mod}`);
+    const m = cache[mod];
+    if (m) m.reset();
+  });
+}
+
+export function findAllDependents(filename: string) {
   const alive = new Set<string>();
   let deps: string[] = [filename];
   while (deps.length > 0) {
@@ -138,12 +147,7 @@ export function clearModules(filename: string) {
     deps = getDependents(deps).filter(d => !alive.has(d));
   }
 
-  alive.forEach(mod => {
-    log(`Clearing module: ${mod}`);
-    delete cache[mod];
-  });
-
-  return true;
+  return alive;
 
   function getDependents(filenames: string[]) {
     let res: string[] = [];
@@ -158,17 +162,18 @@ export function clearModules(filename: string) {
 }
 
 class Module {
-  /**
-   * Alias to resolve the module using node's resolve algorithm
-   * This static property can be overriden by the webpack loader
-   * This allows us to use webpack's module resolution algorithm
-   */
-  static _resolveFilename = (
+  static _resolveFilenameDefault = (
     id: string,
     parent: { id?: string; filename: string; paths?: string[] }
   ) => {
     return ((NativeModule as any) as NM)._resolveFilename(id, parent);
   };
+  /**
+   * Alias to resolve the module using node's resolve algorithm
+   * This static property can be overriden by the webpack loader
+   * This allows us to use webpack's module resolution algorithm
+   */
+  static _resolveFilename = Module._resolveFilenameDefault;
 
   static _nodeModulePaths = (filename: string) =>
     ((NativeModule as any) as NM)._nodeModulePaths(filename);
@@ -178,19 +183,24 @@ class Module {
     compileCache.clear();
   };
 
+  /** Allows consumers to customize filesystem */
+  static _fs = fs;
+
   id: string;
   filename: string;
   paths: string[];
   exports: any;
   extensions: string[];
-  dependencies: string[];
+  dependencies: Set<string>;
   /** Keep track of dependents for cache invalidation. Set to false if non JS/JSON asset. */
-  dependents: string[] | false;
+  dependents: Set<string> | false;
   transform: ((codeAndMap: GeneratorResult) => BabelFileResult) | null;
   /** A hash of the babel transform options */
   _cacheKey?: string;
   /** Represents the source as passed to evaluate. This may have already been transformed by the initial Linaria extraction. */
   private _source?: string;
+  /** keep track of last modified date for file */
+  mtime: number = 0;
   /* we store the code executed for when a source-map is unavailable. */
   private _transformed?: string;
   private loaded?: boolean;
@@ -199,8 +209,8 @@ class Module {
     this.id = filename;
     this.filename = filename;
     this.paths = [];
-    this.dependencies = [];
-    this.dependents = [];
+    this.dependencies = new Set();
+    this.dependents = new Set();
     this.transform = null;
 
     Object.defineProperties(this, {
@@ -284,7 +294,7 @@ class Module {
         throw e;
       }
 
-      this.dependencies.push(filename);
+      this.dependencies.add(filename);
 
       let m = cache[filename];
 
@@ -300,27 +310,16 @@ class Module {
         // end up in infinite loop with cyclic dependencies
         cache[filename] = m;
 
-        if (this.extensions.includes(path.extname(filename))) {
-          // To evaluate the file, we need to read it first
-          const code = fs.readFileSync(filename, 'utf-8');
-
-          if (/\.json$/.test(filename)) {
-            // For JSON files, parse it to a JS object similar to Node
-            m.exports = JSON.parse(code);
-          } else {
-            // For JS/TS files, evaluate the module
-            // The module will be transpiled using provided transform
-            m.evaluate({ code, map: null });
-          }
-        } else {
-          // For non JS/JSON requires, just export the id
-          // This is to support importing assets in webpack
-          // The module will be resolved by css-loader
-          m.exports = id;
-          m.dependents = false;
+        this._loadFromFile(m, id);
+      } else {
+        // Is it still fresh?
+        const lastModified = mtime(m.filename);
+        if (lastModified > m.mtime) {
+          m.mtime = lastModified;
+          m.reset();
         }
       }
-      m.dependents && m.dependents.push(this.filename);
+      m.dependents && m.dependents.add(this.filename);
       return m.exports;
     },
     {
@@ -329,6 +328,33 @@ class Module {
       resolve: this.resolve,
     }
   );
+
+  private _loadFromFile(m: Module, id: string) {
+    if (this.extensions.includes(path.extname(m.filename))) {
+      // To evaluate the file, we need to read it first
+      m.mtime = mtime(m.filename);
+      const code = Module._fs.readFileSync(m.filename, 'utf-8').toString();
+      if (/\.json$/.test(m.filename)) {
+        // For JSON files, parse it to a JS object similar to Node
+        m.exports = JSON.parse(code);
+      } else {
+        // For JS/TS files, evaluate the module
+        // The module will be transpiled using provided transform
+        this.loaded = false;
+        m.evaluate({ code, map: null });
+      }
+    } else {
+      // For non JS/JSON requires, just export the id
+      // This is to support importing assets in webpack
+      // The module will be resolved by css-loader
+      m.exports = id;
+      m.dependents = false;
+    }
+  }
+
+  reset() {
+    this._loadFromFile(this, this.id);
+  }
 
   /** For JavaScript files, we need to transpile it and to get the exports of the module */
   private _transform(codeAndMap: GeneratorResult): string {
@@ -353,19 +379,23 @@ class Module {
   }
 
   /** compiles the string and executes it in the sandbox context. Stores exports on this module. */
-  evaluate(codeAndMap: GeneratorResult, alwaysThrow?: boolean) {
+  evaluate(codeAndMap?: GeneratorResult, alwaysThrow?: boolean) {
     log(`evaluating ${this.filename}`);
     if (this.loaded) {
       return;
     }
 
     try {
-      const compiled = this._transform(codeAndMap);
+      if (typeof codeAndMap !== 'undefined') {
+        this._transform(codeAndMap);
+      } else if (!this._transformed) {
+        throw Error(`Module expected code on first evaluate.`);
+      }
 
       log(`executing ${this.filename}`);
 
       const fn = vm.compileFunction(
-        compiled,
+        this._transformed!,
         ['exports', 'require', 'module', '__filename', '__dirname'],
         {
           parsingContext: sandbox,

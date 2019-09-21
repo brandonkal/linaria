@@ -1,4 +1,4 @@
-import compiler from './__utils__/compiler';
+import pack from './__utils__/compiler';
 import rimraf from 'rimraf';
 import Module from '../babel/module';
 import path from 'path';
@@ -10,7 +10,7 @@ describe('webpack loader', () => {
   });
   test('loader requires generated CSS file - css', async () => {
     const FILE = 'css-classname.js';
-    const stats = await compiler({ fixture: FILE });
+    const stats = await pack({ fixture: FILE });
     const modules: any[] = stats.toJson().modules;
     const output = modules.find(v => v.name.endsWith(FILE)).source;
 
@@ -19,7 +19,7 @@ describe('webpack loader', () => {
 
   test('loader requires generated CSS file - styled', async () => {
     const FILE = 'styled-components.js';
-    const stats = await compiler({ fixture: FILE });
+    const stats = await pack({ fixture: FILE });
     const modules: any[] = stats.toJson().modules;
     const output = modules.find(v => v.name.endsWith(FILE)).source;
 
@@ -28,7 +28,7 @@ describe('webpack loader', () => {
 
   test('complex loader works -- no-optimize', async () => {
     const FILE = 'styled-components.js';
-    const stats = await compiler({
+    const stats = await pack({
       fixture: FILE,
       production: false,
       complex: true,
@@ -43,7 +43,7 @@ describe('webpack loader', () => {
 
   test('complex loader works -- optimizer', async () => {
     const FILE = 'styled-components.js';
-    const stats = await compiler({
+    const stats = await pack({
       fixture: FILE,
       production: true,
       complex: true,

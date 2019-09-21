@@ -42,8 +42,10 @@ export default function linaria({
       const slug = slugify(id);
       const filename = `${id.replace(/\.js$/, '')}_${slug}.css`;
 
-      if (sourceMap && result.cssSourceMapText) {
-        const map = Buffer.from(result.cssSourceMapText).toString('base64');
+      if (sourceMap && result.cssSourceMap) {
+        const map = Buffer.from(JSON.stringify(result.cssSourceMap)).toString(
+          'base64'
+        );
         cssText +=
           `/*# sourceMappingURL` + `=data:application/json;base64,${map}*/`;
       }

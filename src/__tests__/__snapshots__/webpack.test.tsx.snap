@@ -22,7 +22,7 @@ render.create(React.createElement(Container, null, React.createElement(Alert, {
 }), React.createElement(Alert, {
   variant$: \\"error\\",
   title$: \\"Error\\"
-})));
+}))); // Injected by Linaria Loader for Webpack Compilation (virtual)
 
 require(\\"./.linaria-cache/project.dev.linaria.css\\");
 
@@ -112,7 +112,6 @@ require(\\"./.linaria-cache/project.dev.linaria.css\\");
 
 
 
-
 .b {
   margin-bottom: 10px;
 }
@@ -120,7 +119,6 @@ require(\\"./.linaria-cache/project.dev.linaria.css\\");
     background: pink;
     padding: 1rem;
   }
-
 
 "
 `;

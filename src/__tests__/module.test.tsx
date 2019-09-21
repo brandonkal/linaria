@@ -1,12 +1,14 @@
 import path from 'path';
 import dedent from 'dedent';
 import * as babel from '@babel/core';
-import Module from '../babel/module';
+import Module, { resetModules, makeModule } from '../babel/module';
 import stripAnsi from 'strip-ansi';
 
 const test = path.resolve(__dirname, './__fixtures__/test.js');
 
-beforeEach(() => Module.invalidateAll());
+beforeEach(() => {
+  Module.invalidateAll();
+});
 
 function transform(codeAndMap) {
   return babel.transformSync(codeAndMap.code, {
@@ -146,6 +148,32 @@ it('clears modules from the cache', () => {
   Module.invalidateAll();
 
   expect(result === new Module(filename).require(id)).toBe(false);
+});
+
+it('resets references from the cache', () => {
+  const id1 = path.join(__dirname, './__fixtures__/one.js');
+  const id2 = path.join(__dirname, './__fixtures__/two.js');
+
+  let m1 = new Module(id1);
+  m1.evaluate({ code: 'module.exports = { one: 1 }', map: null });
+  const m2 = new Module(id2);
+  m2.evaluate({
+    code: dedent`
+    const one = require('./one.js')
+    module.exports = { one: one, two: 2 }
+    `,
+    map: null,
+  });
+  resetModules([id1]); // loads from fs
+  m1 = makeModule(id1);
+  // Simulate updated file
+  //@ts-ignore -- private property
+  m1.loaded = false;
+  m1.evaluate({ code: 'module.exports = { one: "new" }', map: null });
+  // @ts-ignore -- private
+  m2.loaded = false;
+  m2.evaluate();
+  expect(m2.exports.one.one).toBe('new');
 });
 
 it('exports the path for non JS/JSON files', () => {

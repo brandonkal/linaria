@@ -14,12 +14,12 @@ import {
 import generator from '@babel/generator';
 
 import Module, { makeModule } from '../module';
-import fs from 'fs';
 import { StrictOptions } from '../types';
 import debug from 'debug';
 import slugify from '../../utils/slugify';
 import fixError from '../utils/fixError';
 import * as compileCache from '../compileCache';
+import mtime from '../utils/mtime';
 
 // Load compile cache here.
 let cache = compileCache.get();
@@ -41,14 +41,6 @@ type DefaultOptions = Partial<TOptions> & {
 const babelPreset = require.resolve('../index');
 const topLevelBabelPreset = require.resolve('../../../babel');
 const dynamicImportNOOP = require.resolve('../dynamic-import-noop');
-
-function mtime(filename: string) {
-  try {
-    return +fs.statSync(filename).mtime;
-  } catch (e) {
-    return Date.now();
-  }
-}
 
 export default function evaluate(
   codeOrPath: string | NodePath,

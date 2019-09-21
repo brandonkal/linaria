@@ -1,8 +1,9 @@
 import generator from '@babel/generator';
 import isSerializable from './isSerializable';
-import { NodePath } from '@babel/traverse';
 import isStyled from './isStyled';
 import * as errorQueue from '../utils/errorQueue';
+import SimpleNode from './SimpleNode';
+import { NodePath } from '@babel/core';
 
 function isValid(value: any) {
   return !!(
@@ -15,27 +16,12 @@ function isValid(value: any) {
   );
 }
 
-/** builds an alternative to node that allows us to serialize and cache to disk. */
-// function buildNodeProxy(ex: NodePath, filename: string) {
-//   const loc = ex.node.loc;
-//   const code = '';
-//   // const filename = ex.
-//   const opts = {
-//     start: {
-//       line: loc.start.line,
-//       column: loc.start.column + 1,
-//     },
-//   };
-//   ex.getSource();
-//   const stringified = generator(ex.node).code;
-// }
-
 /**
  * Throw if we can't handle the interpolated value.
  */
 function throwIfInvalid(
   value: any,
-  ex: NodePath,
+  ex: SimpleNode | NodePath,
   allowFn = false,
   circularHint = false
 ): void | never {
@@ -62,14 +48,15 @@ function throwIfInvalid(
     const stringified =
       typeof value === 'object' ? JSON.stringify(value) : String(value);
 
+    // @ts-ignore -- TS shouldn't complain here. It's dynamic JS.
+    const src = ex.stringified || generator(ex.node).code;
+
     const errMsg =
       `\nLinaria: The expression evaluated to '${stringified}', which is probably a mistake.\n` +
       (circularHint && typeof value === 'undefined'
         ? 'This is likely the result of using a circular import.\n'
         : '') +
-      `If you want it to be inserted into CSS, explicitly cast or transform the value to a string, e.g. - 'String(${
-        generator(ex.node).code
-      })'.`;
+      `If you want it to be inserted into CSS, explicitly cast or transform the value to a string, e.g. - 'String(${src})'.`;
 
     if (ex.buildCodeFrameError) {
       return ex.buildCodeFrameError(errMsg);

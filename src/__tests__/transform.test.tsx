@@ -14,7 +14,7 @@ it('rewrites a relative path in url() declarations', async () => {
     `,
     {
       filename: './test.js',
-      outputFilename: '../.linaria-cache/test.css',
+      cssOutputFilename: '../.linaria-cache/test.css',
     }
   );
 
@@ -42,7 +42,7 @@ it('injects global rules to the global scope', async () => {
     `,
     {
       filename: './test.js',
-      outputFilename: '../.linaria-cache/test.css',
+      cssOutputFilename: '../.linaria-cache/test.css',
     }
   );
 
@@ -63,7 +63,7 @@ it('rewrites multiple relative paths in url() declarations', async () => {
     `,
     {
       filename: './test.js',
-      outputFilename: '../.linaria-cache/test.css',
+      cssOutputFilename: '../.linaria-cache/test.css',
     }
   );
 
@@ -81,7 +81,7 @@ it("doesn't rewrite an absolute path in url() declarations", async () => {
     `,
     {
       filename: './test.js',
-      outputFilename: '../.linaria-cache/test.css',
+      cssOutputFilename: '../.linaria-cache/test.css',
     }
   );
 
@@ -99,7 +99,7 @@ it('respects passed babel options', async () => {
       `,
       {
         filename: './test.js',
-        outputFilename: '../.linaria-cache/test.css',
+        cssOutputFilename: '../.linaria-cache/test.css',
         pluginOptions: {
           babelOptions: {
             babelrc: false,
@@ -125,7 +125,7 @@ it('respects passed babel options', async () => {
       `,
       {
         filename: './test.js',
-        outputFilename: '../.linaria-cache/test.css',
+        cssOutputFilename: '../.linaria-cache/test.css',
         pluginOptions: {
           babelOptions: {
             babelrc: false,
@@ -155,7 +155,7 @@ it('handles transpiled template literals', async () => {
     `,
     {
       filename: './test.js',
-      outputFilename: '../.linaria-cache/test.css',
+      cssOutputFilename: '../.linaria-cache/test.css',
       pluginOptions: {
         babelOptions: {
           babelrc: false,
@@ -199,7 +199,7 @@ it("doesn't throw due to duplicate preset", async () => {
       `,
       {
         filename: './test.js',
-        outputFilename: '../.linaria-cache/test.css',
+        cssOutputFilename: '../.linaria-cache/test.css',
         pluginOptions: {
           babelOptions: {
             babelrc: false,

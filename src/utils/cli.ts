@@ -73,11 +73,11 @@ function processFiles(files: string[], options: Options) {
   resolvedFiles.forEach(async filename => {
     const outputFilename = resolveOutputFilename(filename, options.outDir);
 
-    const { cssText, sourceMap, cssSourceMapText } = await transform(
+    const { cssText, sourceMap, cssSourceMap } = await transform(
       fs.readFileSync(filename).toString(),
       {
         filename,
-        outputFilename,
+        cssOutputFilename: outputFilename,
         pluginOptions: {
           configFile: options.configFile,
         },
@@ -97,9 +97,9 @@ function processFiles(files: string[], options: Options) {
       if (
         options.sourceMaps &&
         sourceMap &&
-        typeof cssSourceMapText !== 'undefined'
+        typeof cssSourceMap !== 'undefined'
       ) {
-        fs.writeFileSync(`${outputFilename}.map`, cssSourceMapText);
+        fs.writeFileSync(`${outputFilename}.map`, cssSourceMap);
       }
 
       if (options.insertCssRequires && options.sourceRoot) {

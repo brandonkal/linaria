@@ -1,10 +1,10 @@
-import path from 'path';
 import * as babel from '@babel/core';
-import { SourceMapGenerator } from 'source-map';
+import { RawSourceMap } from 'source-map';
 import loadOptions, { PluginOptions } from './loadOptions';
-import { Rule, Replacement, CSSIdentifiers } from '../babel/types';
+import { RuleBase, Replacement, Replacer } from '../babel/types';
 import * as compileCache from '../babel/compileCache';
 import debug from 'debug';
+import buildCSS, { adjustRelativePaths, buildCssSourceMap } from './buildCSS';
 const log = debug('linaria:transform');
 
 export interface Result {
@@ -12,16 +12,17 @@ export interface Result {
   /** The sourceMap. Type is RawSourceMap from source-map module. */
   sourceMap?: any;
   cssText?: string;
-  cssSourceMap?: string;
+  cssSourceMap?: RawSourceMap;
   dependencies?: string[];
-  rules?: Rule[];
+  rules?: RuleBase[];
   replacements?: Replacement[];
-  identifiers?: CSSIdentifiers;
+  /** A replacer function for updating CSS placeholders. */
+  replacer?: Replacer;
 }
 
-interface Options {
+export interface Options {
   filename: string;
-  outputFilename?: string;
+  cssOutputFilename?: string;
   inputSourceMap?: Object;
   /** Where the transform cache is stored */
   cacheDirectory?: string;
@@ -94,52 +95,33 @@ export default async function transform(
       };
     }
 
-    let { replacements, dependencies, cssText } = metadata.linaria;
+    let { replacements, dependencies, rules, replacer } = metadata.linaria;
 
     // Construct a CSS-ish file from the unprocessed style rules
+    let cssText = buildCSS(rules, replacer!);
 
     // When writing to a file, we need to adjust the relative paths inside url(..) expressions
     // It'll allow css-loader to resolve an imported asset properly
-    if (options.outputFilename) {
-      cssText = cssText.replace(
-        /\b(url\()(\.[^)]+)(\))/g,
-        (_, p1, p2, p3) =>
-          p1 +
-          // Replace asset path with new path relative to the output CSS
-          path.relative(
-            path.dirname(options.outputFilename!),
-            // Get the absolute path to the asset from the path relative to the JS file
-            path.resolve(path.dirname(options.filename), p2)
-          ) +
-          p3
-      );
-    }
-    cssText += '\n';
+    cssText = adjustRelativePaths(
+      cssText,
+      options.filename,
+      options.cssOutputFilename
+    );
 
     return {
       code: transformedCode || '',
+      rules,
       cssText,
       replacements,
       dependencies,
       sourceMap: map != null ? map : undefined,
 
       get cssSourceMap() {
-        const generator = new SourceMapGenerator({
-          file: options.filename,
-        });
-        generator.addMapping({
-          generated: {
-            line: 1,
-            column: 0,
-          },
-          original: {
-            line: 1,
-            column: 0,
-          },
-          source: options.filename,
-        });
-        generator.setSourceContent(options.filename, code);
-        return generator.toJSON();
+        return buildCssSourceMap(
+          options.filename,
+          options.cssOutputFilename!,
+          code
+        );
       },
     };
   } catch (e) {
