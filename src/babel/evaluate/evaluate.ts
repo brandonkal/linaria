@@ -64,7 +64,7 @@ export default function evaluate(
 
     let transformOptions;
     try {
-      transformOptions = getOptions(options, this.filename, map);
+      transformOptions = getOptions(options, this.filename);
       this._cacheKey = slugify(JSON.stringify(transformOptions));
     } catch (e) {
       e = fixError(e);
@@ -112,6 +112,7 @@ export default function evaluate(
       } else {
         log(`transform step 1: linaria skipped pass for ${this.filename}`);
       }
+      transformOptions.inputSourceMap = map == null ? undefined : map;
       log(`transform step 2: babel pass for ${this.filename}`);
       const compiled = transformFromAstSync(
         ast,
@@ -264,8 +265,7 @@ function getPresetName(item: any): string {
  */
 function getOptions(
   pluginOptions: StrictOptions | undefined,
-  filename: string,
-  map: any
+  filename: string
 ): TransformOptions {
   const transformOptions = getProgrammaticOptions(pluginOptions);
   transformOptions.filename = filename;
@@ -308,7 +308,6 @@ function getOptions(
       nextOptions,
     ]);
   }
-  options.inputSourceMap = map == null ? undefined : map;
   options.sourceMaps = true;
   options.ast = false;
 
