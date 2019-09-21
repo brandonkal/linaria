@@ -139,6 +139,7 @@
     "source-map-support": "^0.5.13",
     "strip-ansi": "^5.2.0",
     "webpack-sources": "^1.4.3",
+    "webpack-virtual-modules": "^0.1.11",
     "yargs": "^14.0.0"
   },
   "resolutions": {
