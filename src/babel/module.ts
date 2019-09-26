@@ -14,7 +14,7 @@ import NativeModule from 'module';
 import vm from 'vm';
 import fs from 'fs';
 import path from 'path';
-import * as sandboxProcess from './process';
+import { createSandbox } from './sandbox';
 import { BabelFileResult } from '@babel/core';
 import { GeneratorResult } from '@babel/generator';
 import debug from 'debug';
@@ -25,6 +25,9 @@ import * as errorQueue from './utils/errorQueue';
 const log = debug('linaria:module');
 import './sourceMapRegister';
 import mtime from './utils/mtime';
+import { writeAndFlushConsole } from './console';
+
+let sandbox = createSandbox();
 
 // Supported node builtins based on the modules polyfilled by webpack
 // `true` means module is polyfilled, `false` means module is empty
@@ -68,38 +71,6 @@ const builtins = {
 let cache: { [filename: string]: Module } = {};
 
 const NOOP = () => {};
-
-const vmGlobal = {
-  URL,
-  URLSearchParams,
-  process: sandboxProcess,
-  linariaVM: true,
-  Buffer,
-  console,
-  setTimeout,
-  clearTimeout,
-  setImmediate,
-  setInterval,
-  clearInterval,
-  // pass all errors through so instanceof works
-  Error,
-  TypeError,
-  ReferenceError,
-  URIError,
-  EvalError,
-  RangeError,
-};
-
-const sandbox = vm.createContext(
-  {
-    global: vmGlobal,
-    ...vmGlobal,
-    window: {},
-  },
-  {
-    name: 'Linaria Preval',
-  }
-);
 
 /**
  * matches: [1] filename [2] line number [3] column number
