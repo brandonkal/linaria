@@ -15,7 +15,9 @@ import App from './components/App';
 import config from '../serve.config';
 
 const cache = {};
-const css = fs.readFileSync(path.join(__dirname, '../dist/styles.css'), 'utf8');
+const css = fs
+  .readFileSync(path.join(__dirname, '../dist/styles.css'))
+  .toString();
 const app = new Koa();
 const router = new Router();
 

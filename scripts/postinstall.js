@@ -6,7 +6,7 @@
 const fs = require('fs');
 
 const jestRunTest = require.resolve('jest-runner/build/runTest.js');
-let original = fs.readFileSync(jestRunTest, 'utf-8');
+let original = fs.readFileSync(jestRunTest).toString();
 if (original.includes('requireInternalModule')) {
   let file = original.replace('requireInternalModule', 'requireModule');
   fs.writeFileSync(jestRunTest, file, 'utf8');
