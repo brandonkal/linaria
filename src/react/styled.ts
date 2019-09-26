@@ -1,6 +1,6 @@
 import React from 'react'; // eslint-disable-line import/no-extraneous-dependencies
 import { cx } from '../index';
-import { CSSProperties } from '../index';
+import { CSSObject } from '../index';
 
 interface Options {
   name: string;
@@ -151,16 +151,23 @@ export type StyledComponent<Tag, ExtraProps> = React.FunctionComponent<
 > &
   _isStyled;
 
+type InterpolationFunction<P> = (props: P) => string | number;
+
+// remove the call signature from StyledComponent so Interpolation can still infer InterpolationFunction
+type StyledComponentInterpolation = Pick<
+  StyledComponent<any, any>,
+  keyof StyledComponent<any, any>
+>;
+
 // The tagged template function
 type StyledTag<Tag> = <ExtraProps = {}>(
   strings: TemplateStringsArray,
   ...exprs: Array<
     | string
     | number
-    | CSSProperties
-    | StyledComponent<any, any>
-    // Strictly typing props argument would break the generated StyledComponent.
-    | ((props?: any) => string | number)
+    | CSSObject
+    | StyledComponentInterpolation
+    | InterpolationFunction<ExtraProps & GetProps<Tag>>
     | [unknown] // Modifier selectors
   >
 ) => StyledComponent<Tag, ExtraProps>;

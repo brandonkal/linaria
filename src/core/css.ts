@@ -1,14 +1,19 @@
 import { StyledComponent } from '../react';
+import * as CSS from 'csstype'; // eslint-disable-line import/no-unresolved
 
 export type Interpolation =
   | string
   | number
-  | CSSProperties
+  | CSSObject
   | StyledComponent<any, any>;
 
-export type CSSProperties = {
-  [key: string]: string | number | CSSProperties;
-};
+export type CSSProperties = CSS.Properties<string | number>;
+
+export type CSSPseudos = { [K in CSS.Pseudos]?: CSSObject };
+
+export interface CSSObject extends CSSProperties, CSSPseudos {
+  [key: string]: CSSObject | string | number | undefined;
+}
 
 // Override css return type for TS
 type CssFn = (
