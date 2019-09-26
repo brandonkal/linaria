@@ -3,48 +3,47 @@ import blacklist from './blacklist';
 
 const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789';
 
-function valid(string: string) {
-  if (/^[0-9]/.test(string)) {
-    return false;
-  }
-  return !blacklist.some(word => string.includes(word));
-}
-
 interface factoryOptions {
   prefix?: string;
-  suffix?: string;
   optimize: boolean;
 }
 
-export default function makeTinyId({
-  prefix = '',
-  suffix = '',
-  optimize,
-}: factoryOptions) {
-  let map = new Map<string, string>();
-  const next = incstr.idGenerator({ alphabet });
-
-  function optimizer(string: string) {
-    if (optimize) {
-      if (map.has(string)) {
-        return map.get(string);
+export default class TinyID {
+  /** set to override the map property */
+  record: Record<string, string> = {};
+  /** register and get a tiny ID for a given string */
+  get: (string: string) => string;
+  /** resets the generator and map properties */
+  reset: () => void;
+  constructor({ prefix = '', optimize = false }: factoryOptions) {
+    let next = incstr.idGenerator({ alphabet });
+    const valid = (string: string) => {
+      if (this.record.hasOwnProperty(string) || /^[0-9]/.test(string)) {
+        return false;
       }
+      return !blacklist.some(word => string.includes(word));
+    };
 
-      let id: string;
-      while (!valid((id = next()))) {
-        // empty
+    const optimizer = (string: string) => {
+      if (optimize) {
+        if (this.record.hasOwnProperty(string)) {
+          return this.record[string];
+        }
+
+        let id: string;
+        while (!valid((id = next()))) {
+          // empty
+        }
+        return (this.record[string] = id);
+      } else {
+        return string;
       }
-      map.set(string, id);
-      return id;
-    } else {
-      return string;
-    }
+    };
+
+    this.get = string => `${prefix}${optimizer(string)}`;
+    this.reset = () => {
+      next = incstr.idGenerator({ alphabet });
+      this.record = {};
+    };
   }
-
-  const api = function(string: string) {
-    return `${prefix}${optimizer(string)}${suffix}`;
-  };
-  api.map = map;
-
-  return api;
 }

@@ -1,5 +1,5 @@
 import path from 'path';
-import webpack from 'webpack';
+import webpack, { Configuration } from 'webpack';
 import memoryfs from 'memory-fs';
 import Linaria from '../../plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
@@ -97,7 +97,7 @@ const pack = ({
     new Linaria({ optimize: !!complex }),
   ];
 
-  const compiler = webpack({
+  const config: Configuration = {
     mode: mode,
     context: path.resolve(path.join(__dirname, '../__fixtures__', folder)),
     entry: `./${fixture}`,
@@ -126,15 +126,26 @@ const pack = ({
     module: {
       rules: complex ? complexRules : simpleRules,
     },
-  });
+  };
+
+  const compiler = webpack(config);
 
   compiler.outputFileSystem = new memoryfs();
 
   return new Promise<webpack.Stats>((resolve, reject) => {
     compiler.run((err, stats) => {
-      if (err) reject(err);
-      if (stats.hasErrors()) reject(new Error(stats.toJson().errors.join(' ')));
-
+      if (err) {
+        reject(err);
+        return;
+      }
+      if (!stats) {
+        reject(new Error('No webpack stats available'));
+        return;
+      }
+      if (stats.hasErrors()) {
+        reject(new Error(stats.toJson().errors.join(' ')));
+        return;
+      }
       resolve(stats);
     });
   });

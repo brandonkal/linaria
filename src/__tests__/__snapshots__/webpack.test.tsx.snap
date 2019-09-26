@@ -24,7 +24,7 @@ render.create(React.createElement(Container, null, React.createElement(Alert, {
   title$: \\"Error\\"
 }))); // Injected by Linaria Loader for Webpack Compilation (virtual)
 
-require(\\"./.linaria-cache/project.dev.linaria.css\\");
+require(\\"./.linaria-cache/css/7092bd38278643717e46e36be1c3e8d5.prod.linaria.css\\");
 
 /* CSS after optimization */
 
@@ -111,7 +111,6 @@ require(\\"./.linaria-cache/project.dev.linaria.css\\");
 
 
 
-
 .b {
   margin-bottom: 10px;
 }
@@ -119,6 +118,5 @@ require(\\"./.linaria-cache/project.dev.linaria.css\\");
     background: pink;
     padding: 1rem;
   }
-
 "
 `;

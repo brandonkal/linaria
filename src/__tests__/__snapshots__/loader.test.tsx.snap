@@ -27,7 +27,7 @@ styled(\\"h3\\")({
   class: \\"T3_t1y4fq36\\"
 }); // Injected by Linaria Loader for Webpack Compilation (virtual)
 
-require(\\"./.linaria-cache/styled-components.dev.linaria.css\\");"
+require(\\"./.linaria-cache/css/d8444e21c14a3c7e7c923bbcf86d4d84.dev.linaria.css\\");"
 `;
 
 exports[`webpack loader complex loader works -- optimizer 1`] = `
@@ -58,7 +58,7 @@ styled(\\"h3\\")({
   class: \\"LINARIA_t1y4fq36_LINARIA\\"
 }); // Injected by Linaria Loader for Webpack Compilation (virtual)
 
-require(\\"./.linaria-cache/styled-components.dev.linaria.css\\");
+require(\\"./.linaria-cache/css/d8444e21c14a3c7e7c923bbcf86d4d84.prod.linaria.css\\");
 
 /* CSS after optimization */
 
@@ -73,10 +73,9 @@ require(\\"./.linaria-cache/styled-components.dev.linaria.css\\");
 .a.a-0 {
     color: red;
   }
-.b .a {
+.b .T2_t1jdyzzg {
     background: #333;
   }
-
 "
 `;
 
@@ -86,7 +85,7 @@ const Container = \\"Container_c1j2k3d2\\";
 export default Container;
 
 // Injected by Linaria Loader for Webpack Compilation (virtual)
-require(\\"./.linaria-cache/css-classname.dev.linaria.css\\");"
+require(\\"./.linaria-cache/css/cff3476c374622df2ed1295f40efaa97.dev.linaria.css\\");"
 `;
 
 exports[`webpack loader loader requires generated CSS file - styled 1`] = `
@@ -117,5 +116,5 @@ styled(\\"h3\\")({
 });
 
 // Injected by Linaria Loader for Webpack Compilation (virtual)
-require(\\"./.linaria-cache/styled-components.dev.linaria.css\\");"
+require(\\"./.linaria-cache/css/d8444e21c14a3c7e7c923bbcf86d4d84.dev.linaria.css\\");"
 `;

@@ -133,7 +133,7 @@ export interface StrictOptions {
   ignore: RegExp;
   prefix: string;
   optimize: boolean;
-  babelOptions: TransformOptions;
+  babelOptions?: TransformOptions;
   /** set to true when evaluating modules for preval. */
   _isEvaluatePass: boolean;
 }

@@ -10,7 +10,9 @@ expect.addSnapshotSerializer(serializer);
 const transpile = (input: string) =>
   babel.transformAsync(input, {
     babelrc: false,
-    presets: [[require.resolve('../babel'), { evaluate: false }]],
+    presets: [
+      [require.resolve('../babel'), { evaluate: false, displayName: true }],
+    ],
     plugins: ['@babel/plugin-syntax-jsx'],
     filename: path.join(__dirname, 'app/index.js'),
   });

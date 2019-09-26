@@ -1,8 +1,8 @@
-import loadOptions, { PluginOptions } from '../utils/loadOptions';
+import { StrictOptions } from './types';
 import extract from './extract';
 
-export default function linaria(context: any, options: PluginOptions) {
+export default function linaria(context: any, options: StrictOptions) {
   return {
-    plugins: [[extract, loadOptions(options)]],
+    plugins: [[extract, options]],
   };
 }

@@ -1,7 +1,7 @@
 import path from 'path';
 import dedent from 'dedent';
 import * as babel from '@babel/core';
-import Module, { resetModules, makeModule } from '../babel/module';
+import Module, { reloadModules, makeModule } from '../babel/module';
 import stripAnsi from 'strip-ansi';
 
 const test = path.resolve(__dirname, './__fixtures__/test.js');
@@ -164,7 +164,7 @@ it('resets references from the cache', () => {
     `,
     map: null,
   });
-  resetModules([id1]); // loads from fs
+  reloadModules([id1]); // loads from fs
   m1 = makeModule(id1);
   // Simulate updated file
   //@ts-ignore -- private property

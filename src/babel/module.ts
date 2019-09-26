@@ -97,15 +97,30 @@ export function makeModule(filename: string) {
 }
 
 /**
- * clearModules gets the module if it already is cached and
- * clears all its dependents recursively.
+ * reloadModules takes a list of modules and resets their evaluations.
  */
-export function resetModules(filenames: Set<string> | string[]) {
+export function reloadModules(filenames: Set<string> | string[]) {
   filenames.forEach((mod: string) => {
-    log(`Clearing module: ${mod}`);
+    log(`Resetting module: ${mod}`);
     const m = cache[mod];
-    if (m) m.reset();
+    if (m) {
+      m.load();
+    }
   });
+}
+
+/**
+ * Evaluates a module only if required.
+ */
+export function evaluateModule(mod: string) {
+  const m = cache[mod];
+  /* private only for file */
+  if (m && !m.loaded && (m as any)._transformed) {
+    log(`Reloading updated module: ${mod}`);
+    m.evaluate();
+  } else {
+    log(`Reload skipped for module: ${mod}`);
+  }
 }
 
 export function findAllDependents(filename: string) {
@@ -151,15 +166,16 @@ class Module {
 
   static invalidateAll = () => {
     cache = {};
+    sandbox = createSandbox();
     compileCache.clear();
   };
 
   /** Allows consumers to customize filesystem */
   static _fs = fs;
 
-  id: string;
-  filename: string;
-  paths: string[];
+  readonly id: string;
+  readonly filename: string;
+  readonly paths: string[];
   exports: any;
   extensions: string[];
   dependencies: Set<string>;
@@ -174,7 +190,7 @@ class Module {
   mtime: number = 0;
   /* we store the code executed for when a source-map is unavailable. */
   private _transformed?: string;
-  private loaded?: boolean;
+  loaded?: boolean;
 
   constructor(filename: string) {
     this.id = filename;
@@ -234,6 +250,9 @@ class Module {
     }
   };
 
+  /**
+   * The module require method which should only be called by evaluating code.
+   */
   require: {
     (id: string): any;
     resolve: (id: string) => string;
@@ -286,9 +305,11 @@ class Module {
         // Is it still fresh?
         const lastModified = mtime(m.filename);
         if (lastModified > m.mtime) {
-          m.mtime = lastModified;
-          m.reset();
+          m._loadFromFile(m, id);
         }
+      }
+      if (!m.loaded) {
+        m.evaluate();
       }
       m.dependents && m.dependents.add(this.filename);
       return m.exports;
@@ -300,19 +321,31 @@ class Module {
     }
   );
 
+  /**
+   * loadFromFile checks if the file has been modified.
+   * If the file is JSON or not Javascript, it is evaluated. Otherwise, the file is transformed only.
+   * Call m.evaluate() if m.loaded is false.
+   */
   private _loadFromFile(m: Module, id: string) {
     if (this.extensions.includes(path.extname(m.filename))) {
+      const lastModified = mtime(m.filename);
+      let code: string;
+      if (m._source && m.mtime === lastModified) {
+        code = m._source;
+      } else {
+        m.mtime = lastModified;
+        code = Module._fs.readFileSync(m.filename).toString();
+      }
       // To evaluate the file, we need to read it first
-      m.mtime = mtime(m.filename);
-      const code = Module._fs.readFileSync(m.filename, 'utf-8').toString();
       if (/\.json$/.test(m.filename)) {
         // For JSON files, parse it to a JS object similar to Node
         m.exports = JSON.parse(code);
+        m.loaded = true;
       } else {
-        // For JS/TS files, evaluate the module
+        // For JS/TS files, code should be evaluated after the transform
         // The module will be transpiled using provided transform
-        this.loaded = false;
-        m.evaluate({ code, map: null });
+        m.loaded = false;
+        m._transform({ code, map: null });
       }
     } else {
       // For non JS/JSON requires, just export the id
@@ -320,11 +353,17 @@ class Module {
       // The module will be resolved by css-loader
       m.exports = id;
       m.dependents = false;
+      m.loaded = true;
     }
   }
 
-  reset() {
-    this._loadFromFile(this, this.id);
+  load() {
+    try {
+      this._loadFromFile(this, this.id);
+    } catch (e) {
+      e = this._prepareStack(e);
+      throwOrQueue(e);
+    }
   }
 
   /** For JavaScript files, we need to transpile it and to get the exports of the module */
@@ -373,6 +412,8 @@ class Module {
           filename: this.filename,
         }
       );
+      this._disposeQueue.forEach(exec);
+      this._disposeQueue = [];
       fn(
         this.exports,
         this.require,
@@ -449,9 +490,25 @@ class Module {
     }
     return e;
   }
+
+  private _disposeQueue: Function[] = [];
+
+  hot = {
+    dispose: (fn: Function) => {
+      this._disposeQueue.push(fn);
+    },
+  };
 }
 
 export default Module;
+
+function exec(fn: Function) {
+  try {
+    fn();
+  } catch (e) {
+    /* noop */
+  }
+}
 
 function throwOrQueue(e: any, alwaysThrow?: boolean) {
   if (
@@ -460,7 +517,8 @@ function throwOrQueue(e: any, alwaysThrow?: boolean) {
     e.code === 'RESOLVE' ||
     e.code === 'TRANSFORM'
   ) {
-    throw e;
+    writeAndFlushConsole();
+    throw errorQueue.merge(e);
   } else {
     // These errors will not be printed until an evaluation fails.
     // In this way, modules that only contain side effects that access a browser-only global

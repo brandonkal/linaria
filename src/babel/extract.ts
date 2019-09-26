@@ -6,6 +6,7 @@ import debug from 'debug';
 import evaluate from './evaluate/evaluate';
 import addPrevalExport from './evaluate/addPrevalExport';
 import getTemplateProcessor from './evaluate/templateProcessor';
+import Module from './module';
 const log = debug('linaria:babel');
 import {
   State,
@@ -21,6 +22,7 @@ import generateReplaceMap from './utils/generateReplaceMap';
 import { processInterpolations } from './utils/processInterpolations';
 import { merge } from './utils/errorQueue';
 import SimpleNode from './utils/SimpleNode';
+import { writeAndFlushConsole } from './console';
 
 function isLazyValue(v: ExpressionValue): v is LazyValue {
   return v.kind === ValueType.LAZY;
@@ -103,6 +105,8 @@ export default function extract(
             state.dependencies = [...evaluation.dependencies];
             lazyValues = evaluation.value.__linariaPreval;
             if (lazyValues == null || lazyDeps.length !== lazyValues.length) {
+              writeAndFlushConsole();
+              Module.invalidateAll();
               throw merge(
                 new Error(
                   'Linaria Internal Error: lazy evaluation count is incorrect.\nIf no other errors were thrown, this is likely caused by using different babel transforms in evaluation and main compilation.'

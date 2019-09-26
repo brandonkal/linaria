@@ -67,12 +67,12 @@ export function load(cacheDirectory?: string) {
   }
 
   process.on('exit', save);
-  process.nextTick(save);
+  process.on('SIGINT', save);
 
   if (!fs.existsSync(FILENAME)) return;
 
   try {
-    cache = JSON.parse(fs.readFileSync(FILENAME, 'utf8'));
+    cache = JSON.parse(fs.readFileSync(FILENAME).toString());
     if (cache.version !== VERSION) {
       cache = { version: VERSION, data: {} };
     }
@@ -87,7 +87,8 @@ function _getFilename(cacheDirectory?: string) {
     process.env.LINARIA_CACHE_PATH ||
     os.homedir() ||
     os.tmpdir();
-  return path.join(dir, `.linariaCompileCache.json`);
+  // dot prefixed as cacheDirectory may be a visible folder
+  return path.join(dir, '.linariaCompileCache.json');
 }
 
 /**

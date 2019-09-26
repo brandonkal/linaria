@@ -1,9 +1,9 @@
 import { createFilter } from 'rollup-pluginutils';
 import transform from './utils/transform';
 import slugify from './utils/slugify';
-import { PluginOptions } from './utils/loadOptions';
+import { StrictOptions } from './babel/types';
 
-interface RollupPluginOptions extends Partial<PluginOptions> {
+interface RollupPluginOptions extends Partial<StrictOptions> {
   include?: string | string[];
   exclude?: string | string[];
   sourceMap?: boolean;

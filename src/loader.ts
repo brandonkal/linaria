@@ -1,52 +1,67 @@
 import fs from 'fs';
 import path from 'path';
 import normalize from 'normalize-path';
+import crypto from 'crypto';
 import loaderUtils from 'loader-utils';
 import validateOptions from 'schema-utils';
 import enhancedResolve from 'enhanced-resolve';
-import Module, { resetModules, findAllDependents } from './babel/module';
+import Module, { reloadModules, findAllDependents } from './babel/module';
 import transform, { Result } from './utils/transform';
 import fixError from './babel/utils/fixError';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { loader } from 'webpack'; // type only import
 import { RawSourceMap } from 'source-map';
-import { Virtual } from './plugin';
+import util from 'util';
+import { schema } from './utils/options';
 
 import debug from 'debug';
 import { Replacer, RuleBase } from './babel/types';
 import buildCSS from './utils/buildCSS';
+import VirtualModulesPlugin from './utils/VirtualModules';
 const log = debug('linaria:loader');
 
-const schema = {
-  type: 'object',
-  properties: {
-    displayName: {
-      type: 'boolean',
-    },
-    evaluate: {
-      type: 'boolean',
-    },
-    prefix: {
-      type: 'string',
-    },
-    optimize: {
-      type: 'boolean',
-    },
-    sourceMap: {
-      type: 'boolean',
-    },
-    cacheDirectory: {
-      type: 'string',
-    },
-  },
-};
+function digest(str: string) {
+  return crypto
+    .createHash('md5')
+    .update(str)
+    .digest('hex');
+}
 
 const supportedExtensions = ['.js', '.jsx', '.ts', '.tsx', '.json'];
+
+/**
+ * Keep track of CSS. This allows hot reloading of CSS seperately from JS.
+ * A Map of JS source file to CSSUpdater instance.
+ */
+export const cssUpdateManager = {
+  updaters: new Map<string, CSSUpdater>(),
+  queue: new Set<string>(),
+  ignored: new Set<string>(),
+} as const;
 
 // Keep track of requested files. We only clear dependents on rebuilds.
 const requested = new Set<string>();
 
-export function pitch(this: loader.LoaderContext) {
+let linariaResolver: (id: string, parent: any) => string;
+
+interface LoaderThis extends loader.LoaderContext {
+  LinariaPlugin: VirtualModulesPlugin;
+}
+
+export default async function linariaLoader(
+  this: LoaderThis,
+  content: string,
+  inputSourceMap?: RawSourceMap
+) {
+  log(`Executing loader for ${this.resourcePath}`);
+  const callback = this.async()!;
+  this.cacheable();
+  const options = loaderUtils.getOptions(this) || {};
+  validateOptions(schema, options, 'Linaria Loader');
+  if (typeof this.LinariaPlugin === 'undefined') {
+    throw new Error('Linaria loader requires LinariaPlugin');
+  }
+
   if (!requested.has(this.resourcePath)) {
     requested.add(this.resourcePath);
   } else {
@@ -57,50 +72,31 @@ export function pitch(this: loader.LoaderContext) {
     log(
       `pitch for ${this.resourcePath}. Clearing ${deps.size} dependent modules.`
     );
-    resetModules(deps);
-    deps.forEach(dep => {
-      if (dep === this.resourcePath) return;
-      const updater = cssUpdaters.get(dep);
-      if (updater) {
-        updater.update();
-      }
-    });
+    reloadModules(deps);
+    cssUpdateManager.ignored.add(this.resourcePath);
+    deps.forEach(dep => cssUpdateManager.queue.add(dep));
   }
-}
 
-/**
- * Keep track of CSS. This allows hot reloading of CSS seperately from JS.
- */
-const cssUpdaters = new Map<string, CSSUpdater>();
+  const {
+    sourceMap,
+    cacheDirectory: cacheName = '.linaria-cache',
+    ...pluginOptions
+  } = options;
 
-let linariaResolver: (id: string, parent: any) => string;
-
-export default async function linariaLoader(
-  this: loader.LoaderContext,
-  content: string,
-  inputSourceMap?: RawSourceMap
-) {
-  log(`Executing loader for ${this.resourcePath}`);
-  const callback = this.async()!;
-  this.cacheable();
-  const options = loaderUtils.getOptions(this) || {};
-  validateOptions(schema, options, 'Linaria Loader');
-  const { sourceMap, cacheDirectory: cacheConfig, ...pluginOptions } = options;
-  const cacheName: string = cacheConfig || '.linaria-cache';
-
-  const filePrefix = process.env.NODE_ENV === 'production' ? 'prod' : 'dev';
+  const filePrefix = this.mode === 'production' ? 'prod' : 'dev';
 
   const cacheDirectory = path.isAbsolute(cacheName)
     ? cacheName
     : path.join(this.rootContext, cacheName);
 
-  const outputFilename = path.join(
-    cacheDirectory,
-    path.relative(
-      this.rootContext,
-      this.resourcePath.replace(/\.[^.]+$/, `.${filePrefix}.linaria.css`)
-    )
-  );
+  const relative = path.relative(this.rootContext, this.resourcePath);
+
+  const outputFilename =
+    // note that while we could use a short path with virtual files,
+    // other loaders expect to be able to find postCSS config files by walking up the tree.
+    // This has the side effect that volume.json is not portable as paths
+    path.join(cacheDirectory, 'css', digest(relative)) +
+    `.${filePrefix}.linaria.css`;
 
   createResolver.call(this);
 
@@ -109,6 +105,7 @@ export default async function linariaLoader(
   try {
     // Use webpack's resolution when evaluating modules
     Module._resolveFilename = linariaResolver;
+    Module._fs = this.fs;
 
     result = await transform(content, {
       filename: this.resourcePath,
@@ -118,12 +115,22 @@ export default async function linariaLoader(
       cacheDirectory,
     });
   } catch (e) {
-    throw fixError(e);
+    callback(fixError(e));
+    return;
   }
 
   if (result.cssText) {
     let { cssText, cssSourceMap, replacer, rules } = result;
-    updateCSS(cssText, outputFilename, cssSourceMap, sourceMap, this.fs);
+    const cssWriter = async (css: string) =>
+      updateCSS(
+        css,
+        outputFilename,
+        this.LinariaPlugin,
+        cssSourceMap,
+        sourceMap,
+        this.fs
+      );
+    await cssWriter(cssText);
     callback(
       null,
       `${
@@ -134,15 +141,15 @@ export default async function linariaLoader(
       )});`,
       result.sourceMap
     );
-    const cssWriter = (css: string) =>
-      updateCSS(css, outputFilename, cssSourceMap, sourceMap, this.fs);
-    const updater = new CSSUpdater(
-      outputFilename,
-      rules!,
-      replacer!,
-      cssWriter
-    );
-    cssUpdaters.set(outputFilename, updater);
+    if (rules && rules.length && replacer) {
+      const updater = new CSSUpdater(
+        outputFilename,
+        rules!,
+        replacer!,
+        cssWriter
+      );
+      cssUpdateManager.updaters.set(this.resourcePath, updater);
+    }
   } else {
     log(`done ${this.resourcePath} (skip css)`);
     callback(null, result.code, result.sourceMap);
@@ -150,45 +157,45 @@ export default async function linariaLoader(
 }
 
 class CSSUpdater {
-  update: () => void;
+  update: () => Promise<string>;
   rules: RuleBase[];
   filename: string;
   constructor(
     cssFilename: string,
     rules: RuleBase[],
     replacer: Replacer,
-    cssWriter: (css: string) => void
+    cssWriter: (css: string) => Promise<string>
   ) {
     this.rules = rules;
     this.filename = cssFilename;
     this.update = () => {
       log(`Rebuilding CSS for ${this.filename}`);
       const css = buildCSS(this.rules, replacer);
-      cssWriter(css);
+      return cssWriter(css);
     };
   }
 }
 
 interface reqFS {
-  readFileSync: typeof fs.readFileSync;
+  readFile: typeof fs.readFile;
 }
 
 /**
  * updateCSS checks the current CSS file on the filesystem
  * and checks if CSS should be written. If a CSS write is required,
  * a source map is appended and a virtual Module is written.
- * @returns the written CSS text.
+ * @returns a promise for the written CSS text.
  */
-function updateCSS(
+async function updateCSS(
   cssText: string,
   outputFilename: string,
+  Virtual: VirtualModulesPlugin,
   cssSourceMap?: RawSourceMap,
   enableSourceMap?: boolean,
   FS?: reqFS
-): string {
-  // We add a new line here because otherwise an empty string would always be truthy.
-  cssText += '\n';
+): Promise<string> {
   const inFS = FS || fs;
+  const readFile = util.promisify(inFS.readFile);
   // Read the file first to compare the content
   // Write the new content only if it's changed
   // In development, we compare the contents without the trailing empty lines at the end
@@ -197,13 +204,12 @@ function updateCSS(
   // This will prevent unnecessary WDS reloads
   let currentCss = '';
   try {
-    currentCss = inFS
-      .readFileSync(outputFilename, { encoding: 'utf8' })
-      .toString();
+    currentCss = (await readFile(outputFilename)).toString();
   } catch (e) {
     // Ignore error
   }
   function appendSourceMap() {
+    let cssOutput = cssText.trimRight();
     let update = false;
     let re = /\/\*# sourceMappingURL=data:application\/json;base64,.*$/m;
     const trimmed = (str: string) => {
@@ -217,8 +223,8 @@ function updateCSS(
       if (trimmed(currentCss) !== trimmed(cssText)) {
         update = true;
         if (enableSourceMap) {
-          cssText +=
-            `/*# sourceMappingURL` +
+          cssOutput +=
+            `\n/*# sourceMappingURL` +
             `=data:application/json;base64,${Buffer.from(
               JSON.stringify(cssSourceMap || '')
             ).toString('base64')}*/`;
@@ -227,22 +233,22 @@ function updateCSS(
     } else {
       // Production
       if (enableSourceMap) {
-        cssText +=
-          `/*# sourceMappingURL` +
+        cssOutput +=
+          `\n/*# sourceMappingURL` +
           `=data:application/json;base64,${Buffer.from(
             JSON.stringify(cssSourceMap || '')
           ).toString('base64')}*/`;
       }
-    }
-    if (currentCss !== cssText) {
-      update = true;
+      if (currentCss.trimRight() !== cssOutput) {
+        update = true;
+      }
     }
     return { cssOutput: cssText, update };
   }
   const { cssOutput, update } = appendSourceMap();
   if (update) {
     log(`updating css file: ${outputFilename}`);
-    Virtual.writeModule(outputFilename, cssOutput);
+    Virtual.writeModule({ path: outputFilename, contents: cssOutput });
   } else {
     log(`done ${outputFilename} (no css update)`);
   }

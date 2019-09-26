@@ -1,7 +1,7 @@
 import * as babel from '@babel/core';
 import { RawSourceMap } from 'source-map';
-import loadOptions, { PluginOptions } from './loadOptions';
-import { RuleBase, Replacement, Replacer } from '../babel/types';
+import { defaultOptions } from './options';
+import { RuleBase, Replacement, Replacer, StrictOptions } from '../babel/types';
 import * as compileCache from '../babel/compileCache';
 import debug from 'debug';
 import buildCSS, { adjustRelativePaths, buildCssSourceMap } from './buildCSS';
@@ -26,7 +26,7 @@ export interface Options {
   inputSourceMap?: Object;
   /** Where the transform cache is stored */
   cacheDirectory?: string;
-  pluginOptions?: Partial<PluginOptions>;
+  pluginOptions?: Partial<StrictOptions>;
 }
 
 const babelPreset = require.resolve('../babel');
@@ -46,7 +46,7 @@ export default async function transform(
         code.includes('@brandonkal/linaria')
       )
     ) {
-      log(`skipping ${options.filename}: linaria usage not found`);
+      log(`skipping ${options.filename}: Linaria usage not found`);
       return {
         code,
         sourceMap: options.inputSourceMap,
@@ -59,7 +59,10 @@ export default async function transform(
       COMPILE_CACHE_LOADED = true;
     }
 
-    const pluginOptions = loadOptions(options.pluginOptions);
+    const pluginOptions: StrictOptions = {
+      ...defaultOptions,
+      ...options.pluginOptions,
+    };
 
     log(`parsing ${options.filename}`);
 
@@ -111,6 +114,7 @@ export default async function transform(
     return {
       code: transformedCode || '',
       rules,
+      replacer,
       cssText,
       replacements,
       dependencies,

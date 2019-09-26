@@ -16,7 +16,7 @@ function activate() {
   activated = true;
 }
 
-function linariaRetrieveSourceMap(filename: string) {
+export function linariaRetrieveSourceMap(filename: string) {
   const cached = compileCache.get()[filename];
   if (cached && cached.map) {
     return {

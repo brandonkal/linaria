@@ -9,12 +9,6 @@ import transform from './transform';
 
 const { argv } = yargs
   .usage('Usage: $0 [options] <files ...>')
-  .option('config', {
-    alias: 'c',
-    type: 'string',
-    description: 'Path to a config file',
-    requiresArg: true,
-  })
   .option('out-dir', {
     alias: 'o',
     type: 'string',
@@ -51,7 +45,6 @@ processFiles(argv._, {
   sourceMaps: argv['source-maps'],
   sourceRoot: argv['source-root'],
   insertCssRequires: argv['insert-css-requires'],
-  configFile: argv.config,
 });
 
 interface Options {
@@ -59,7 +52,7 @@ interface Options {
   sourceMaps?: boolean;
   sourceRoot?: string;
   insertCssRequires?: string;
-  configFile?: string;
+  pluginOptions?: any;
 }
 
 function processFiles(files: string[], options: Options) {
@@ -78,9 +71,7 @@ function processFiles(files: string[], options: Options) {
       {
         filename,
         cssOutputFilename: outputFilename,
-        pluginOptions: {
-          configFile: options.configFile,
-        },
+        pluginOptions: options.pluginOptions,
       }
     );
 
@@ -116,7 +107,7 @@ function processFiles(files: string[], options: Options) {
           relativePath.startsWith('.') ? relativePath : `./${relativePath}`
         }');`;
 
-        const inputContent = fs.readFileSync(inputFilename, 'utf-8');
+        const inputContent = fs.readFileSync(inputFilename).toString();
 
         if (!inputContent.trim().endsWith(requireStatement)) {
           fs.writeFileSync(
