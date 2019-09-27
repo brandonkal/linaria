@@ -1,8 +1,8 @@
 import Module from '../module';
-export default function mtime(filename: string) {
+export default function mtime(filename: string, fallback?: number) {
   try {
     return Module._fs.statSync(filename).mtimeMs;
   } catch (e) {
-    return Date.now();
+    return fallback || Date.now();
   }
 }

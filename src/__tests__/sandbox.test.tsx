@@ -28,6 +28,15 @@ it('resets environment', () => {
   expect(ctx.window.secret).toBe(undefined);
 });
 
+it('includes process', () => {
+  let ctx = context();
+  expect(ctx.process.cwd()).toBe('/');
+  expect(ctx.process.exit()).toBe(undefined);
+  expect(typeof ctx.process.nextTick).toBe('function');
+  ctx.process.nextTick(ctx.process.exit);
+  expect(ctx.process.binding).toThrow();
+});
+
 it('generates a new sandbox', () => {
   expect(createSandbox()).not.toBe(createSandbox());
 });

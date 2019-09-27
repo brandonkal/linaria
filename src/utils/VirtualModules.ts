@@ -235,7 +235,8 @@ class VirtualModulesPlugin {
           .catch(e => {
             const logger: typeof console = compilation.getLogger
               ? compilation.getLogger(NAME)
-              : console;
+              : /* istanbul ignore next */
+                console;
             log('Failed to write virtual files to output FS', e);
             logger.warn(
               'Unable to flush all virtual files to the Output Filesystem. This may not break the build, but could cause subsequent builds to fail if aggressive caching expects this file on disk.\n',
@@ -321,6 +322,7 @@ function makeAbsolute(filePath: string, compiler: Compiler) {
 }
 
 function setData(storage: any, key: string, value: any) {
+  /* istanbul ignore else */
   if (storage.data instanceof Map) {
     storage.data.set(key, value);
   } else {

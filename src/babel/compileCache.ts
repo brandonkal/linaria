@@ -73,11 +73,12 @@ export function load(cacheDirectory?: string) {
 
   try {
     cache = JSON.parse(fs.readFileSync(FILENAME).toString());
+    /* istanbul ignore else */
     if (cache.version !== VERSION) {
       cache = { version: VERSION, data: {} };
     }
   } catch (err) {
-    return;
+    /** noop */
   }
 }
 

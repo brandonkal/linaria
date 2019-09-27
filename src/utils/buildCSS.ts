@@ -7,9 +7,7 @@ import { Replacer, RuleBase } from '../babel/types';
  */
 export default function buildCSS(rules: RuleBase[], replacer: Replacer) {
   let cssText = '';
-  if (!rules) {
-    return cssText;
-  }
+
   rules.forEach(rule => {
     // Append new lines until we get to the start line number
     let line = cssText.split('\n').length;

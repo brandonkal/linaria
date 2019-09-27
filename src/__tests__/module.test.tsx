@@ -167,10 +167,8 @@ it('resets references from the cache', () => {
   reloadModules([id1]); // loads from fs
   m1 = makeModule(id1);
   // Simulate updated file
-  //@ts-ignore -- private property
   m1.loaded = false;
   m1.evaluate({ code: 'module.exports = { one: "new" }', map: null });
-  // @ts-ignore -- private
   m2.loaded = false;
   m2.evaluate();
   expect(m2.exports.one.one).toBe('new');
@@ -333,6 +331,37 @@ it('has __dirname available', () => {
   );
 
   expect(mod.exports).toBe(path.dirname(mod.filename));
+});
+
+it('has module.hot available', () => {
+  const mod = new Module(test);
+  const code = dedent`
+  global.counter = typeof global.counter === 'undefined' ? 1 : global.counter += 1
+  module.exports = String(global.counter);
+  `;
+
+  mod.evaluate({ code, map: null }, true);
+
+  expect(mod.exports).toBe('1');
+  mod.loaded = false;
+  mod.evaluate(undefined, true);
+  expect(mod.exports).toBe('2');
+  Module.invalidateAll();
+  const modHot = new Module(test);
+  const codeHot = dedent`
+  module.hot.dispose(() => {
+    global.counter = 0
+  })
+  global.counter = typeof global.counter === 'undefined' ? 1 : global.counter += 1
+  module.exports = String(global.counter);
+  `;
+
+  modHot.evaluate({ code: codeHot, map: null }, true);
+
+  expect(modHot.exports).toBe('1');
+  modHot.loaded = false;
+  modHot.evaluate(undefined, true);
+  expect(modHot.exports).toBe('1');
 });
 
 it('changes resolve behaviour on overriding _resolveFilename', () => {

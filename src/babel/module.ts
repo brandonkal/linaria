@@ -328,7 +328,7 @@ class Module {
    */
   private _loadFromFile(m: Module, id: string) {
     if (this.extensions.includes(path.extname(m.filename))) {
-      const lastModified = mtime(m.filename);
+      const lastModified = mtime(m.filename, m.mtime);
       let code: string;
       if (m._source && m.mtime === lastModified) {
         code = m._source;

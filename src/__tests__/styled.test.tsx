@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import React from 'react';
 import renderer from 'react-test-renderer';
 const styled = require('../react/styled').default;
@@ -238,4 +239,26 @@ it('throws when using as tag for template literal', () => {
         color: blue;
       `
   ).toThrow('Using the "styled" tag in runtime is not supported');
+});
+
+it('warns if interpolation does not evaluate to a string or number', () => {
+  const spy = jest.spyOn(console, 'warn').mockImplementation();
+  const Test = styled('div')({
+    name: 'TestComponent',
+    class: 'abcdefg',
+    vars: {
+      a: [
+        () => {
+          return {
+            color: 'red',
+          };
+        },
+      ],
+    },
+  });
+
+  renderer.create(<Test>This is a test</Test>);
+
+  expect(spy).toHaveBeenCalledTimes(1);
+  spy.mockRestore();
 });

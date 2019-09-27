@@ -158,7 +158,7 @@ export default function getTemplateProcessor(options: StrictOptions) {
               : { line: end.line, column: end.column + 1 },
           };
         };
-        // Test if ex is inline array expression. This has already been validated.
+        // Test if ex is inline array expression. This has already been validated to be an expression.
         if (t.isArrayExpression(ex)) {
           if (options._isEvaluatePass) {
             // No need to evaluate modifiers here.

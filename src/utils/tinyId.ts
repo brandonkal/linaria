@@ -4,7 +4,7 @@ import blacklist from './blacklist';
 const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789';
 
 interface factoryOptions {
-  prefix?: string;
+  prefix: string;
   optimize: boolean;
 }
 
@@ -15,7 +15,7 @@ export default class TinyID {
   get: (string: string) => string;
   /** resets the generator and map properties */
   reset: () => void;
-  constructor({ prefix = '', optimize = false }: factoryOptions) {
+  constructor({ prefix, optimize }: factoryOptions) {
     let next = incstr.idGenerator({ alphabet });
     const valid = (string: string) => {
       if (this.record.hasOwnProperty(string) || /^[0-9]/.test(string)) {

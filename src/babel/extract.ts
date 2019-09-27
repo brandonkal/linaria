@@ -41,9 +41,6 @@ export default function extract(
       Program: {
         enter(path, state) {
           const src = path.getSource();
-          if (src.includes('__linariaPreval')) {
-            return;
-          }
           // Collect all the style rules from the styles we encounter
           state.queue = [];
           state.rules = [];
@@ -104,6 +101,7 @@ export default function extract(
 
             state.dependencies = [...evaluation.dependencies];
             lazyValues = evaluation.value.__linariaPreval;
+            /* istanbul ignore if */
             if (lazyValues == null || lazyDeps.length !== lazyValues.length) {
               writeAndFlushConsole();
               Module.invalidateAll();
