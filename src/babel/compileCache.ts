@@ -67,7 +67,6 @@ export function load(cacheDirectory?: string) {
   }
 
   process.on('exit', save);
-  process.on('SIGINT', save);
 
   if (!fs.existsSync(FILENAME)) return;
 
