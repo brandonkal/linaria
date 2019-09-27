@@ -20,7 +20,7 @@ const NAME = 'LinariaPlugin';
 
 const LINARIA_REGEX = /LINARIA_.*?_LINARIA/g;
 
-interface LinariaPluginOptions extends VirtualModulesOptions {
+export interface LinariaPluginOptions extends VirtualModulesOptions {
   prefix?: string;
   optimize?: boolean;
   cacheDirectory?: string;
@@ -39,7 +39,6 @@ export default class LinariaPlugin {
   classes: string[] = [];
   opts: StrictOptions & Required<LinariaPluginOptions>;
   filesToUpdate = new Map<any, Set<string>>();
-  ignore: RegExp;
   tinyID: TinyID;
   Virtual: VirtualModulesPlugin;
 
@@ -52,7 +51,6 @@ export default class LinariaPlugin {
       cacheDirectory: options.cacheDirectory || '.linaria-cache',
     } as const;
     this.opts = opts;
-    this.ignore = opts.ignore!;
     this.tinyID = new TinyID({ prefix: opts.prefix, optimize: opts.optimize! });
     this.Virtual = new VirtualModulesPlugin([], {
       writeToDisk: this.opts.writeToDisk,

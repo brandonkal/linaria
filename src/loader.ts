@@ -87,7 +87,7 @@ export default async function linariaLoader(
   }
 
   const {
-    sourceMap,
+    sourceMap: enableSourceMap = true,
     cacheDirectory: cacheName = '.linaria-cache',
     ...pluginOptions
   } = options;
@@ -137,7 +137,7 @@ export default async function linariaLoader(
         outputFilename,
         this.LinariaPlugin,
         cssSourceMap,
-        sourceMap,
+        enableSourceMap,
         this.fs
       );
     await cssWriter(cssText);
