@@ -21,7 +21,7 @@ declare module 'webpack' {
 const NAME = 'LinariaVirtualModulesPlugin';
 
 interface stats {
-  mtime: number;
+  mtime: Date | number | string;
 }
 
 interface IVirtualFile {
@@ -41,7 +41,7 @@ class VirtualFile implements IVirtualFile {
     this.contents = init.contents;
     this.stats = new VirtualStats({
       size: init.contents ? Buffer.byteLength(init.contents) : 0,
-      mtime: init.stats ? init.stats.mtime : Date.now(),
+      mtime: init.stats ? init.stats.mtime : new Date(),
     });
     this.path = init.path;
   }
@@ -107,7 +107,7 @@ class VirtualModulesPlugin {
   /**
    * writeModule creates an in-memory module that Webpack will treat as if a real file exists at that location.
    */
-  writeModule(fileObj: IVirtualFile) {
+  writeModule(fileObj: IVirtualFile, emitChange = false) {
     this._checkActivation();
     const file =
       fileObj instanceof VirtualFile ? fileObj : new VirtualFile(fileObj);
@@ -117,6 +117,7 @@ class VirtualModulesPlugin {
     this._compiler!.inputFileSystem._writeVirtualFile(file);
     this._needsFlush.add(file.path);
     if (
+      emitChange &&
       this._watcher &&
       this._watcher.watchFileSystem.watcher.fileWatchers.length
     ) {
@@ -175,7 +176,13 @@ class VirtualModulesPlugin {
             .readFileSync(volumePath)
             .toString();
           const files = VirtualModulesPlugin.fromJSON(JSON.parse(str));
-          files.forEach(this.writeModule);
+          files.forEach(file => this.writeModule(file));
+          // Files that require this file will always recompile on the first build.
+          // This is because the mtime will always change, so we can transparently support cache-loader.
+          this.writeModule({
+            path: path.join(compiler.context, '.linaria-cache/ghost.linaria'),
+            contents: '',
+          });
         } catch (e) {
           log('Unable to load virtual volume file', volumePath);
         }
@@ -184,7 +191,7 @@ class VirtualModulesPlugin {
 
     const afterResolversHook = () => {
       if (this.staticModules) {
-        this.staticModules.forEach(this.writeModule);
+        this.staticModules.forEach(mod => this.writeModule(mod));
         this.staticModules = [];
       }
     };
@@ -203,12 +210,6 @@ class VirtualModulesPlugin {
           ? nativeFS.writeFile.bind(nativeFS)
           : compiler.outputFileSystem.writeFile.bind(compiler.outputFileSystem)
       );
-
-      // const makeDir: (path: string) => Promise<void> = util.promisify(
-      //   this.opts.filesystem === 'native'
-      //     ? mkdirp.bind(mkdirp)
-      //     : compiler.outputFileSystem.mkdirp.bind(compiler.outputFileSystem)
-      // );
 
       const flushToRealFS = (compilation: any) => {
         if (!this.volumeFile) {
@@ -266,13 +267,13 @@ const handler = {
   get(target: webpack.InputFileSystem, prop: keyof InputFileSystem) {
     if (prop === 'readFile') {
       const cache = target._virtualFilesLinaria;
-      return (
+      return function readFile(
         path: string,
         callback: (
           err: Error | null | undefined,
           buffer: Buffer | string
         ) => void
-      ) => {
+      ) {
         if (cache && cache.has(path)) {
           callback(undefined, cache.get(path)!.contents);
         } else {
@@ -281,7 +282,7 @@ const handler = {
       };
     } else if (prop === 'readFileSync') {
       const cache = target._virtualFilesLinaria;
-      return (path: string): string | Buffer => {
+      return function readFileSync(path: string): string | Buffer {
         if (cache && cache.has(path)) {
           return cache.get(path)!.contents;
         } else {
@@ -290,10 +291,10 @@ const handler = {
       };
     } else if (prop === 'stat') {
       const cache = target._virtualFilesLinaria;
-      return (
+      return function stat(
         path: string,
         callback: (err: Error | undefined | null, stats: any) => void
-      ) => {
+      ) {
         if (cache && cache.has(path)) {
           callback(undefined, cache.get(path)!.stats);
         } else {
@@ -302,7 +303,7 @@ const handler = {
       };
     } else if (prop === 'statSync') {
       const cache = target._virtualFilesLinaria;
-      return (path: string) => {
+      return function statSync(path: string) {
         if (cache && cache.has(path)) {
           return cache.get(path)!.stats;
         } else {

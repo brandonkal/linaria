@@ -1,3 +1,4 @@
+import { Stats } from 'fs';
 /**
  * Used to cache a stats object for the virtual file.
  * ES6 update (c) 2019 Brandon Kalinowski. MIT.
@@ -11,13 +12,13 @@ let inode = 45000000;
 
 interface StatsConfig {
   size: number;
-  mtime?: number;
+  mtime?: Date | number | string;
 }
 
 /**
  * Create a new stats object.
  */
-class VirtualStats {
+class VirtualStats implements Stats {
   dev = 8675309;
   nlink = 0;
   uid = 1000;
@@ -28,19 +29,29 @@ class VirtualStats {
   mode = 33188;
   size: number;
   blocks: number;
-  atime: number;
-  mtime: number;
+  atime: Date;
+  atimeMs: number;
+  mtime: Date;
   mtimeMs: number;
-  ctime: number;
-  birthtime: number;
-  constructor({ size, mtime = Date.now() }: StatsConfig) {
+  ctime: Date;
+  ctimeMs: number;
+  birthtime: Date;
+  birthtimeMs: number;
+  constructor({ size, mtime = new Date() }: StatsConfig) {
+    if (!(mtime instanceof Date)) {
+      mtime = new Date(mtime);
+    }
+    const ms = mtime.getTime();
     this.size = size;
     this.blocks = Math.floor(size / 4096);
     this.atime = mtime;
     this.mtime = mtime;
-    this.mtimeMs = mtime;
     this.ctime = mtime;
     this.birthtime = mtime;
+    this.atimeMs = ms;
+    this.ctimeMs = ms;
+    this.mtimeMs = ms;
+    this.birthtimeMs = ms;
   }
   _checkModeProperty(property: number): boolean {
     return (this.mode & constants.S_IFMT) === property;
@@ -69,7 +80,7 @@ class VirtualStats {
 
   toJSON() {
     return {
-      mtime: this.mtime,
+      mtimeMs: this.mtime,
     };
   }
 }

@@ -62,16 +62,25 @@ export default async function linariaLoader(
     throw new Error('Linaria loader requires LinariaPlugin');
   }
 
+  let addGhostFile = () => {};
+
   if (!requested.has(this.resourcePath)) {
     requested.add(this.resourcePath);
+    // We add a virtual ghost file. This allows us to transparently support cache-loader.
+    // On the first compilation, the LinariaPlugin will update the mtime for this file.
+    addGhostFile = () => {
+      const ghostPath = path.join(
+        this.rootContext,
+        '.linaria-cache/ghost.linaria'
+      );
+      this.addDependency(ghostPath);
+    };
   } else {
     // We clear on hot rebuilds.
     // If we could be sure that modules don't execute code in module scope
     // (only export functions) this step could be omitted.
     const deps = findAllDependents(this.resourcePath);
-    log(
-      `pitch for ${this.resourcePath}. Clearing ${deps.size} dependent modules.`
-    );
+    log(`Clearing ${deps.size} dependent modules for ${this.resourcePath}.`);
     reloadModules(deps);
     cssUpdateManager.ignored.add(this.resourcePath);
     deps.forEach(dep => cssUpdateManager.queue.add(dep));
@@ -120,6 +129,7 @@ export default async function linariaLoader(
   }
 
   if (result.cssText) {
+    addGhostFile();
     let { cssText, cssSourceMap, replacer, rules } = result;
     const cssWriter = async (css: string) =>
       updateCSS(

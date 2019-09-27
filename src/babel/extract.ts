@@ -129,10 +129,7 @@ export default function extract(
         },
         exit(_, state) {
           log(`exiting ${state.file.opts.filename}`);
-          if (
-            typeof state.rules === 'object' &&
-            Object.keys(state.rules).length
-          ) {
+          if (state.rules.length) {
             // Store the result as the file metadata
             state.file.metadata = {
               linaria: {
