@@ -2,7 +2,7 @@
 
 ## stylelint
 
-For linting styles with [stylelint](https://stylelint.io/), we provide our custom config tailored for linaria - `linaria/stylelint-config`.
+For linting styles with [stylelint](https://stylelint.io/), we provide our custom config tailored for linaria - `@brandonkal/linaria/stylelint-config`. Stylelint now supports CSS-in-JS syntax, so no preprocessor is needed. This means you can also use `stylelint --fix` on your JavaScript files.
 
 ### Installation
 
@@ -14,7 +14,7 @@ yarn add --dev stylelint stylelint-config-recommended
 
 ### Configuring stylelint
 
-All you need to do is to set your config to extend from `linaria/stylelint-config`.
+All you need to do is to set your config to extend from `@brandonkal/linaria/stylelint-config`.
 
 Here's the example `.stylelintrc` configuration file:
 
@@ -22,14 +22,12 @@ Here's the example `.stylelintrc` configuration file:
 {
   "extends": [
     "stylelint-config-recommended",
-    "linaria/stylelint-config"
+    "@brandonkal/linaria/stylelint-config"
   ]
 }
 ```
 
 Please refer to the [official stylelint documentation](https://stylelint.io/user-guide/configuration/) for more info about configuration.
-
-The preprocessor will use the [options from the configuration file](/docs/CONFIGURATION.md) for processing your files.
 
 ### Linting your files
 

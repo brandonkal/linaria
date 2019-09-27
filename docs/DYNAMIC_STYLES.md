@@ -16,7 +16,7 @@ export function Pager({ index, children }) {
 }
 ```
 
-However, it's not possible to use inline styles with pseudo-selectors or media queries.
+However, it is not possible to use inline styles with pseudo-selectors or media queries.
 
 ## CSS custom properties
 

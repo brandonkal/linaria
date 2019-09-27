@@ -32,9 +32,9 @@ You can also keep the styles in a separate JS file if you want, of course.
 
 ### 3. Refactor with confidence
 
-You don't have to worry about breaking an unrelated component when changing and removing styles. Since Linaria's styles are like regular JavaScript variables, it's easy to track their usage and refactor.
+You don't have to worry about breaking an unrelated component when changing and removing styles. Because Linaria's styles are like regular JavaScript variables, it is easy to track their usage and refactor.
 
-### 4. No pre-processor needed
+### 4. No pre-processor needed\*
 
 Linaria supports JavaScript expressions, which enables you to generate style rules inside a declaration programmatically with JavaScript. You can share constants and helper functions between your CSS and JavaScript freely.
 
@@ -54,15 +54,17 @@ const button = css`
 `;
 ```
 
+\* Note that Linaria does require postcss and postcss-nested. PostCSS is most likely already integrated into your build pipeline for features such as autoprefixer. Linaria integrates seamlessly in this pipeline, so you can use any postcss plugin or even SASS. However, the point to emphasize here is that by using JavaScript directly, you won't need all those plugins and extra syntax. This means less complexity.
+
+If you have ever had to configure and learn LESS and SCSS syntax, you will appreciate the maintainablity of Linaria's solution. It has all the benefits of CSS-in-JS, while still compiling down to vanilla CSS files.
+
 ### 5. Automatic unused styles removal
 
 Linaria automatically drops unused styles in a file unless it is exported. Linters like [ESLint](https://eslint.org/) can also warn you about when you have unused styles since they are just normal JS variables.
 
-### 6. Automatic vendor prefixing
+### 6. Integrates with PostCSS for automatic vendor prefixing
 
-Linaria will automatically vendor prefix your CSS, so you don't have to worry about supporting older browsers. You write modern CSS, and Linaria takes care of the rest.
-
-You can still use tools like [PostCSS](https://postcss.org/) to further optimize the CSS.
+Pair Linaria with [PostCSS](https://postcss.org/) and autoprefixer, and your pipelint will automatically vendor prefix your CSS. You can worry less about supporting older browsers. You write modern CSS, and the computer will takes care of the rest.
 
 ### 7. Declarative dynamic styling with React
 
@@ -84,7 +86,7 @@ const Box = styled.div`
 
 ### 1. No new syntax to learn
 
-Linaria's syntax is just like regular CSS, plus ability to nest selectors for convenience. There's no new syntax for variables, mixins or functions. It's just JavaScript.
+Linaria's syntax is just like regular CSS, plus ability to nest selectors for convenience. There's no new syntax for variables, mixins or functions. It's just JavaScript!
 
 ### 2. Same advantages as regular CSS
 
@@ -109,7 +111,7 @@ Class names perform much faster than inline styles.
 
 ### 1. CSS is downloaded and parsed separately from JS
 
-Since the styles are extracted to separate CSS files, the CSS and JavaScript can be downloaded and parsed by the browser in parallel and can improve the load time.
+Since the styles are extracted to separate CSS files, the CSS and JavaScript can be downloaded and parsed by the browser in parallel which will improve the load time.
 
 ### 2. No extra parsing needed for CSS
 
@@ -117,23 +119,31 @@ Many CSS-in-JS libraries parse the CSS string using a custom parser on the clien
 
 Linaria is unique in the sense that it doesn't need a runtime to work. Styles are parsed, evaluated and generated at build time and no extra parsing is needed on the client.
 
-### 3. No style duplication on SSR
+### 3. No style duplication on Server Side Render
 
-For component based CSS in JS libraries, rendering same component with different props can lead to duplicating the same set of styles multiple times. It doesn't matter on client side, but may increase the size of the rendered CSS when doing SSR. It may not matter in most cases, but in cases where you are rendering a large list of elements with tiny differences in styles, it can quickly add up.
+When you do SSR, the rendered CSS is downloaded in addition to the CSS you wrote in JS files. This is a waste of precious bandwidth and further increases the download and browser parsing size.
 
-In addition, when you do SSR, the rendered CSS is downloaded in addition to the CSS you wrote in JS files, further increasing the size.
+For component based CSS in JS libraries, rendering same the component with different props can lead to duplicating the same set of styles multiple times. It doesn't matter on the client side, but will increase the size of the rendered CSS when doing SSR. It may not matter in most cases, but in cases where you are rendering a large list of elements with tiny differences in styles, it can quickly add up.
 
-Linaria produces only one rule set per declaration, and the differences are taken care of using CSS variables, so there's no duplication, which is great for reducing bundle size.
+Linaria produces only one rule set per declaration, and any dynamic differences are taken care of using CSS variables. This means no duplication, which is great for reducing bundle size.
 
 ### 4. Catch errors early due to build-time evaluation
 
-When you interpolate invalid values in Linaria (for example NaN in styles), you'll get a build time error. So you don't accidentally ship bugs into production and realize it later.
+When you interpolate invalid values in Linaria (for example NaN in styles), you'll get a build-time error. So you don't accidentally ship bugs into production and realize it later.
 
-Linaria's stylelint processor is also more robust and can lint styles much better, like you're writing vanilla CSS files.
+Paired with TypeScript and [csstyper](https://www.npmjs.com/package/eslint-plugin-csstyper), you can catch even more errors that stylelint alone will miss. For example:
+
+```js
+const Button = (props => styled.button`
+  color: ${props.primary ? 'blue' : 'superwhite'};
+`)({});
+```
+
+will throw an error.
 
 ### 5. Familiar CSS syntax
 
-Unlike some CSS in JS libraries, Linaria lets you write normal CSS syntax, which means you can copy paste styles from the browser's dev tools (or StackOverflow), and avoid unnecessary noise in the styles.
+Unlike some CSS in JS libraries, Linaria lets you write normal CSS syntax, which means you can copy-paste styles from your browser's dev tools (or StackOverflow), and avoid unnecessary noise in the styles.
 
 You can also use a pre-processor such as Sass if you prefer.
 

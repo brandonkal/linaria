@@ -16,7 +16,7 @@ const flower = css`
   color: violet;
 `;
 
-// flower === flower__9o5awv –> with babel plugin
+// flower === flower_9o5awv –> with babel plugin
 ```
 
 All rules inside the template literal are scoped to the class name, including media queries and animations. For example, we can declare CSS animation like so:
@@ -83,14 +83,101 @@ const Container = styled.div`
   &:hover {
     border-color: blue;
   }
+
+  &${[props => props.large$]} {
+    width: ${100 / 2}px;
+  }
 `;
 ```
 
 All rules inside the template literal are scoped to the component, similar to the `css` tag.
 
-Dynamic function interpolations are replaced with CSS custom properties. A dynamic function interpolation will receive the `props` of the component as it's arguments and the returned result will be used as the value for the variable. When using this, a tiny helper is imported so that we don't duplicate the code for creating the component in all files.
+Dynamic function interpolations are replaced with CSS custom properties. A dynamic function interpolation will receive the `props` of the component as its arguments and the returned result will be used as the value for the variable. When using this, a tiny helper is imported so that we don't duplicate the code for creating the component in all files. This runtime is depency-free.
 
-You can also interpolate a component to refer to it:
+#### Modifiers
+
+The `styled` function also accepts a modifier shorthand.
+This is elegant because it means all style logic can be encapsulated in the CSS.
+When the babel plugin encounters an array literal, its first element will be interpolated as a modifier condition. The plugin will statically read the expression to interpolate a development class name. This means you can spend less time thinking about what to name things, and more time thinking about the state that causes a modifier to become active. In the example above, the generated classname will be `bsc0o8j__large_0`:
+
+```js
+<Container large$>lorem</Container>
+```
+
+```html
+<div class="Container_bsc0o8j bsc0o8j__large_0">lorem</div>
+OR MINIMIZED
+<div class="c c-0">lorem</div>
+```
+
+When a modifier evaluates to be truthy, its generated className (and their associated styles) will be applied to the element. Just like dynamic variables, you can use any values that are available at runtime.
+
+#### Shorthand
+
+Writing many arrow functions for interpolations can get a little verbose. `@brandonkal/linaria` supports a shorthand that compiles down to the same arrow function before further evaluation. Here is an example of a Button component:
+
+```js
+import { styled } from '@brandonkal/linaria/react';
+
+const Button = (p => styled.div`
+  &${[p.kind$ === 'primary']} {
+    color: #fff;
+    background-color: var(--bc);
+    border-color: var(--bc);
+    --bc: #1890ff;
+  }
+
+  &${[p.size$ === 'large']} {
+    height: 40px;
+    a& {
+      line-height: 38px;
+    }
+  }
+
+  &${[p.size$ === 'small']} {
+    height: 24px;
+    a& {
+      line-height: 22px;
+    }
+  }
+`)({});
+
+<Button kind$="primary" size$="large">
+  Account
+</Button>;
+```
+
+```html
+<button class="Button_bsc0o8j bsc0o8j__size-large_0 bsc0o8j__kind-primary_4">
+  Account
+</button>
+```
+
+Note that this is optional, we could have written `&${[props => props.kind$ === 'primary']}` instead.
+
+By wrapping the styled call inside an IIFE, the props are available in scope so that you remain type-safe.
+This IIFE is compiled away during the build.
+
+#### TypeScript
+
+Typescript is supported.
+
+```ts
+interface ButtonProps {
+  kind$?: 'default' | 'primary' | 'dashed' | 'danger';
+  size$?: 'large' | 'default' | 'small';
+}
+const Button = (p => styled.button<ButtonProps>`
+  /* CSS */
+  /* the type is accessible directly */
+  color: ${btn => (btn.type === 'submit' ? 'red' : 'blue')};
+`)({} as ButtonProps);
+// The type of Button will be StyledComponent<"button", ButtonProps>
+```
+
+#### Components as Selectors
+
+The `styled` function can also interpolate a component to refer to its selector:
 
 ```js
 const Title = styled.h1`

@@ -107,11 +107,11 @@ function Heading() {
 }
 ```
 
-Apart from the reduced boilerplate code, this also makes it easier to do prop based styling which you'll cover later in the guide.
+Apart from the reduced boilerplate code, this also makes it easier to do prop based styling which you'll cover later in this guide.
 
 ### Nesting, pseudo-elements and pseudo-selectors
 
-You can nest selectors, pseudo-elements and pseudo-selectors similar to Sass, thanks to [stylis](https://github.com/thysultan/stylis.js).
+You can nest selectors, pseudo-elements and pseudo-selectors similar to Sass, thanks to [postCSS](https://postcss.parts).
 
 For example, to change the color of a button on hover, you'll write something like this:
 
@@ -230,7 +230,7 @@ Here `spin` will be replaced with a unique string to scope the animation to the 
 
 Like normal template literals, you can interpolate other expressions inside a template literal tagged with `css` or `styled`.
 
-If you try to interpolate an invalid value, you'll get an error at build-time.
+If you try to interpolate an invalid value, you'll get a build-time error.
 
 ### Basic interpolations
 
@@ -244,7 +244,7 @@ const Title = styled.h1`
 `;
 ```
 
-Here, the `fontSize` variable will be evaluated at build time and inserted into the generated CSS.
+Here, the `fontSize` variable will be evaluated at build-time and inserted into the generated CSS.
 
 You can also call functions while interpolating:
 
@@ -258,9 +258,11 @@ const Button = styled.button`
 `;
 ```
 
+This concept of JavaScript-in-CSS is very powerful. Because `darken()` is evaluated at build-time, dead-code-elimination can completely remove the darken utility from the final bundle, meaning you ship less code to your users.
+
 ### Object interpolations
 
-You can also interpolate object styles. It's converted to a CSS string before inserting to the stylesheet:
+You can also interpolate object styles. Objects are converted to a CSS string before inserting into the stylesheet:
 
 ```js
 const cover = {
@@ -351,7 +353,7 @@ const Article = styled.article`
 
 ## Overriding styles
 
-If you want to override few styles on a styled component you defined earlier, you can do so by wrapping it in the `styled(..)` tag:
+If you want to override a few styles on a styled component you defined earlier, you can do so by wrapping it in the `styled(..)` tag:
 
 ```js
 const Button = styled.button`
@@ -367,7 +369,7 @@ const LargeButton = styled(Button)`
 `;
 ```
 
-Here, when you use `LargeButton`, it'll have all the same styles as `Button` except the `font-size` and `padding` which we overrode.
+Here, when you use `LargeButton`, it'll have all the same styles as `Button` except the `font-size` and `padding` which we overrode. When evaluate === true (the default option), a more specific selector will be generated for the wrapping component's styles.
 
 ## Styling custom components
 
@@ -443,8 +445,7 @@ For example, you may have a script that applies a `tabbing` class to the body if
 
 ```js
 const Button = styled.button`
-  :global .tabbing &,
-  &${[p => p.showOutlines]} {
+  :global .tabbing &${[p => p.showOutlines]} {
     outline: 4px orange solid;
   }
 `;

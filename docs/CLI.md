@@ -8,7 +8,7 @@ Linaria CLI allows you to extract CSS from your source files using a command lin
 yarn linaria [options] <file1> [<fileN>...]
 ```
 
-Option `-o, --out-dir <dir>` __is always required__.
+Option `-o, --out-dir <dir>` **is always required**.
 
 You can also use glob for specifying files to process:
 
@@ -28,8 +28,7 @@ where `source-root` is directory with source JS files and `insert-css-requires` 
 
 ### Options
 
-* `-o, --out-dir <dir>` (__required__) - Output directory for the extracted CSS files
-* `-s, --source-maps` - Generate source maps for the CSS files
-* `-r, --source-root <dir>` - Directory containing the source JS files
-* `-i, --insert-css-requires <dir>` - Directory containing JS files to insert require statements for the CSS files (__works only if `-r, --source-root` is provided__)
-* `-c, --config-file <filepath>` - Path to the configuration file. If a relative path is given, it'll be resolved relative to the current working directory.
+- `-o, --out-dir <dir>` (**required**) - Output directory for the extracted CSS files
+- `-s, --source-maps` - Generate source maps for the CSS files
+- `-r, --source-root <dir>` - Directory containing the source JS files
+- `-i, --insert-css-requires <dir>` - Directory containing JS files to insert require statements for the CSS files (**works only if `-r, --source-root` is provided**)

@@ -156,7 +156,7 @@ const Box = styled.h1`
 `;
 ```
 
-But keep in mind that if you're doing SSR for your app, this won't work with SSR. In this particular case, better option will be to use the `calc` function along with the `vh` unit for the viewport height (e.g. `calc(100vh * 2)`).
+But keep in mind that if you're doing SSR for your app, this won't work on the server. In this particular case, a better option will be to use the `calc` function along with the `vh` unit for the viewport height (e.g. `calc(100vh * 2)`).
 
 ## Bundler integration
 
