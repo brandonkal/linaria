@@ -21,6 +21,7 @@ This is a fork of Linaria. Reasons you will enjoy using the @brandonkal fork:
 7. Uses postCSS rather than stylis. This allows for a much deeper integration with your existing CSS pipeline.
 8. High resolution source maps. Even nested selectors and modifiers point to the proper line rather than the start of the template literal.
 9. Vastly improved Typescript types and support.
+10. Faster builds with an improved module invalidation system plus webpack caching support.
 
 Modifiers look like this (with optional TS typing and shorthand prop syntax):
 
@@ -216,7 +217,7 @@ See [Basics](/docs/BASICS.md) for a detailed information about the syntax.
 This project wouldn't have been possible without the following libraries or the people behind them.
 
 - [babel](https://babeljs.io/)
-- [stylis.js](https://github.com/thysultan/stylis.js)
+- [postcss](https://github.com/postcss/postcss)
 
 Special thanks to [@kentcdodds](https://github.com/kentcdodds) for his babel plugin and [@threepointone](https://github.com/threepointone) for his suggestions and encouragement.
 
