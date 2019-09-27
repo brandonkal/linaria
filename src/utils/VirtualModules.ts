@@ -41,7 +41,7 @@ class VirtualFile implements IVirtualFile {
     this.contents = init.contents;
     this.stats = new VirtualStats({
       size: init.contents ? Buffer.byteLength(init.contents) : 0,
-      mtime: init.stats ? init.stats.mtime : new Date(),
+      mtime: init.stats ? init.stats.mtime : Date.now(),
     });
     this.path = init.path;
   }

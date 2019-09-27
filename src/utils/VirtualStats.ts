@@ -37,7 +37,7 @@ class VirtualStats implements Stats {
   ctimeMs: number;
   birthtime: Date;
   birthtimeMs: number;
-  constructor({ size, mtime = new Date() }: StatsConfig) {
+  constructor({ size, mtime = Date.now() }: StatsConfig) {
     if (!(mtime instanceof Date)) {
       mtime = new Date(mtime);
     }
@@ -57,10 +57,10 @@ class VirtualStats implements Stats {
     return (this.mode & constants.S_IFMT) === property;
   }
   isDirectory(): boolean {
-    return this._checkModeProperty(constants.S_IFDIR);
+    return false;
   }
   isFile(): boolean {
-    return this._checkModeProperty(constants.S_IFREG);
+    return true;
   }
   isBlockDevice(): boolean {
     return this._checkModeProperty(constants.S_IFBLK);
