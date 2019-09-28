@@ -274,26 +274,30 @@ function createResolver(this: loader.LoaderContext) {
     typeof linariaResolver !== 'function' ||
     lastCompilation !== this._compilation
   ) {
-    const resolveSync = enhancedResolve.create.sync(
-      // this.resolveSync and this._compilation are deprecated APIs
-      // There is this.resolve, but it's asynchronous
-      // This API is used by many loaders/plugins, so we should be safe for a while
-      this._compilation && this._compilation.options.resolve
-        ? {
-            fileSystem: this.fs || fs,
-            alias: this._compilation.options.resolve.alias,
-            modules: this._compilation.options.resolve.modules,
-            extensions: this._compilation.options.resolve.extensions
-              ? this._compilation.options.resolve.extensions.filter(
-                  (ext: string) => supportedExtensions.includes(ext)
-                )
-              : supportedExtensions,
-          }
-        : {
-            extensions: supportedExtensions,
-            fileSystem: this.fs || fs,
-          }
-    );
+    const resolveSync =
+      // prefer resolveSync for PNP support
+      this.resolveSync ||
+      enhancedResolve.create.sync(
+        // this.resolveSync and this._compilation are deprecated APIs
+        // There is this.resolve, but it's asynchronous
+        // This API is used by many loaders/plugins, so we should be safe for a while
+        this._compilation && this._compilation.options.resolve
+          ? {
+              fileSystem: this.fs || fs,
+              alias: this._compilation.options.resolve.alias,
+              modules: this._compilation.options.resolve.modules,
+              extensions: this._compilation.options.resolve.extensions
+                ? this._compilation.options.resolve.extensions.filter(
+                    (ext: string) => supportedExtensions.includes(ext)
+                  )
+                : supportedExtensions,
+            }
+          : {
+              extensions: supportedExtensions,
+              fileSystem: this.fs || fs,
+            }
+      );
+    lastCompilation = this._compilation;
     linariaResolver = (id: string, { filename }) =>
       resolveSync(path.dirname(filename), id);
   }
