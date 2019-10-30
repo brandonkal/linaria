@@ -68,7 +68,7 @@ Unlike the [`classnames`](https://www.npmjs.com/package/classnames) library, thi
 
 Helper to build React components. It allows you to write your components in a similar syntax as [`styled-components`](https://www.styled-components.com/):
 
-The syntax is similar to the `css` tag. Additionally, you can use function interpolations that receive the component's props:
+You can use function interpolations that receive the component's props:
 
 ```js
 import { styled } from '@brandonkal/linaria/react';
@@ -90,9 +90,9 @@ const Container = styled.div`
 `;
 ```
 
-All rules inside the template literal are scoped to the component, similar to the `css` tag.
+All rules inside the template literal are scoped to the component, much like the `css` tag.
 
-Dynamic function interpolations are replaced with CSS custom properties. A dynamic function interpolation will receive the `props` of the component as its arguments and the returned result will be used as the value for the variable. When using this, a tiny helper is imported so that we don't duplicate the code for creating the component in all files. This runtime is depency-free.
+Dynamic function interpolations are replaced with CSS custom properties. Linaria calls your dynamic function interpolation with the component's `props` argument and uses the result as the value for the CSS variable. Styled is a tiny helper function that is imported to avoid duplicating the code for creating the component in all files. This runtime is depency-free.
 
 #### Modifiers
 

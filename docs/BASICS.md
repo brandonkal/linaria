@@ -137,7 +137,7 @@ The value of `&` refers to the class name. This code is equivalent to the follow
 }
 ```
 
-You can nest pseudo-elements as well as other selectors:
+You can nest pseudo-elements and other selectors:
 
 ```js
 const Thing = styled.div`
@@ -234,7 +234,7 @@ If you try to interpolate an invalid value, you'll get a build-time error.
 
 ### Basic interpolations
 
-You can interpolate variables declared in the same file as well as imported variables:
+You can interpolate variables declared in the same file and imported variables:
 
 ```js
 const fontSize = 16;
@@ -258,11 +258,11 @@ const Button = styled.button`
 `;
 ```
 
-This concept of JavaScript-in-CSS is very powerful. Because `darken()` is evaluated at build-time, dead-code-elimination can completely remove the darken utility from the final bundle, meaning you ship less code to your users.
+This concept of JavaScript-in-CSS is immensely powerful. Because `darken()` is evaluated at build-time, dead-code-elimination can completely remove the darken utility from the final bundle, meaning you ship less code to your users.
 
 ### Object interpolations
 
-You can also interpolate object styles. Objects are converted to a CSS string before inserting into the stylesheet:
+You can also interpolate object styles. Objects are converted to a CSS string before inserting into the style sheet:
 
 ```js
 const cover = {

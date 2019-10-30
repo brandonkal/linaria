@@ -73,9 +73,13 @@ const colors = {
 
 // Create a small helper function to loop over the themes and create CSS rule sets
 const theming = cb =>
-  Object.keys(colors).reduce((acc, name) => Object.assign(acc, {
-    [`.theme-${name} &`]: cb(colors[name]),
-  }), {});
+  Object.keys(colors).reduce(
+    (acc, name) =>
+      Object.assign(acc, {
+        [`.theme-${name} &`]: cb(colors[name]),
+      }),
+    {}
+  );
 
 // Use the helper in your styles
 const Header = styled.h1`
@@ -99,4 +103,4 @@ const Button = withTheme(styled.button`
 `);
 ```
 
-Note that this approach also uses CSS custom properties under the hood since function interpolations compile down to CSS custom properties. So the browser support is limited.
+Note that this approach also uses CSS custom properties under the hood since function interpolations compile down to CSS custom properties. Therefore, support is limited to modern browsers.

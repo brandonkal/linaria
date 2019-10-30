@@ -39,7 +39,7 @@ config.plugins.push(new LinariaPlugin({ prefix: 'mui', optimize: true }));
 
 The plugin is required to handle virtual files. We avoid writing intermediate extracted CSS files to disk during the build for performance reasons. The LinariaPlugin handles caching, module invalidation, and production class name optimization.
 
-In order to have your styles extracted, you'll also need to use **css-loader** and **MiniCssExtractPlugin**. First, install them:
+To have your styles extracted, you'll also need to use **css-loader** and **MiniCssExtractPlugin**. First, install them:
 
 ```sh
 yarn add --dev css-loader mini-css-extract-plugin
@@ -51,7 +51,7 @@ Import `mini-css-extract-plugin` at the top of your webpack config:
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 ```
 
-Linaria handles evaluation of Javascript in your CSS. It is expected that you integrate Linaria with your existing CSS build pipeline, using a tool like postcss-loader to enable features such as nesting and auto-prefixing.
+Linaria handles evaluation of JavaScript in your CSS. It is expected that you integrate Linaria with your existing CSS build pipeline, using a tool like postcss-loader to enable features such as nesting and auto-prefixing.
 
 A minimal config would be to use postcss-nested and autoprefixer:
 
@@ -196,7 +196,7 @@ module.exports = {
 };
 ```
 
-Linaria will output CSS files with the same syntax and line numbers as the input. This allows for high resolution source maps. It will also fix relative url()s so that css-loader can locate these resources from the generated css file. In order to have the source maps point back to the original javascript files rather than the generated CSS file, you should wrap your css processor in the tiny source map helping loaders as shown above.
+Linaria will output CSS files with the same syntax and line numbers as the input. This allows for high resolution source maps. It will also fix relative `url()`s so that css-loader can locate these resources from the generated css file. To have the source maps point back to the original JavaScript files rather than the generated CSS file, you should wrap your css processor in the tiny source map helping loaders as shown above.
 
 You can copy this file to your project if you are starting from scratch.
 

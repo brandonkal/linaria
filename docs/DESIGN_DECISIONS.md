@@ -1,6 +1,6 @@
 # Design Decisions
 
-This document lists the reasoning behind some of the design decisions made in `@brandonkal/linaria`.
+This document lists the reasoning behind some design decisions made in `@brandonkal/linaria`.
 
 ## User facing
 
@@ -30,7 +30,7 @@ The original linaria used `stylis` for processing styles. Meanwhile, `postCSS` i
 
 #### The wrapping shortcut
 
-From using tools like Styled Components, the one annoyance I had in authoring stylesheets inside Javascript was the constant need to type out arrow functions. When TypeScript is added into the mix, adding typings for all those functions becomes even more tedious. With the wrapping shortcut, this is no longer necessary. This also improves readability for stylesheets.
+From using tools like Styled Components, the one annoyance I had in authoring stylesheets inside JavaScript was the constant need to type out arrow functions. When TypeScript is added into the mix, adding typings for all those functions becomes even more tedious. With the wrapping shortcut, this is no longer necessary. This also improves readability for stylesheets.
 
 #### Removal of Linaria Stylelint processor
 
@@ -46,7 +46,7 @@ WARNING: This is considered experimental. Consider it undocumented. Until this b
 
 After evaluating normally, if this property exists on an interpolation value, it will be used in the generated CSS. This is handy for making any function behave as if it was a linaria css class Name.
 
-In my own component library, I found myself reaching for `styledComponent.__linaria.className` and attaching that to components that render a styled component. That approach isn't very clean.
+In my own component library, I found myself reaching for `styledComponent.__linaria.className` and attaching that to components that render a styled component. That approach isn't clean.
 
 The idea is that eventually something like this should be possible:
 
@@ -68,7 +68,7 @@ const Options = styled.div`
 
 #### throwIfInvalid
 
-Empty objects in interpolated values are now considered errors as this is most likely a mistake. Empty strings will not throw as this has a valid use case.
+Empty objects in interpolated values are now considered errors as this is usually a mistake. Empty strings will not throw as this has a valid use case.
 
 ## Internal Code
 
@@ -79,15 +79,15 @@ The shaker is a really slick piece of code. Before forking this project the shak
 1. Built a dependency tree and shook the code to remove unused nodes.
 2. Added linaria-specific exports.
 
-Before removing the shaker from the plugin code path, I split those into two. It is my opinion that the first part could be made into a very useful standalone babel transform. However, the shaker logic is very complex and because of some code changes, is no longer necessary for preval support.
+Before removing the shaker from the plugin code path, I split those into two. It is my opinion that the first part can be made into a useful standalone babel transform. However, the shaker logic is decidedly complex and because of some code changes, is no longer necessary for preval support.
 
 Before removing the shaker, it had some issues with keeping dependencies of arrays and removing uninitialized variable declarations:
 
 `let thing; export const a = thing; >> export const a = thing`
 
-##### Why it is no longer required:
+##### Why it is no longer required
 
-In order to improve caching performance and reduce build time, I have changed linaria to export items that need to be pre-evaluated on a new key rather than only exporting those items. Because babel works on a single file at a time, it cannot know which exports will be required by other files to evaluate their expressions. This resulted in linaria processing and transforming files several times to evaluate different exports. By exporting the values on a seperate key, the transformed code can be cached and persisted to disk between project builds. It only needs to change when the source file changes.
+To improve caching performance and reduce build time, I have changed linaria to export items that need to be pre-evaluated on a new key rather than only exporting those items. Because babel works on a single file at a time, it cannot know which exports will be required by other files to evaluate their expressions. This resulted in linaria processing and transforming files several times to evaluate different exports. By exporting the values on a seperate key, the transformed code can be cached and persisted to disk between project builds. It only needs to change when the source file changes.
 
 #### \_\_linariaPreval
 
@@ -111,7 +111,7 @@ When converted to commonJS for evaluation, `export *` will ignore exports that a
 
 Errors are passed through so that instances will work for Error. Sometimes this doesn't work. `module.evaluate` has a trap that will convert error-like-objects to actual Errors so that these checks will work in Webpack and other bundler code.
 
-The entire global object is not passed through in order to isolate it from code that runs in the VM. This means code cannot call for instance `global.Set()` to access normal Javascript built-ins. I have yet to see a module that actually does this though and a normal call to `Set()` will work. Functions that are added by the Node runtime such as setTimeout are available in the vm global object.
+The entire global object is not passed through in order to isolate it from code that runs in the VM. This means code cannot call for instance `global.Set()` to access normal JavaScript built-ins. I have yet to see a module that actually does this though and a normal call to `Set()` will work. Functions that are added by the Node runtime such as setTimeout are available in the vm global object.
 
 #### VM context
 
@@ -127,17 +127,17 @@ This function ensures an actual error is returned when thrown. It also generates
 
 #### buildCSS
 
-This logic handles building a CSS-like-string from the extracted rules. This is only required when not evaluating. A replace map is used so that all Javascript transformations (outside of the removal of the \_\_linariaPreval exports) occur before the code is evaluated. Again, this is to improve caching of work.
+This logic handles building a CSS-like-string from the extracted rules. This is only required when not evaluating. A replace map is used so that all JavaScript transformations (outside of the removal of the \_\_linariaPreval exports) occur before the code is evaluated. Again, this is to improve caching of work.
 
 The call to this function was moved into the babel plugin process as the intent is to eventually remove the requirement for a special webpack loader or cli.
 
-In the future, it should be possible to avoid writing the intermediate CSS file to disk by writing a generic buffer-loader for all of the bundlers that will handle a base-encoded require string and process it as if it was a file on disk.
+In the future, it should be possible to avoid writing the intermediate CSS file to disk by writing a generic buffer-loader for all the bundlers that will handle a base-encoded require string and process it as if it was a file on disk.
 
 #### Limitations
 
 Certain limitations exist to ensure performant development.
 
-Preval Evaluation: If `options.evaluate == true`, any identifiers as a CSS expression will be evaluated to determine if it is a runtime function or a value (i.e. string). During development, Linaria rebuild CSS without rebuilding the Javascript for performance.
+Preval Evaluation: If `options.evaluate == true`, any identifiers as a CSS expression will be evaluated to determine if it is a runtime function or a value (i.e. string). During development, Linaria rebuild CSS without rebuilding the JavaScript for performance.
 For instance:
 
 ```js

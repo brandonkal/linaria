@@ -22,7 +22,7 @@ The resulting CSS will look something like:
 }
 ```
 
-Here the generated class name is unique and based on the hash of the file path.
+Here the generated class name is unique and based on the hash of the path.
 
 ### 2. Styles are in same file as the component
 
@@ -54,7 +54,7 @@ const button = css`
 `;
 ```
 
-\* Note that Linaria does require postcss and postcss-nested. PostCSS is most likely already integrated into your build pipeline for features such as autoprefixer. Linaria integrates seamlessly in this pipeline, so you can use any postcss plugin or even SASS. However, the point to emphasize here is that by using JavaScript directly, you won't need all those plugins and extra syntax. This means less complexity.
+\* Note that Linaria does require postcss and postcss-nested. PostCSS is probably already integrated into your build pipeline for features such as autoprefixer. Linaria integrates seamlessly in this pipeline, so you can use any postcss plugin or even SASS. However, the point to emphasize here is that by using JavaScript directly, you won't need all those plugins and extra syntax. This means less complexity.
 
 If you have ever had to configure and learn LESS and SCSS syntax, you will appreciate the maintainablity of Linaria's solution. It has all the benefits of CSS-in-JS, while still compiling down to vanilla CSS files.
 
@@ -86,7 +86,7 @@ const Box = styled.div`
 
 ### 1. No new syntax to learn
 
-Linaria's syntax is just like regular CSS, plus ability to nest selectors for convenience. There's no new syntax for variables, mixins or functions. It's just JavaScript!
+Linaria's syntax is just like regular CSS, plus ability to nest selectors for convenience. There's no new syntax for variables, mixins, or functions. It's just JavaScript!
 
 ### 2. Same advantages as regular CSS
 
@@ -117,19 +117,19 @@ Since the styles are extracted to separate CSS files, the CSS and JavaScript can
 
 Many CSS-in-JS libraries parse the CSS string using a custom parser on the client. This increases the bundle size (albeit slightly) due to the inclusion of the parser. In addition, the CSS cannot be parsed until the JavaScript code is parsed and executed, which can be noticable, especially on low-end devices and bigger JS bundles.
 
-Linaria is unique in the sense that it doesn't need a runtime to work. Styles are parsed, evaluated and generated at build time and no extra parsing is needed on the client.
+Linaria is unique in the sense that it doesn't need a runtime to work. Styles are parsed, evaluated, and generated at build time and no extra parsing is needed on the client.
 
 ### 3. No style duplication on Server Side Render
 
 When you do SSR, the rendered CSS is downloaded in addition to the CSS you wrote in JS files. This is a waste of precious bandwidth and further increases the download and browser parsing size.
 
-For component based CSS in JS libraries, rendering same the component with different props can lead to duplicating the same set of styles multiple times. It doesn't matter on the client side, but will increase the size of the rendered CSS when doing SSR. It may not matter in most cases, but in cases where you are rendering a large list of elements with tiny differences in styles, it can quickly add up.
+For component based CSS in JS libraries, rendering same the component with different props can lead to duplicating the same set of styles multiple times. It doesn't matter on the client side, but will increase the size of the rendered CSS when doing SSR. It may not matter for most cases, but when rendering a large list of elements with tiny differences in styles, this can quickly add up.
 
 Linaria produces only one rule set per declaration, and any dynamic differences are taken care of using CSS variables. This means no duplication, which is great for reducing bundle size.
 
 ### 4. Catch errors early due to build-time evaluation
 
-When you interpolate invalid values in Linaria (for example NaN in styles), you'll get a build-time error. So you don't accidentally ship bugs into production and realize it later.
+When you interpolate invalid values in Linaria (for example NaN in styles), you'll get a build-time error. In this way, you can avoid accidentally shipping bugs into production only to realize it later.
 
 Paired with TypeScript and [csstyper](https://www.npmjs.com/package/eslint-plugin-csstyper), you can catch even more errors that stylelint alone will miss. For example:
 

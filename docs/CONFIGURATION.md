@@ -12,7 +12,7 @@ The plugin accepts the following options:
 
 - `optimize: boolean` (default: `process.env.NODE_ENV === 'production'`)
 
-  Generate incredibly short identifiers for CSS class names. i.e. 'a'. This defaults to be true when NODE_ENV is 'production'. When false, you will see longer descriptive names.
+  Generate incredibly short identifiers for CSS class names. i.e. `a`. This defaults to be true when NODE_ENV is "production". When false, you will see longer descriptive names.
 
 - `cacheDirectory: string` (default: `'.linaria-cache'`)
 
@@ -24,7 +24,7 @@ The plugin accepts the following options:
 
 - `filesystem: 'native' | 'output'` (default: `'native'`)
 
-  Specify the filesystem to write the virtual volume. Defaults to use the native filesytem, but in some cases you may wish to override this.
+  Specify the filesystem to write the virtual volume. Defaults to use the native filesytem, but you can override this.
 
 ## Loader Options
 
@@ -40,7 +40,7 @@ The loader accepts the following options:
 
   Path to the directory where the loader will output the intermediate CSS files. You can pass a relative or absolute directory path. Make sure the directory is inside the working directory for things to work properly. **You should add this directory to `.gitignore` so you don't accidentally commit them.**
 
-  In most cases, this should not be changed from the default. Relative paths will be relative to the webpack root directory. Note that postCSS loader will expect to be able to resolve a config file from here.
+  Typically this should not be changed from the default. Relative paths will be relative to the webpack root directory. Note that postCSS loader will expect to be able to resolve a config file from here.
 
 ## Shared Options
 
@@ -64,7 +64,7 @@ These options are accepted by the babel preset and loader. The plugin will also 
 
 - `ignore: RegExp` (default: `/node_modules/`):
 
-  If you specify a regex here, files matching the regex won't be processed, i.e. the matching files won't be transformed with Babel during evaluation. If you need to compile certain modules under `/node_modules/`, it's recommended to do it on a module by module basis for faster transforms, e.g. `ignore: /node_modules[\/\\](?!some-module|other-module)/`.
+  If you specify a regular expression here, files matching the expression won't be processed, i.e. the matching files won't be transformed with Babel during evaluation. If you need to compile certain modules under `/node_modules/`, it's recommended to do it on a module by module basis for faster transforms, e.g. `ignore: /node_modules[\/\\](?!some-module|other-module)/`.
 
 - `babelOptions: Object`
 
@@ -72,7 +72,7 @@ These options are accepted by the babel preset and loader. The plugin will also 
 
 ## `@brandonkal/linaria/babel` preset
 
-The preset pre-processes and evaluates the CSS inside your files. The bundler plugins use this preset under the hood. You also might want to use this preset if you import the components outside of the files handled by your bundler, such as on your server or in unit tests.
+The preset pre-processes and evaluates the CSS inside your files. The bundler plugins use this preset under the hood. You also may want to use this preset if you import the components outside of the files handled by your bundler, such as on your server or in unit tests.
 
 To use this preset, add `@brandonkal/linaria/babel` to your Babel configuration at the end of the presets list:
 
