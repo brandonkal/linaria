@@ -29,21 +29,6 @@ require(\\"./.linaria-cache/css/7092bd38278643717e46e36be1c3e8d5.prod.linaria.cs
 /* CSS after optimization */
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 .a {
   top: 15px;
   color: rgba(0, 0, 0, 0.45);
@@ -60,15 +45,6 @@ require(\\"./.linaria-cache/css/7092bd38278643717e46e36be1c3e8d5.prod.linaria.cs
   font-weight: 700;
 }
 
-
-
-
-
-
-
-
-
-
 .e {
   position: relative;
   margin: 0;
@@ -77,39 +53,15 @@ require(\\"./.linaria-cache/css/7092bd38278643717e46e36be1c3e8d5.prod.linaria.cs
   font-size: 14px;
 }
 
-
-
-
-
-
-
-
-
-
 .e.e-1 {
     margin-bottom: 0;
     border: 0;
   }
 
-
-
-
-
-
-
-
-
-
 .e.e-2 {
     background-color: #f6ffed;
     border: 1px solid #b7eb8f;
   }
-
-
-
-
-
-
 
 .b {
   margin-bottom: 10px;
@@ -118,5 +70,219 @@ require(\\"./.linaria-cache/css/7092bd38278643717e46e36be1c3e8d5.prod.linaria.cs
     background: pink;
     padding: 1rem;
   }
+"
+`;
+
+exports[`webpack test website compiles -- optimizer 1`] = `
+"// JS after Babel plugin before optimization
+// import 'regenerator-runtime/runtime'
+import React from 'react';
+import render from 'react-test-renderer';
+import App from './components/App';
+var root = document.getElementById('root');
+render.create(React.createElement(App, null)); // Injected by Linaria Loader for Webpack Compilation (virtual)
+
+require(\\"../.linaria-cache/css/38682f47b0cf12c516bc3714fc45d0fd.dev.linaria.css\\");
+
+/* CSS after optimization */
+
+
+.c {
+  padding: 16px 24px;
+  margin: 0 auto;
+}
+  .c.c-0 {
+    max-width: 1140px;
+  }
+
+.k.c {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+  @media screen and (min-width: 640px) {
+
+.k.c {
+    flex-direction: row
+}
+  }
+
+.i {
+  height: 64px;
+  margin: 16px auto;
+  display: block;
+}
+
+@media screen and (min-width: 640px) {
+
+.i {
+    height: 48px;
+    margin: 0;
+    display: inline-block;
+    vertical-align: middle
+}
+  }
+
+.h {
+  display: flex;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  align-items: center;
+}
+
+.j {
+  display: block;
+  font-size: 1.2em;
+  font-weight: 700;
+  padding: 24px 16px;
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.2s;
+  transition: 200ms;
+}
+
+.j:hover {
+    color: inherit;
+  }
+
+@supports (-webkit-background-clip: text) {
+
+.j {
+    background-image: linear-gradient(to right, hsl(180, 100%, 70%), hsl(64, 57%, 82%), hsl(0, 100%, 90%));
+    /* stylelint-disable-next-line property-no-vendor-prefix */
+    -webkit-background-clip: text
+}
+
+    .j:hover {
+      color: transparent;
+    }
+  }
+
+.e {
+  position: relative;
+}
+
+  @media screen and (min-width: 1024px) {
+
+.e {
+    padding: 64px 0;
+    background-image: url(d9a913bf77959b40909382a023cebbc0.svg);
+    background-repeat: no-repeat;
+    background-position: bottom right
+}
+  }
+
+@media screen and (min-width: 1024px) {
+
+.m {
+    display: flex;
+    align-items: center;
+    justify-content: space-between
+}
+  }
+
+.g {
+  text-align: center;
+  flex: 3;
+}
+
+@media screen and (min-width: 1024px) {
+
+.g {
+    text-align: left
+}
+  }
+
+.n {
+  text-align: center;
+  flex: 2;
+  z-index: 1;
+}
+
+.f {
+  font-weight: 700;
+  font-size: 56px;
+}
+
+.d {
+  margin-bottom: 60px;
+}
+
+.a {
+  display: inline-block;
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 16px 24px;
+  color: inherit;
+  font-size: inherit;
+  font-weight: 700;
+  font-family: inherit;
+  text-transform: uppercase;
+  text-decoration: none;
+  box-shadow: inset 0 0 0 2px currentColor, 1px 1px 1px rgba(0, 0, 0, 0.08);
+  border-radius: 30px;
+  cursor: pointer;
+  transition: color 200ms, background 200ms;
+}
+
+.a:hover {
+    color: #d2356d;
+    box-shadow: inset 0 0 0 2px transparent, 1px 1px 1px rgba(0, 0, 0, 0.08);
+    background: linear-gradient(
+      to right,
+      hsl(180, 100%, 70%),
+      hsl(64, 57%, 82%),
+      hsl(0, 100%, 84%)
+    );
+  }
+
+.b {
+  width: var(--b-0);
+  height: auto;
+  margin: 64px 24px;
+  max-width: calc(100% - 48px);
+  box-shadow: 3px 3px 32px rgba(0, 0, 0, 0.32);
+}
+
+@media screen and (min-width: 1024px) {
+
+.b {
+    margin: 24px
+}
+  }
+
+.l {
+  background: linear-gradient(to bottom right, #b24592, #f15f79);
+  color: #fff;
+  min-height: 100vh;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.08);
+}
+
+html {
+  box-sizing: border-box;
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, \\"Segoe UI\\", Roboto, Oxygen, Ubuntu, Cantarell, \\"Open Sans\\", \\"Helvetica Neue\\", Helvetica, sans-serif;
+  font-size: 20px;
+  line-height: 1.42857;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
 "
 `;

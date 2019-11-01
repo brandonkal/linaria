@@ -87,6 +87,10 @@ const pack = ({
         },
       ],
     },
+    {
+      test: /\.(png|jpg|gif|svg)$/,
+      use: [{ loader: 'file-loader' }],
+    },
   ];
 
   const plugins = [
