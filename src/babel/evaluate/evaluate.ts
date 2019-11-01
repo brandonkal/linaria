@@ -82,6 +82,7 @@ export default function evaluate(
       cached.optsHash === this._cacheKey &&
       cached.mtime === lastModified
     ) {
+      log(`using compile cache for ${this.filename}`);
       return {
         code: cached.code,
         map: cache[this.filename].map,
@@ -96,7 +97,7 @@ export default function evaluate(
          * We need to perform this transform first. This two-pass approach ensures that
          * path.evaluate() will not return different results from different Babel configs.
          */
-        const { map: map2, ast: ast2 } = transformFromAstSync(ast!, code, {
+        const { map: map2, code: codeMid } = transformFromAstSync(ast!, code, {
           filename: this.filename,
           presets: [[babelPreset, { ...options, _isEvaluatePass: true }]],
           babelrc: false,
@@ -104,11 +105,13 @@ export default function evaluate(
           sourceMaps: true,
           sourceFileName: this.filename,
           inputSourceMap: map == null ? undefined : map,
-          code: false,
-          ast: true,
+          code: true,
+          ast: false,
         })!;
-        ast = ast2!;
         map = map2 == undefined ? null : map2;
+        // We must reparse the generated code into a new AST so scope is correct
+        transformOptions.inputSourceMap = map;
+        ast = parseSync(codeMid!, transformOptions)!;
       } else {
         log(`transform step 1: linaria skipped pass for ${this.filename}`);
       }

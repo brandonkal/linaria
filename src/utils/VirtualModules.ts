@@ -202,51 +202,44 @@ class VirtualModulesPlugin {
     };
 
     if (this.opts.writeToDisk) {
-      const writeFile: (
-        path: string,
-        data: any
-      ) => Promise<void> = util.promisify(
+      const writeFile =
         this.opts.filesystem === 'native'
           ? nativeFS.writeFile.bind(nativeFS)
-          : compiler.outputFileSystem.writeFile.bind(compiler.outputFileSystem)
-      );
+          : compiler.outputFileSystem.writeFile.bind(compiler.outputFileSystem);
 
-      const flushToRealFS = (compilation: any) => {
+      const flushToRealFS = (compilation: any, callback: Function) => {
         if (!this.volumeFile) {
           log('No virtual volume file set. Skipping flush');
-          return Promise.resolve();
+          callback();
+          return;
         }
         const toFlush = new Set(this._needsFlush);
         if (!this._needsFlush.size) {
-          return Promise.resolve();
+          callback();
+          return;
         }
         log('Flushing virtual files to output FS');
-        let mkdirpPromise = Promise.resolve();
         const files = this.virtualFiles();
-        return mkdirpPromise
-          .then(() => {
-            const data = JSON.stringify([...files]);
-            return writeFile(this.volumeFile!, data);
-          })
-          .then(() => {
-            log(`Successfully wrote ${files.size} virtual files to output FS`);
-            this.markFlushed(toFlush);
-            return;
-          })
-          .catch(e => {
+        const data = JSON.stringify([...files]);
+        writeFile(this.volumeFile!, data, err => {
+          if (err != null && (err as any).code !== 'ENOENT') {
             const logger: typeof console = compilation.getLogger
               ? compilation.getLogger(NAME)
               : /* istanbul ignore next */
                 console;
-            log('Failed to write virtual files to output FS', e);
+            log('Failed to write virtual files to output FS', err);
             logger.warn(
               'Unable to flush all virtual files to the Output Filesystem. This may not break the build, but could cause subsequent builds to fail if aggressive caching expects this file on disk.\n',
-              e
+              err
             );
-            return;
-          });
+          } else {
+            log(`Successfully wrote ${files.size} virtual files to output FS`);
+            this.markFlushed(toFlush);
+            callback();
+          }
+        });
       };
-      compiler.hooks.afterEmit.tapPromise(NAME, flushToRealFS);
+      compiler.hooks.afterEmit.tapAsync(NAME, flushToRealFS);
     }
 
     compiler.hooks.afterEnvironment.tap(NAME, pathFilesystem);
