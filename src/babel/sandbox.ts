@@ -1,5 +1,6 @@
 import vm from 'vm';
 import vmConsole from './console';
+import jsdom from 'jsdom';
 
 const noop = () => {};
 const vmProcess = Object.freeze({
@@ -34,9 +35,12 @@ const vmProcess = Object.freeze({
 
 function makeGlobal() {
   vmConsole._reset();
+  const window = createDOM();
   const vmGlobal = Object.assign(
     {},
     {
+      window: window,
+      ...window,
       URL,
       URLSearchParams,
       process: vmProcess,
@@ -65,7 +69,6 @@ export const context = () => {
   return {
     global: vmGlobal,
     ...vmGlobal,
-    window: {},
   };
 };
 
@@ -74,3 +77,36 @@ export const createSandbox = () => {
     name: 'Linaria Preval',
   });
 };
+
+function createDOM() {
+  const virtualConsole = new jsdom.VirtualConsole();
+  virtualConsole.sendTo(vmConsole, {
+    omitJSDOMErrors: true,
+  });
+
+  const dom = new jsdom.JSDOM(
+    `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>React App</title>
+  </head>
+  <body>
+    <noscript>
+      You need to enable JavaScript to run this app.
+    </noscript>
+    <div id="root"></div>
+  </body>
+  </html>
+  `,
+    {
+      runScripts: 'outside-only',
+      virtualConsole: virtualConsole,
+      url: 'http://localhost:8080',
+    }
+  );
+
+  return dom.window;
+}

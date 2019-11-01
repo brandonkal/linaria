@@ -4,6 +4,7 @@ import isStyled from './isStyled';
 import * as errorQueue from '../utils/errorQueue';
 import SimpleNode from './SimpleNode';
 import { NodePath } from '@babel/core';
+import { writeAndFlushConsole } from '../console';
 
 function isValid(value: any) {
   return !!(
@@ -65,6 +66,7 @@ function throwIfInvalid(
   }
 
   thisError.stack += errorQueue.print();
+  writeAndFlushConsole();
   throw thisError;
 }
 

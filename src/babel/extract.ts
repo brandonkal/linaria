@@ -60,7 +60,7 @@ export default function extract(
           const valueStrings: ValueStrings = new WeakMap();
           const nodePathFromString = new Map<string, SimpleNode>();
 
-          const lazyDepsPaths = state.queue.reduce(
+          const lazyDepsPaths: NodePath<t.Expression>[] = state.queue.reduce(
             (acc, { expressionValues: values }) => {
               acc.push(...values.filter(isLazyValue).map(v => v.ex));
               return acc;
@@ -100,14 +100,18 @@ export default function extract(
             );
 
             state.dependencies = [...evaluation.dependencies];
-            lazyValues = evaluation.value.__linariaPreval;
+            lazyValues = evaluation.value.__linariaPreval || [];
             /* istanbul ignore if */
             if (lazyValues == null || lazyDeps.length !== lazyValues.length) {
               writeAndFlushConsole();
               Module.invalidateAll();
               throw merge(
                 new Error(
-                  'Linaria Internal Error: lazy evaluation count is incorrect.\nIf no other errors were thrown, this is likely caused by using different babel transforms in evaluation and main compilation.'
+                  `Linaria Internal Error: lazy evaluation count is incorrect.\n${
+                    lazyValues == null
+                      ? 'Got null'
+                      : `Expected ${lazyDeps.length} but got ${lazyValues.length}`
+                  }\nIf no other errors were thrown, this is likely caused by using different babel transforms in evaluation and main compilation.`
                 )
               );
             }
